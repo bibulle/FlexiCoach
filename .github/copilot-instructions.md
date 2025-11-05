@@ -2,7 +2,31 @@
 
 ## Project Overview
 
-This is a French-language Progressive Web App (PWA) for guided exercise routines with daily tracking, progress visualization, and multiple training programs. The current `coach_dos_routine_douce_10_min.html` file is **one example training routine** demonstrating the core coaching engine - a 10-minute gentle back routine with timer and voice guidance.
+This is a French-language Progressive Web App (PWA) for guided exercise routines with daily tracking, progress visualization, and multiple training programs.
+
+## Development Workflow - IMPORTANT
+
+### Database Access
+
+- **ALWAYS use MongoDB MCP tools** for database operations instead of terminal commands
+- Available tools: `mcp_mongodb_mcp_s_*` for queries, counts, aggregations, exports
+- Example: Use `mcp_mongodb_mcp_s_count` instead of `mongosh --eval "db.collection.count()"`
+
+### Testing Requirements - CRITICAL
+
+**BEFORE any git commit:**
+
+1. Run ALL tests: `npx nx test frontend --run` AND `npx nx run backend-e2e:e2e`
+2. Verify 100% pass rate (currently: 18 frontend + 23 backend = 41 tests)
+3. Fix any failing tests before proceeding
+4. Update tests when adding new features
+5. **Never commit with failing tests**
+
+### Git Workflow
+
+1. Ensure all tests are green ✅
+2. Add meaningful commit messages
+3. Push to GitHub only after verification
 
 ## Architecture Pattern
 
