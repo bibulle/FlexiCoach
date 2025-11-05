@@ -4,12 +4,14 @@ import { of, throwError } from 'rxjs';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { RoutinePlayerComponent } from './routine-player.component';
 import { RoutineService } from '../services/routine.service';
+import { SessionService } from '../services/session.service';
 import { Routine } from '@flexicoach/shared';
 
 describe('RoutinePlayerComponent', () => {
   let component: RoutinePlayerComponent;
   let fixture: ComponentFixture<RoutinePlayerComponent>;
   let mockRoutineService: any;
+  let mockSessionService: any;
   let mockRouter: any;
   let mockActivatedRoute: any;
 
@@ -65,6 +67,10 @@ describe('RoutinePlayerComponent', () => {
       getBySlug: vi.fn(),
     };
 
+    mockSessionService = {
+      create: vi.fn().mockReturnValue(of({ id: 'session-123' })),
+    };
+
     mockRouter = {
       navigate: vi.fn(),
     };
@@ -81,6 +87,7 @@ describe('RoutinePlayerComponent', () => {
       imports: [RoutinePlayerComponent],
       providers: [
         { provide: RoutineService, useValue: mockRoutineService },
+        { provide: SessionService, useValue: mockSessionService },
         { provide: Router, useValue: mockRouter },
         { provide: ActivatedRoute, useValue: mockActivatedRoute },
       ],

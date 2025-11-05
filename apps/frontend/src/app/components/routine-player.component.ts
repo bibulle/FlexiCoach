@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Routine, Step } from '@flexicoach/shared';
 import { RoutineService } from '../services/routine.service';
+import { SessionService } from '../services/session.service';
 
 @Component({
   selector: 'app-routine-player',
@@ -18,6 +19,7 @@ export class RoutinePlayerComponent implements OnInit, OnDestroy {
   isResting = false;
   isPlaying = false;
   totalSeconds = 0;
+  startTime: Date | null = null;
 
   private interval: any = null;
   private synth = window.speechSynthesis;
@@ -29,7 +31,8 @@ export class RoutinePlayerComponent implements OnInit, OnDestroy {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private routineService: RoutineService
+    private routineService: RoutineService,
+    private sessionService: SessionService
   ) {
     // Load voices
     if (this.synth) {
@@ -133,6 +136,11 @@ export class RoutinePlayerComponent implements OnInit, OnDestroy {
 
     this.isPlaying = true;
 
+    // Record start time on first start
+    if (!this.startTime) {
+      this.startTime = new Date();
+    }
+
     // Initialize audio context on user interaction
     if (!this.audioContext) {
       this.audioContext = new AudioContext();
@@ -234,7 +242,45 @@ export class RoutinePlayerComponent implements OnInit, OnDestroy {
   private complete() {
     this.pause();
     this.speak('Bravo ! Routine terminée.');
-    // TODO: Save session, show completion screen
+
+    if (!this.routine || !this.startTime) return;
+
+    const endTime = new Date();
+    const durationSec = Math.floor(
+      (endTime.getTime() - this.startTime.getTime()) / 1000
+    );
+
+    // Save session
+    this.sessionService
+      .create({
+        routineId: this.routine.id,
+        startAt: this.startTime,
+        endAt: endTime,
+        durationSec: durationSec,
+        completed: true,
+        progress: 1,
+      })
+      .subscribe({
+        next: () => {
+          // Navigate to completion screen
+          this.router.navigate(['/completion'], {
+            queryParams: {
+              routineName: this.routine?.name,
+              duration: durationSec,
+            },
+          });
+        },
+        error: (err) => {
+          console.error('Error saving session:', err);
+          // Still navigate even if save fails
+          this.router.navigate(['/completion'], {
+            queryParams: {
+              routineName: this.routine?.name,
+              duration: durationSec,
+            },
+          });
+        },
+      });
   }
 
   private processCues(step: Step, elapsed: number) {

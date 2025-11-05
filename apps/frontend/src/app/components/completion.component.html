@@ -1,0 +1,35 @@
+<div class="completion-wrap">
+    <div class="completion-card">
+        <div class="success-icon">🎉</div>
+        <h1>Bravo !</h1>
+        <p class="subtitle">Routine terminée avec succès</p>
+
+        <div class="stats">
+            <div class="stat-item">
+                <span class="stat-label">Routine</span>
+                <span class="stat-value">{{ routineName }}</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Durée</span>
+                <span class="stat-value">{{ formatDuration(duration) }}</span>
+            </div>
+        </div>
+
+        <div class="feeling-section">
+            <h3>Comment vous sentez-vous ?</h3>
+            <div class="feelings">
+                @for (feeling of feelings; track feeling.value) {
+                <button class="feeling-btn" [class.selected]="selectedFeeling === feeling.value"
+                    (click)="selectFeeling(feeling.value)">
+                    <span class="feeling-emoji">{{ feeling.emoji }}</span>
+                    <span class="feeling-label">{{ feeling.label }}</span>
+                </button>
+                }
+            </div>
+        </div>
+
+        <button class="btn-primary large" (click)="finish()">
+            Terminer
+        </button>
+    </div>
+</div>
