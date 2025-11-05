@@ -1,0 +1,146 @@
+{
+    "id": "douce-10min",
+    "slug": "douce-10min",
+    "name": "Routine douce",
+    "duration": 10,
+    "level": "Débutant",
+    "description": "Mobilité douce et étirements pour soulager les tensions.",
+    "totalSeconds": 631,
+    "restSeconds": 10,
+    "steps": [
+        {
+            "name": "Respiration profonde",
+            "seconds": 60,
+            "mode": "respiration",
+            "text": "Debout ou assis. Épaules relâchées. Inspire par le nez, expire longuement par la bouche.",
+            "cues": [
+                {
+                    "at": 30,
+                    "say": "À mi‑parcours. Relâche les épaules."
+                }
+            ]
+        },
+        {
+            "name": "Rotations du bassin",
+            "seconds": 60,
+            "mode": "mouvement",
+            "text": "Mains sur les hanches. Petites rotations souples. 30 secondes dans chaque sens.",
+            "cues": [
+                {
+                    "at": 30,
+                    "say": "Change de sens."
+                }
+            ]
+        },
+        {
+            "name": "Chat – vache",
+            "seconds": 60,
+            "mode": "mouvement",
+            "text": "À quatre pattes. Inspire dos creux, expire dos rond. Mouvement fluide, sans forcer.",
+            "cues": []
+        },
+        {
+            "name": "Genoux – poitrine",
+            "seconds": 90,
+            "mode": "statique",
+            "text": "Allongé dos au sol. 20 s jambe droite, 10 s relâche, 20 s jambe gauche, 10 s relâche, puis 20 s les deux genoux.",
+            "cues": [
+                {
+                    "at": 20,
+                    "say": "Relâche 10 secondes."
+                },
+                {
+                    "at": 30,
+                    "say": "Change de jambe, jambe gauche vers la poitrine."
+                },
+                {
+                    "at": 50,
+                    "say": "Relâche 10 secondes."
+                },
+                {
+                    "at": 60,
+                    "say": "Amène les deux genoux vers la poitrine."
+                }
+            ]
+        },
+        {
+            "name": "Torsion allongée",
+            "seconds": 70,
+            "mode": "statique",
+            "text": "Bras en croix. 30 s genou droit vers la gauche, 10 s transition, 30 s genou gauche vers la droite.",
+            "cues": [
+                {
+                    "at": 30,
+                    "say": "Relâche et change de côté."
+                },
+                {
+                    "at": 40,
+                    "say": "Reprends en position, genou gauche vers la droite."
+                }
+            ]
+        },
+        {
+            "name": "Étirement du psoas",
+            "seconds": 50,
+            "mode": "statique",
+            "text": "Grande fente. 20 s jambe droite, 10 s transition, 20 s jambe gauche. Buste haut, bassin lourd.",
+            "cues": [
+                {
+                    "at": 20,
+                    "say": "Relâche et change de jambe."
+                },
+                {
+                    "at": 30,
+                    "say": "Reprends, jambe gauche devant."
+                }
+            ]
+        },
+        {
+            "name": "Pont fessier",
+            "seconds": 45,
+            "mode": "mouvement",
+            "text": "Pieds au sol, genoux pliés. Monte les hanches sans cambrer, redescends en contrôle.",
+            "cues": [
+                {
+                    "at": 25,
+                    "say": "Garde l'abdomen légerement engagé."
+                }
+            ]
+        },
+        {
+            "name": "Bird dog",
+            "seconds": 60,
+            "mode": "mouvement",
+            "text": "À quatre pattes. Bras droit + jambe gauche, puis inverse. Bassin stable, regard au sol.",
+            "cues": [
+                {
+                    "at": 30,
+                    "say": "À mi‑parcours. Maintiens la stabilité du bassin."
+                }
+            ]
+        },
+        {
+            "name": "Gainage frontal",
+            "seconds": 75,
+            "mode": "statique",
+            "text": "Planche sur les coudes : 30 s maintien, 15 s relâche, 30 s maintien. Corps aligné, respiration calme.",
+            "cues": [
+                {
+                    "at": 30,
+                    "say": "Relâche 15 secondes."
+                },
+                {
+                    "at": 45,
+                    "say": "Reprends le gainage 30 secondes."
+                }
+            ]
+        },
+        {
+            "name": "Retour au calme",
+            "seconds": 30,
+            "mode": "respiration",
+            "text": "Respiration lente. Épaules basses, nuque longue. Bravo !",
+            "cues": []
+        }
+    ]
+}

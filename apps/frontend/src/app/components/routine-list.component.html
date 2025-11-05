@@ -1,0 +1,26 @@
+<div class="routine-list">
+    <h2>Routines disponibles</h2>
+
+    @if (loading) {
+    <p>Chargement...</p>
+    } @if (error) {
+    <p class="error">{{ error }}</p>
+    } @if (routines.length > 0) {
+    <div class="routines-grid">
+        @for (routine of routines; track routine.id) {
+        <div class="routine-card">
+            <h3>{{ routine.name }}</h3>
+            <p class="description">{{ routine.description }}</p>
+            <div class="meta">
+                <span class="duration">{{ routine.duration }} min</span>
+                <span class="level">{{ routine.level }}</span>
+                <span class="steps">{{ routine.steps.length }} exercices</span>
+            </div>
+            <button (click)="selectRoutine(routine)">Démarrer</button>
+        </div>
+        }
+    </div>
+    } @else if (!loading) {
+    <p>Aucune routine disponible</p>
+    }
+</div>

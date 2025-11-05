@@ -1,0 +1,54 @@
+<div class="player-wrap" *ngIf="routine">
+    <button class="back-btn" (click)="goBack()">← Retour</button>
+
+    <div class="player-card">
+        <h1>{{ routine.name }}</h1>
+        <p class="subtitle">{{ routine.description }}</p>
+
+        <div class="timer-section">
+            <div class="timer-display">
+                <div class="time-remaining">{{ formatTime(timeLeft) }}</div>
+                <div class="step-title">{{ currentTitle }}</div>
+                <div class="step-instruction">{{ currentInstruction }}</div>
+            </div>
+
+            <div class="progress-bar">
+                <div class="progress-fill" [style.width.%]="progressPercent"></div>
+            </div>
+
+            <div class="global-time">
+                Temps restant total : {{ formatTime(remainingGlobalTime()) }}
+            </div>
+        </div>
+
+        <div class="controls">
+            <button *ngIf="!isPlaying" (click)="start()" class="primary">
+                {{ currentStepIndex === 0 && timeLeft === 0 ? 'Démarrer' : 'Reprendre' }}
+            </button>
+            <button *ngIf="isPlaying" (click)="pause()" class="secondary">Pause</button>
+            <button (click)="stop()" class="danger">Arrêter</button>
+        </div>
+
+        <div class="steps-list">
+            <h3>Étapes de la routine</h3>
+            <div class="step-item" *ngFor="let step of routine.steps; let i = index"
+                [class.current]="i === currentStepIndex && !isResting" [class.done]="i < currentStepIndex">
+                <div class="step-number">{{ i + 1 }}</div>
+                <div class="step-info">
+                    <div class="step-name">{{ step.name }}</div>
+                    <div class="step-meta">
+                        {{ formatTime(step.seconds) }} · {{ step.mode }}
+                    </div>
+                </div>
+                <div class="step-status">
+                    <span *ngIf="i < currentStepIndex">✓</span>
+                    <span *ngIf="i === currentStepIndex && !isResting">▶</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="loading" *ngIf="!routine">
+    <p>Chargement de la routine...</p>
+</div>

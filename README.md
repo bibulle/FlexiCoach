@@ -1,96 +1,187 @@
-# CoachDos
+# FlexiCoach
 
-<a alt="Nx logo" href="https://nx.dev" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/nrwl/nx/master/images/nx-logo.png" width="45"></a>
+Application Progressive Web App (PWA) pour routines d'exercices guidées avec suivi quotidien, visualisation des progrès et programmes d'entraînement multiples.
 
-✨ Your new, shiny [Nx workspace](https://nx.dev) is ready ✨.
+## 🏗️ Architecture
 
-[Learn more about this workspace setup and its capabilities](https://nx.dev/getting-started/intro#learn-nx?utm_source=nx_project&amp;utm_medium=readme&amp;utm_campaign=nx_projects) or run `npx nx graph` to visually explore what was created. Now, let's get you up to speed!
+Monorepo Nx avec:
 
-## Run tasks
+- **Backend** (NestJS) - API REST avec MongoDB
+- **Frontend** (Angular) - Interface utilisateur responsive
+- **Shared** - Bibliothèque TypeScript partagée (modèles de données)
 
-To run tasks with Nx use:
+## 🚀 Démarrage rapide
 
-```sh
-npx nx <target> <project-name>
+### Prérequis
+
+- Node.js 18+
+- MongoDB 8.0.1+ (local ou distant)
+- npm ou yarn
+
+### Installation
+
+```bash
+npm install
 ```
 
-For example:
+### Configuration MongoDB
 
-```sh
-npx nx build myproject
+Assurez-vous que MongoDB est en cours d'exécution sur `localhost:27017`.
+
+### Chargement des données initiales
+
+```bash
+npx tsx apps/backend/src/scripts/seed-routines.ts
 ```
 
-These targets are either [inferred automatically](https://nx.dev/concepts/inferred-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) or defined in the `project.json` or `package.json` files.
+### Démarrage des serveurs de développement
 
-[More about running tasks in the docs &raquo;](https://nx.dev/features/run-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-## Add new projects
-
-While you could add new projects to your workspace manually, you might want to leverage [Nx plugins](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) and their [code generation](https://nx.dev/features/generate-code?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) feature.
-
-To install a new plugin you can use the `nx add` command. Here's an example of adding the React plugin:
-```sh
-npx nx add @nx/react
+**Backend** (port 3000):
+```bash
+npx nx serve backend
 ```
 
-Use the plugin's generator to create new projects. For example, to create a new React app or library:
-
-```sh
-# Generate an app
-npx nx g @nx/react:app demo
-
-# Generate a library
-npx nx g @nx/react:lib some-lib
+**Frontend** (port 4200):
+```bash
+npx nx serve frontend
 ```
 
-You can use `npx nx list` to get a list of installed plugins. Then, run `npx nx list <plugin-name>` to learn about more specific capabilities of a particular plugin. Alternatively, [install Nx Console](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) to browse plugins and generators in your IDE.
+L'application sera accessible sur `http://localhost:4200`
 
-[Learn more about Nx plugins &raquo;](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) | [Browse the plugin registry &raquo;](https://nx.dev/plugin-registry?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+## 🧪 Tests
 
-## Set up CI!
+### Tests unitaires frontend
 
-### Step 1
-
-To connect to Nx Cloud, run the following command:
-
-```sh
-npx nx connect
+```bash
+npx nx test frontend
 ```
 
-Connecting to Nx Cloud ensures a [fast and scalable CI](https://nx.dev/ci/intro/why-nx-cloud?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) pipeline. It includes features such as:
+### Tests e2e backend
 
-- [Remote caching](https://nx.dev/ci/features/remote-cache?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Task distribution across multiple machines](https://nx.dev/ci/features/distribute-task-execution?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Automated e2e test splitting](https://nx.dev/ci/features/split-e2e-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Task flakiness detection and rerunning](https://nx.dev/ci/features/flaky-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-### Step 2
-
-Use the following command to configure a CI workflow for your workspace:
-
-```sh
-npx nx g ci-workflow
+```bash
+npx nx run backend-e2e:e2e
 ```
 
-[Learn more about Nx on CI](https://nx.dev/ci/intro/ci-with-nx#ready-get-started-with-your-provider?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+## 📁 Structure du projet
 
-## Install Nx Console
+```
+apps/
+├── backend/           # API NestJS
+│   ├── src/
+│   │   ├── routines/  # Module routines (CRUD)
+│   │   ├── sessions/  # Module sessions de pratique
+│   │   ├── users/     # Module utilisateurs
+│   │   ├── schemas/   # Schémas MongoDB/Mongoose
+│   │   └── scripts/   # Scripts (seed-routines.ts)
+│   └── ...
+├── frontend/          # Application Angular
+│   ├── src/
+│   │   ├── app/
+│   │   │   ├── components/  # Composants (list, player)
+│   │   │   └── services/    # Services HTTP
+│   │   └── styles.sass      # Styles globaux
+│   └── ...
+└── backend-e2e/       # Tests e2e du backend
 
-Nx Console is an editor extension that enriches your developer experience. It lets you run tasks, generate code, and improves code autocompletion in your IDE. It is available for VSCode and IntelliJ.
+libs/
+└── shared/            # Bibliothèque partagée
+    └── src/lib/models.ts  # Modèles TypeScript
 
-[Install Nx Console &raquo;](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+prototype/             # Prototype HTML/CSS/JS original
+├── index.html
+├── assets/common.css
+└── routines/
 
-## Useful links
+routines/              # Données JSON des routines
+├── douce-10min.json
+└── bureau-5min.json
+```
 
-Learn more:
+## 🎯 Fonctionnalités
 
-- [Learn more about this workspace setup](https://nx.dev/getting-started/intro#learn-nx?utm_source=nx_project&amp;utm_medium=readme&amp;utm_campaign=nx_projects)
-- [Learn about Nx on CI](https://nx.dev/ci/intro/ci-with-nx?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Releasing Packages with Nx release](https://nx.dev/features/manage-releases?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [What are Nx plugins?](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+### Implémentées ✅
 
-And join the Nx community:
-- [Discord](https://go.nx.dev/community)
-- [Follow us on X](https://twitter.com/nxdevtools) or [LinkedIn](https://www.linkedin.com/company/nrwl)
-- [Our Youtube channel](https://www.youtube.com/@nxdevtools)
-- [Our blog](https://nx.dev/blog?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+- Liste des routines disponibles avec badges (durée, niveau, nombre d'exercices)
+- Lecteur de routine avec:
+  - Timer compte à rebours
+  - Instructions vocales (Web Speech API)
+  - Barre de progression
+  - Affichage des étapes
+  - Périodes de repos automatiques (10s entre exercices)
+- API REST complète (routines, sessions, users)
+- Connexion MongoDB avec Mongoose
+- Tests unitaires (frontend: Vitest, backend-e2e: Jest)
+- Design moderne avec thème bleu
+
+### En cours ⏳
+
+- Enregistrement des sessions après complétion
+- Écran de complétion avec évaluation du ressenti
+
+### Planifiées 📋
+
+- Compteur de série (streak)
+- Vue calendrier des pratiques
+- Statistiques et graphiques de progrès
+- Authentification utilisateur (JWT)
+- Fonctionnalités PWA (service worker, manifest)
+- Page de paramètres
+
+## 🎨 Design
+
+Le design s'inspire du prototype vanilla JS avec:
+
+- Palette de couleurs: bleu (#3b82f6) comme accent
+- Cards arrondies (16px border-radius)
+- Badges colorés (bleu pour durée, vert pour niveau)
+- Boutons en forme de pilule (999px border-radius)
+- Ombres douces pour la profondeur
+- Max-width 820px pour une lecture optimale
+
+## 🛠️ Technologies
+
+- **Nx** 22.0.2 - Monorepo intégré
+- **NestJS** - Framework backend
+- **Angular** 20.3 - Framework frontend
+- **MongoDB** 8.0.1 + Mongoose - Base de données
+- **Vitest** - Tests unitaires frontend
+- **Jest** - Tests e2e backend
+- **TypeScript** 5.8.0
+- **SASS** - Préprocesseur CSS
+
+## 📝 Notes de développement
+
+### Commandes utiles
+
+```bash
+# Voir le graphe de dépendances
+npx nx graph
+
+# Lancer tous les tests
+npx nx run-many -t test
+
+# Builder le frontend
+npx nx build frontend
+
+# Builder le backend
+npx nx build backend
+```
+
+### Configuration importante
+
+- `.npmrc` contient `legacy-peer-deps=true` pour résoudre les conflits de dépendances
+- Le frontend utilise un proxy (`proxy.conf.json`) pour rediriger `/api` vers `localhost:3000`
+- Les schémas MongoDB sont dans `apps/backend/src/schemas/`
+- Les modèles partagés sont dans `libs/shared/src/lib/models.ts`
+
+## 🌐 API Endpoints
+
+- `GET /api/routines` - Liste toutes les routines
+- `GET /api/routines/:slug` - Détails d'une routine
+- `POST /api/sessions` - Créer une session de pratique
+- `GET /api/sessions/stats` - Statistiques utilisateur
+- `GET /api/users/:id` - Profil utilisateur
+
+## 📄 Licence
+
+Projet personnel - Tous droits réservés

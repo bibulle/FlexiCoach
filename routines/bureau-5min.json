@@ -1,0 +1,115 @@
+{
+    "id": "bureau-5min",
+    "slug": "bureau-5min",
+    "name": "Pause bureau",
+    "duration": 5,
+    "level": "Tous niveaux",
+    "description": "Étirements rapides pour la nuque, épaules et dos.",
+    "totalSeconds": 315,
+    "restSeconds": 5,
+    "steps": [
+        {
+            "name": "Respiration et posture",
+            "seconds": 30,
+            "mode": "respiration",
+            "text": "Debout, pieds écartés largeur épaules. Inspire en redressant la colonne, expire en relâchant les épaules.",
+            "cues": [
+                {
+                    "at": 15,
+                    "say": "Grandis-toi, épaules basses."
+                }
+            ]
+        },
+        {
+            "name": "Rotations des épaules",
+            "seconds": 30,
+            "mode": "mouvement",
+            "text": "Rotations lentes des épaules vers l'arrière. Décolle les omoplates.",
+            "cues": [
+                {
+                    "at": 15,
+                    "say": "Change de sens si tu veux."
+                }
+            ]
+        },
+        {
+            "name": "Étirement latéral nuque",
+            "seconds": 40,
+            "mode": "statique",
+            "text": "Penche la tête à droite, main gauche vers le sol. 15s puis change de côté.",
+            "cues": [
+                {
+                    "at": 15,
+                    "say": "Relâche et change de côté."
+                },
+                {
+                    "at": 25,
+                    "say": "Tête à gauche maintenant."
+                }
+            ]
+        },
+        {
+            "name": "Torsion douce debout",
+            "seconds": 50,
+            "mode": "mouvement",
+            "text": "Mains sur les hanches, pivote le buste à droite puis à gauche. Hanches fixes.",
+            "cues": [
+                {
+                    "at": 25,
+                    "say": "Continue, respire calmement."
+                }
+            ]
+        },
+        {
+            "name": "Étirement bras croisé",
+            "seconds": 40,
+            "mode": "statique",
+            "text": "Bras droit tendu devant, main gauche tire le coude. 15s puis change.",
+            "cues": [
+                {
+                    "at": 15,
+                    "say": "Change de bras."
+                },
+                {
+                    "at": 25,
+                    "say": "Bras gauche maintenant."
+                }
+            ]
+        },
+        {
+            "name": "Extension dorsale",
+            "seconds": 30,
+            "mode": "mouvement",
+            "text": "Mains derrière la nuque, ouvre les coudes vers l'arrière. Respire profondément.",
+            "cues": [
+                {
+                    "at": 15,
+                    "say": "Ouvre bien la poitrine."
+                }
+            ]
+        },
+        {
+            "name": "Flexion avant douce",
+            "seconds": 40,
+            "mode": "statique",
+            "text": "Penche-toi vers l'avant, bras ballants. Laisse le poids étirer ton dos. Remonte lentement.",
+            "cues": [
+                {
+                    "at": 20,
+                    "say": "Respire, laisse faire la gravité."
+                },
+                {
+                    "at": 30,
+                    "say": "Remonte vertèbre par vertèbre."
+                }
+            ]
+        },
+        {
+            "name": "Retour au travail",
+            "seconds": 20,
+            "mode": "respiration",
+            "text": "Inspire profondément, expire en souriant. Tu es prêt(e) à repartir !",
+            "cues": []
+        }
+    ]
+}

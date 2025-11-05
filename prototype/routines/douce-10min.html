@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Coach dos — Routine douce (10 min)</title>
+  <style>
+    /* Integration styles */
+    .back-btn {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 12px;
+      text-decoration: none;
+      color: var(--accent);
+      font-weight: 500;
+    }
+
+    :root {
+      --bg: #f7f9fb;
+      --fg: #0f172a;
+      --muted: #64748b;
+      --accent: #3b82f6;
+      /* bleu kiné doux */
+      --card: #ffffff;
+      --ok: #10b981;
+      --warn: #f59e0b;
+      --border: #e5e7eb;
+    }
+
+    html,
+    body {
+      height: 100%;
+    }
+
+    body {
+      margin: 0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
+      background: var(--bg);
+      color: var(--fg);
+      display: grid;
+      place-items: start center;
+      padding: 16px;
+    }
+
+    .wrap {
+      width: 100%;
+      max-width: 820px;
+    }
+
+    .card {
+      background: var(--card);
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 8px 24px rgba(2, 6, 23, .08);
+    }
+
+    h1 {
+      margin: 0 0 4px;
+      font-size: 28px;
+      letter-spacing: .2px;
+    }
+
+    .sub {
+      color: var(--muted);
+      margin: 0 0 16px;
+    }
+
+    .timer {
+      display: grid;
+      gap: 12px;
+      grid-template-columns: 1fr;
+      align-items: center;
+      text-align: center;
+      border: 1px solid #e5e7eb;
+      border-radius: 14px;
+      padding: 16px;
+      background: #fafcff;
+    }
+
+    .big {
+      font-variant-numeric: tabular-nums;
+      font-size: 48px;
+      font-weight: 700;
+      letter-spacing: 1px;
+    }
+
+    .title {
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .instr {
+      color: var(--muted);
+      font-size: 15px;
+    }
+
+    .bar {
+      height: 10px;
+      background: #e5e7eb;
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent), #60a5fa);
+      transition: width 0.25s linear;
+    }
+
+    .controls {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    button {
+      border: 0;
+      border-radius: 999px;
+      padding: 10px 16px;
+      font-weight: 600;
+      cursor: pointer;
+      background: var(--accent);
+      color: white;
+      box-shadow: 0 6px 16px rgba(59, 130, 246, .25);
+    }
+
+    button.secondary {
+      background: #e2e8f0;
+      color: #0f172a;
+      box-shadow: none;
+    }
+
+    button.danger {
+      background: #ef4444;
+    }
+
+    .list {
+      margin-top: 16px;
+    }
+
+    .step {
+      display: grid;
+      grid-template-columns: 44px 1fr auto;
+      gap: 12px;
+      align-items: center;
+      padding: 10px 12px;
+      border-radius: 12px;
+    }
+
+    .step.active {
+      background: #eef2ff;
+    }
+
+    .num {
+      width: 44px;
+      height: 44px;
+      display: grid;
+      place-items: center;
+      border-radius: 10px;
+      background: #eef2ff;
+      color: #3730a3;
+      font-weight: 800;
+    }
+
+    .meta {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .badge {
+      font-size: 12px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: #f1f5f9;
+      margin-left: 8px;
+    }
+
+    footer {
+      color: var(--muted);
+      font-size: 13px;
+      text-align: center;
+      margin-top: 12px;
+    }
+  </style>
+</head>
+
+<body>
+  <a href="/index.html" class="back-btn">← Accueil</a>
+
+  <div class="wrap">
+    <div class="card">
+      <h1>Coach dos — Routine douce (10 min)</h1>
+      <p class="sub">Style kiné : voix + chrono + consignes. Appuie sur <strong>Démarrer</strong> et laisse‑toi guider.
+      </p>
+
+      <div class="timer">
+        <div class="title" id="stepTitle">Prêt ?</div>
+        <div class="instr" id="instructions">Quand tu es installé, clique sur Démarrer.</div>
+        <div class="big" id="countdown">10:00</div>
+        <div class="bar">
+          <div class="fill" id="progress"></div>
+        </div>
+        <div class="controls">
+          <button id="startBtn">▶️ Démarrer</button>
+          <button class="secondary" id="pauseBtn">⏸️ Pause</button>
+          <button class="secondary" id="skipBtn">⏭️ Étape suivante</button>
+          <button class="danger" id="resetBtn">🔄 Réinitialiser</button>
+        </div>
+      </div>
+
+      <div class="list" id="stepsList"></div>
+
+      <footer>Astuce : active le son. La voix te donne le départ, la moitié et les 10 dernières secondes.</footer>
+    </div>
+  </div>
+
+  <script>
+    // Configuration
+    const REST_SECONDS = 10; // pause de transition entre exercices
+
+    // Définition des étapes (≈10 minutes hors pauses)
+    // Chaque étape peut préciser :
+    // - mode: "mouvement" | "statique" | "respiration"
+    // - cues: annonces vocales à des temps écoulés (en secondes)
+    const plan = [
+      {
+        name: "Respiration profonde",
+        seconds: 60,
+        mode: "respiration",
+        text: "Debout ou assis. Épaules relâchées. Inspire par le nez, expire longuement par la bouche.",
+        cues: [
+          { at: 30, say: "À mi‑parcours. Relâche les épaules." }
+        ]
+      },
+      {
+        name: "Rotations du bassin",
+        seconds: 60,
+        mode: "mouvement",
+        text: "Mains sur les hanches. Petites rotations souples. 30 secondes dans chaque sens.",
+        cues: [
+          { at: 30, say: "Change de sens." }
+        ]
+      },
+
+      {
+        name: "Chat – vache",
+        seconds: 60,
+        mode: "mouvement",
+        text: "À quatre pattes. Inspire dos creux, expire dos rond. Mouvement fluide, sans forcer.",
+        cues: []
+      },
+      {
+        name: "Genoux – poitrine",
+        seconds: 90,
+        mode: "statique",
+        text: "Allongé dos au sol. 20 s jambe droite, 10 s relâche, 20 s jambe gauche, 10 s relâche, puis 20 s les deux genoux.",
+        cues: [
+          { at: 20, say: "Relâche 10 secondes." },
+          { at: 30, say: "Change de jambe, jambe gauche vers la poitrine." },
+          { at: 50, say: "Relâche 10 secondes." },
+          { at: 60, say: "Amène les deux genoux vers la poitrine." }
+        ]
+      },
+      {
+        name: "Torsion allongée",
+        seconds: 70,
+        mode: "statique",
+        text: "Bras en croix. 30 s genou droit vers la gauche, 10 s transition, 30 s genou gauche vers la droite.",
+        cues: [
+          { at: 30, say: "Relâche et change de côté." },
+          { at: 40, say: "Reprends en position, genou gauche vers la droite." }
+        ]
+      },
+      {
+        name: "Étirement du psoas",
+        seconds: 50,
+        mode: "statique",
+        text: "Grande fente. 20 s jambe droite, 10 s transition, 20 s jambe gauche. Buste haut, bassin lourd.",
+        cues: [
+          { at: 20, say: "Relâche et change de jambe." },
+          { at: 30, say: "Reprends, jambe gauche devant." }
+        ]
+      },
+
+      {
+        name: "Pont fessier",
+        seconds: 45,
+        mode: "mouvement",
+        text: "Pieds au sol, genoux pliés. Monte les hanches sans cambrer, redescends en contrôle.",
+        cues: [
+          { at: 25, say: "Garde l'abdomen légerement engagé." }
+        ]
+      },
+      {
+        name: "Bird dog",
+        seconds: 60,
+        mode: "mouvement",
+        text: "À quatre pattes. Bras droit + jambe gauche, puis inverse. Bassin stable, regard au sol.",
+        cues: [
+          { at: 30, say: "À mi‑parcours. Maintiens la stabilité du bassin." }
+        ]
+      },
+      {
+        name: "Gainage frontal",
+        seconds: 75,
+        mode: "statique",
+        text: "Planche sur les coudes : 30 s maintien, 15 s relâche, 30 s maintien. Corps aligné, respiration calme.",
+        cues: [
+          { at: 30, say: "Relâche 15 secondes." },
+          { at: 45, say: "Reprends le gainage 30 secondes." }
+        ]
+      },
+      {
+        name: "Retour au calme",
+        seconds: 30,
+        mode: "respiration",
+        text: "Respiration lente. Épaules basses, nuque longue. Bravo !",
+        cues: []
+      }
+    ];
+
+    // État
+    let idx = -1;             // index de l'étape dans plan
+    let timeLeft = 0;          // temps restant pour l'étape en cours
+    let interval = null;       // timer
+    let paused = false;
+    let resting = false;       // si on est dans une pause de transition
+
+    // Calcul du total incluant les pauses (entre chaque étape, sauf après la dernière)
+    const baseTotal = plan.reduce((a, s) => a + s.seconds, 0);
+    const totalSeconds = baseTotal + REST_SECONDS * (plan.length - 1);
+
+    const elTitle = document.getElementById('stepTitle');
+    const elInstr = document.getElementById('instructions');
+    const elCountdown = document.getElementById('countdown');
+    const elProgress = document.getElementById('progress');
+    const startBtn = document.getElementById('startBtn');
+    const pauseBtn = document.getElementById('pauseBtn');
+    const skipBtn = document.getElementById('skipBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const stepsList = document.getElementById('stepsList');
+
+    // Utilitaires format
+    const fmt = (s) => {
+      const m = Math.floor(s / 60).toString().padStart(2, '0');
+      const r = Math.floor(s % 60).toString().padStart(2, '0');
+      return `${m}:${r}`;
+    };
+
+    // Rendu liste
+    function renderList(currentElapsedInStep = 0) {
+      stepsList.innerHTML = '';
+      plan.forEach((s, i) => {
+        const div = document.createElement('div');
+        div.className = 'step' + (i === idx && !resting ? ' active' : '');
+        const modeBadge = `<span class="badge">${s.mode}</span>`;
+        div.innerHTML = `
+          <div class="num">${i + 1}</div>
+          <div>
+            <div><strong>${s.name}</strong><span class="badge">${Math.round(s.seconds)} s</span>${modeBadge}</div>
+            <div class="meta">${s.text}</div>
+          </div>
+          <div class="meta">${fmt(s.seconds)}</div>
+        `;
+        stepsList.appendChild(div);
+      });
+    }
+
+    // Voix (Web Speech API) + bip de secours (WebAudio)
+    const synth = window.speechSynthesis;
+    const haveVoice = !!synth;
+    let audioCtx = null;
+    let voicesLoaded = false;
+
+    // Wait for voices to load (Chrome needs this)
+    if (haveVoice) {
+      const loadVoices = () => {
+        const voices = synth.getVoices();
+        if (voices.length > 0) {
+          voicesLoaded = true;
+          console.log('✅ Voices loaded:', voices.length, 'voices available');
+          console.log('French voices:', voices.filter(v => v.lang.startsWith('fr')).map(v => v.name));
+        }
+      };
+
+      loadVoices();
+      synth.addEventListener('voiceschanged', loadVoices);
+    }
+
+    function beep(freq = 880, dur = 0.12) {
+      try {
+        audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+        const o = audioCtx.createOscillator();
+        const g = audioCtx.createGain();
+        o.connect(g); g.connect(audioCtx.destination);
+        o.frequency.value = freq; o.type = 'sine';
+        g.gain.setValueAtTime(0.001, audioCtx.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.1, audioCtx.currentTime + 0.02);
+        o.start();
+        setTimeout(() => { g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.02); o.stop(); }, dur * 1000);
+      } catch (e) { /* no‑op */ }
+    }
+    function speak(text) {
+      console.log('Attempting to speak:', text.substring(0, 50), 'voicesLoaded:', voicesLoaded);
+
+      if (!haveVoice) {
+        console.log('No voice available, using beep');
+        beep(880, .12);
+        return;
+      }
+
+      const doSpeak = () => {
+        const voices = synth.getVoices();
+        const u = new SpeechSynthesisUtterance(text);
+        u.lang = 'fr-FR';
+        u.rate = 1.02;
+        u.pitch = 1.0;
+        u.volume = 1.0;
+
+        // Use first French voice if available
+        const frenchVoice = voices.find(v => v.lang.startsWith('fr'));
+        if (frenchVoice) {
+          u.voice = frenchVoice;
+        }
+
+        u.onstart = () => console.log('✅ Speech started:', text.substring(0, 30));
+        u.onerror = (e) => console.error('❌ Speech error:', e.error);
+        u.onend = () => console.log('🏁 Speech ended');
+
+        synth.speak(u);
+      };
+
+      if (voicesLoaded) {
+        doSpeak();
+      } else {
+        // Wait for voices to load, then speak
+        console.log('⏳ Waiting for voices to load...');
+        const checkVoices = setInterval(() => {
+          if (voicesLoaded) {
+            clearInterval(checkVoices);
+            doSpeak();
+          }
+        }, 100);
+
+        // Timeout after 2 seconds
+        setTimeout(() => {
+          clearInterval(checkVoices);
+          if (!voicesLoaded) {
+            console.error('⚠️ Voices failed to load, using beep');
+            beep(880, .12);
+          }
+        }, 2000);
+      }
+    }
+
+    function remainingGlobal() {
+      let rem = timeLeft;
+      // Ajoute le reste des étapes + pauses de transition restantes
+      for (let i = idx + (resting ? 0 : 1); i < plan.length; i++) {
+        // si on est au milieu d'une pause, elle est comptée dans timeLeft
+        rem += plan[i].seconds;
+        if (i < plan.length - 1) rem += REST_SECONDS;
+      }
+      return rem;
+    }
+
+    function updateCountdown() {
+      elCountdown.textContent = fmt(timeLeft);
+      const elapsed = totalSeconds - remainingGlobal();
+      const pct = Math.max(0, Math.min(100, (elapsed / totalSeconds) * 100));
+      elProgress.style.width = pct + '%';
+    }
+
+    function startRest(next) {
+      resting = true;
+      timeLeft = REST_SECONDS;
+      elTitle.textContent = 'Pause – mise en place';
+      elInstr.textContent = `Respiration calme. Prépare‑toi pour : ${next.name}.`;
+      speak('Pause de dix secondes. Prépare‑toi pour le prochain exercice.');
+      updateCountdown();
+    }
+
+    function nextStep() {
+      // Si on sort d'une pause, lancer l'étape suivante réelle
+      if (resting) {
+        resting = false;
+        // ne change pas idx, on est déjà positionné
+      } else {
+        idx++;
+      }
+
+      if (idx >= plan.length) {
+        clearInterval(interval); interval = null;
+        elTitle.textContent = 'Terminé !';
+        elInstr.textContent = 'Bien joué — hydrate‑toi et marche 1 minute.';
+        elCountdown.textContent = '00:00';
+        elProgress.style.width = '100%';
+        speak('Routine terminée. Bravo !');
+        renderList();
+
+        // Integration with main app
+        if (window.coachEngine) {
+          setTimeout(() => {
+            window.coachEngine.endSession(true);
+            window.location.href = '/index.html';
+          }, 3000);
+        }
+        return;
+      }
+
+      const s = plan[idx];
+      timeLeft = s.seconds;
+      elTitle.textContent = s.name + (s.mode ? ` — ${s.mode}` : '');
+      elInstr.textContent = s.text;
+      renderList();
+      // Annonce initiale
+      speak(`${s.name}. ${s.mode === 'mouvement' ? 'Mouvement.' : (s.mode === 'statique' ? 'Position à tenir.' : '')} ${s.text}`);
+
+      // Préparer suivi des cues
+      s._announced = new Set();
+      updateCountdown();
+    }
+
+    function processCues(step, elapsed) {
+      if (!step.cues) return;
+      step.cues.forEach(c => {
+        if (elapsed >= c.at && !step._announced.has(c.at)) {
+          step._announced.add(c.at);
+          speak(c.say);
+        }
+      });
+    }
+
+    function tick() {
+      if (paused) return;
+      timeLeft -= 1;
+      if (timeLeft < 0) timeLeft = 0;
+
+      // Annonces génériques de fin
+      if (timeLeft === 30 && !resting) speak('Il reste trente secondes.');
+      if (timeLeft === 10) { speak('Dix secondes.'); beep(1200, .15); }
+
+      // Cues spécifiques à l'étape (basées sur le temps écoulé)
+      if (!resting && idx >= 0 && idx < plan.length) {
+        const s = plan[idx];
+        const elapsed = s.seconds - timeLeft;
+        processCues(s, elapsed);
+      }
+
+      if (timeLeft <= 0) {
+        beep(660, .18);
+        // si ce n'est pas la dernière étape et qu'on n'est pas déjà en pause, on insère la pause
+        if (!resting && idx < plan.length - 1) {
+          const next = plan[idx + 1];
+          startRest(next);
+        } else {
+          nextStep();
+        }
+      }
+
+      updateCountdown();
+    }
+
+    startBtn.addEventListener('click', () => {
+      if (!interval) {
+        // Force activation of audio context on first user interaction
+        if (idx === -1 && haveVoice) {
+          // Resume audio context if suspended (Chrome requirement)
+          if (audioCtx && audioCtx.state === 'suspended') {
+            audioCtx.resume();
+          }
+          // Trigger speech synthesis to unlock it
+          const unlock = new SpeechSynthesisUtterance('');
+          synth.speak(unlock);
+        }
+
+        if (idx === -1) {
+          setTimeout(() => {
+            nextStep();
+            interval = setInterval(tick, 1000);
+          }, 50);
+        } else {
+          nextStep();
+          interval = setInterval(tick, 1000);
+        }
+        paused = false;
+      } else {
+        paused = false;
+      }
+    });
+    pauseBtn.addEventListener('click', () => { paused = !paused; speak(paused ? 'Pause.' : 'Reprise.'); });
+    skipBtn.addEventListener('click', () => { nextStep(); });
+    resetBtn.addEventListener('click', () => {
+      if (interval) { clearInterval(interval); interval = null; }
+      idx = -1; timeLeft = totalSeconds; paused = false; resting = false;
+      elTitle.textContent = 'Prêt ?';
+      elInstr.textContent = 'Quand tu es installé, clique sur Démarrer.';
+      elProgress.style.width = '0%';
+      elCountdown.textContent = fmt(totalSeconds);
+      renderList();
+      speak('Réinitialisé.');
+    });
+
+    // Init
+    elCountdown.textContent = fmt(totalSeconds);
+    renderList();
+
+    // Integration with main app
+    window.addEventListener('load', () => {
+      if (window.coachEngine) {
+        console.log('Integrated with Coach Dos app');
+      }
+    });
+  </script>
+</body>
+
+</html>
+</script>
+</body>
+
+</html>
