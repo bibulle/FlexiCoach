@@ -19,6 +19,16 @@
         "backend:build",
         "backend:serve"
       ]
+    },
+    "e2e-dev": {
+      "executor": "@nx/jest:jest",
+      "outputs": [
+        "{workspaceRoot}/coverage/{e2eProjectRoot}"
+      ],
+      "options": {
+        "jestConfig": "apps/backend-e2e/jest.config.ts",
+        "passWithNoTests": true
+      }
     }
   }
 }

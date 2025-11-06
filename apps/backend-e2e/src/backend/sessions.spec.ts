@@ -49,6 +49,45 @@ describe('Sessions API', () => {
     });
   });
 
+  describe('GET /api/sessions/calendar', () => {
+    it('should return calendar data', async () => {
+      const res = await axios.get(`${API_URL}/api/sessions/calendar`);
+
+      expect(res.status).toBe(200);
+      expect(Array.isArray(res.data)).toBe(true);
+    });
+
+    it('should filter calendar by date range', async () => {
+      const from = '2025-11-01';
+      const to = '2025-11-30';
+      const res = await axios.get(
+        `${API_URL}/api/sessions/calendar?from=${from}&to=${to}`
+      );
+
+      expect(res.status).toBe(200);
+      expect(Array.isArray(res.data)).toBe(true);
+
+      // Verify all returned dates are within range
+      res.data.forEach((item: { date: string; completionRate: number }) => {
+        expect(item).toHaveProperty('date');
+        expect(item).toHaveProperty('completionRate');
+        expect(item.date >= from).toBe(true);
+        expect(item.date <= to).toBe(true);
+        expect(item.completionRate).toBeGreaterThanOrEqual(0);
+        expect(item.completionRate).toBeLessThanOrEqual(100);
+      });
+    });
+
+    it('should filter calendar by userId', async () => {
+      const res = await axios.get(
+        `${API_URL}/api/sessions/calendar?userId=test-user`
+      );
+
+      expect(res.status).toBe(200);
+      expect(Array.isArray(res.data)).toBe(true);
+    });
+  });
+
   describe('GET /api/sessions/:id', () => {
     it('should return a specific session', async () => {
       const res = await axios.get(`${API_URL}/api/sessions/${sessionId}`);
