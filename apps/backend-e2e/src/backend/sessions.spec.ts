@@ -66,7 +66,7 @@ describe('Sessions API', () => {
       expect(typeof res.data.totalSessions).toBe('number');
       expect(typeof res.data.totalMinutes).toBe('number');
       expect(typeof res.data.adherenceRate).toBe('number');
-      
+
       expect(res.data.adherenceRate).toBeGreaterThanOrEqual(0);
       expect(res.data.adherenceRate).toBeLessThanOrEqual(100);
     });

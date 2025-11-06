@@ -116,10 +116,9 @@ export class SessionsService {
 
     // Total sessions and minutes
     const totalSessions = sessions.length;
-    const totalMinutes = sessions.reduce(
-      (sum, session) => sum + (session.durationSec || 0),
-      0
-    ) / 60;
+    const totalMinutes =
+      sessions.reduce((sum, session) => sum + (session.durationSec || 0), 0) /
+      60;
 
     // Group sessions by date
     const sessionsByDate = new Map<string, Session[]>();
@@ -140,8 +139,10 @@ export class SessionsService {
     if (sortedDates.length > 0) {
       // Check if today or yesterday has a session to start current streak
       const today = new Date().toISOString().split('T')[0];
-      const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
-      
+      const yesterday = new Date(Date.now() - 86400000)
+        .toISOString()
+        .split('T')[0];
+
       let streakStartDate: string | null = null;
       if (sortedDates.includes(today)) {
         streakStartDate = today;
@@ -165,20 +166,22 @@ export class SessionsService {
       // Calculate longest streak
       for (let i = 0; i < sortedDates.length; i++) {
         const currentDate = new Date(sortedDates[i]);
-        
+
         if (i === 0) {
           tempStreak = 1;
         } else {
           const prevDate = new Date(sortedDates[i - 1]);
-          const dayDiff = Math.round((currentDate.getTime() - prevDate.getTime()) / 86400000);
-          
+          const dayDiff = Math.round(
+            (currentDate.getTime() - prevDate.getTime()) / 86400000
+          );
+
           if (dayDiff === 1) {
             tempStreak++;
           } else {
             tempStreak = 1;
           }
         }
-        
+
         longestStreak = Math.max(longestStreak, tempStreak);
       }
     }
@@ -188,9 +191,10 @@ export class SessionsService {
     const recentSessionDates = sortedDates.filter(
       (date) => new Date(date) >= thirtyDaysAgo
     );
-    const adherenceRate = recentSessionDates.length > 0 
-      ? Math.round((recentSessionDates.length / 30) * 100) 
-      : 0;
+    const adherenceRate =
+      recentSessionDates.length > 0
+        ? Math.round((recentSessionDates.length / 30) * 100)
+        : 0;
 
     // Find favorite routine
     const routineCounts = new Map<string, number>();

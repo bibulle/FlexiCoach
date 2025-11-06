@@ -63,14 +63,16 @@ describe('RoutineListComponent', () => {
     vi.spyOn(router, 'navigate');
 
     mockRoutineService.getAll.mockReturnValue(of(mockRoutines));
-    mockStatsService.getSummary.mockReturnValue(of({
-      currentStreak: 5,
-      longestStreak: 10,
-      totalSessions: 25,
-      totalMinutes: 250,
-      adherenceRate: 75,
-      favoriteRoutine: 'douce-10min',
-    }));
+    mockStatsService.getSummary.mockReturnValue(
+      of({
+        currentStreak: 5,
+        longestStreak: 10,
+        totalSessions: 25,
+        totalMinutes: 250,
+        adherenceRate: 75,
+        favoriteRoutine: 'douce-10min',
+      })
+    );
 
     fixture = TestBed.createComponent(RoutineListComponent);
     component = fixture.componentInstance;

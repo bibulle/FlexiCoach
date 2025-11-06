@@ -15,7 +15,7 @@ export interface StatsSummary {
   providedIn: 'root',
 })
 export class StatsService {
-  private baseUrl = 'http://localhost:3000/api/sessions';
+  private baseUrl = '/api/sessions';
 
   constructor(private http: HttpClient) {}
 

@@ -55,7 +55,9 @@ describe('StatsComponent', () => {
 
   it('should handle error when loading fails', () => {
     const errorResponse = new Error('Network error');
-    mockStatsService.getSummary.mockReturnValue(throwError(() => errorResponse));
+    mockStatsService.getSummary.mockReturnValue(
+      throwError(() => errorResponse)
+    );
 
     fixture.detectChanges();
 
@@ -115,7 +117,7 @@ describe('StatsComponent', () => {
   it('should display loading message', () => {
     // Mock getSummary to not auto-complete
     mockStatsService.getSummary.mockReturnValue(of(mockSummary));
-    
+
     // Set loading state manually before detectChanges
     component.loading = true;
     component.summary = null;
@@ -125,7 +127,7 @@ describe('StatsComponent', () => {
 
     const compiled = fixture.nativeElement as HTMLElement;
     const loadingElement = compiled.querySelector('.loading');
-    
+
     // The loading state completes too quickly in tests, so just verify component structure
     expect(component).toBeTruthy();
   });
@@ -159,11 +161,11 @@ describe('StatsComponent', () => {
     fixture.detectChanges();
 
     const compiled = fixture.nativeElement as HTMLElement;
-    const icons = compiled.querySelectorAll('.stat-icon');
-    expect(icons[0].textContent).toContain('🔥');
-    expect(icons[1].textContent).toContain('⏱️');
-    expect(icons[2].textContent).toContain('📈');
-    expect(icons[3].textContent).toContain('🎯');
+    const cardIcons = compiled.querySelectorAll('.stat-card mat-icon');
+    expect(cardIcons[0].textContent).toContain('local_fire_department');
+    expect(cardIcons[1].textContent).toContain('schedule');
+    expect(cardIcons[2].textContent).toContain('trending_up');
+    expect(cardIcons[3].textContent).toContain('emoji_events');
   });
 
   it('should not display favorite routine card when null', () => {
