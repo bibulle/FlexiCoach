@@ -106,9 +106,15 @@ export class RoutinePlayerComponent implements OnInit, OnDestroy {
   }
 
   get progressPercent(): number {
-    if (!this.routine) return 0;
-    const elapsed = this.totalSeconds - this.remainingGlobalTime();
-    return Math.max(0, Math.min(100, (elapsed / this.totalSeconds) * 100));
+    if (!this.routine || !this.startTime || !this.isPlaying) return 0;
+    
+    // Calculate elapsed time since start
+    const now = new Date();
+    const elapsedMs = now.getTime() - this.startTime.getTime();
+    const elapsedSeconds = Math.floor(elapsedMs / 1000);
+    
+    // Clamp between 0 and 100
+    return Math.max(0, Math.min(100, (elapsedSeconds / this.totalSeconds) * 100));
   }
 
   remainingGlobalTime(): number {
@@ -176,6 +182,7 @@ export class RoutinePlayerComponent implements OnInit, OnDestroy {
     this.isResting = false;
     this.timeLeft = 0;
     this.isPlaying = false;
+    this.startTime = null;
   }
 
   private tick() {
