@@ -36,31 +36,54 @@ npx tsx apps/backend/src/scripts/seed-routines.ts
 
 ### Démarrage des serveurs de développement
 
-**Backend** (port 3000):
+**Workflow recommandé : 4 terminaux en mode watch**
+
+**Terminal 1 - Backend** (port 3000):
 ```bash
 npx nx serve backend
 ```
 
-**Frontend** (port 4200):
+**Terminal 2 - Frontend** (port 4200):
 ```bash
 npx nx serve frontend
 ```
 
+**Terminal 3 - Tests frontend** (watch mode):
+```bash
+npx nx test frontend --watch
+```
+
+**Terminal 4 - Tests backend e2e** (manuel):
+```bash
+npx nx run backend-e2e:e2e
+```
+
 L'application sera accessible sur `http://localhost:4200`
+
+> 💡 **Note**: Les serveurs backend et frontend doivent tourner en permanence en mode watch. Les tests frontend se relancent automatiquement. Les tests e2e backend se lancent manuellement quand nécessaire.
 
 ## 🧪 Tests
 
 ### Tests unitaires frontend
 
+**Mode watch (recommandé pour développement):**
 ```bash
-npx nx test frontend
+npx nx test frontend --watch
+```
+
+**Mode single run:**
+```bash
+npx nx test frontend --run
 ```
 
 ### Tests e2e backend
 
+**Exécution unique:**
 ```bash
 npx nx run backend-e2e:e2e
 ```
+
+> ⚠️ **Important**: Le backend doit être lancé (`npx nx serve backend`) avant de lancer les tests e2e.
 
 ## 📁 Structure du projet
 

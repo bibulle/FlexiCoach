@@ -1,13 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { Routine } from '@flexicoach/shared';
 import { RoutineService } from '../services/routine.service';
 
 @Component({
   selector: 'app-routine-list',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterLink],
   templateUrl: './routine-list.component.html',
   styleUrls: ['./routine-list.component.scss'],
 })

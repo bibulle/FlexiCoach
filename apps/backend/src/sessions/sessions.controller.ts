@@ -29,6 +29,15 @@ export class SessionsController {
     return this.sessionsService.getStats(userId);
   }
 
+  @Get('calendar')
+  getCalendar(
+    @Query('userId') userId?: string,
+    @Query('from') from?: string,
+    @Query('to') to?: string
+  ) {
+    return this.sessionsService.getCalendar(userId, from, to);
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.sessionsService.findOne(id);

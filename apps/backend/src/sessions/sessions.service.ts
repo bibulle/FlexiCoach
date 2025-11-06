@@ -59,4 +59,47 @@ export class SessionsService {
       ),
     };
   }
+
+  async getCalendar(
+    userId?: string,
+    from?: string,
+    to?: string
+  ): Promise<Array<{ date: string; completionRate: number }>> {
+    const filter: any = userId ? { userId } : {};
+
+    // Add date range filter if provided
+    if (from || to) {
+      filter.startAt = {};
+      if (from) {
+        filter.startAt.$gte = new Date(from);
+      }
+      if (to) {
+        filter.startAt.$lte = new Date(to);
+      }
+    }
+
+    const sessions = await this.sessionModel.find(filter).exec();
+
+    // Group sessions by date
+    const sessionsByDate = new Map<string, Session[]>();
+    sessions.forEach((session) => {
+      const dateStr = session.startAt.toISOString().split('T')[0];
+      if (!sessionsByDate.has(dateStr)) {
+        sessionsByDate.set(dateStr, []);
+      }
+      sessionsByDate.get(dateStr)!.push(session);
+    });
+
+    // Calculate completion rate for each date
+    const calendar: Array<{ date: string; completionRate: number }> = [];
+    sessionsByDate.forEach((daySessions, date) => {
+      const completed = daySessions.filter((s) => s.completed).length;
+      const total = daySessions.length;
+      const completionRate =
+        total > 0 ? Math.round((completed / total) * 100) : 0;
+      calendar.push({ date, completionRate });
+    });
+
+    return calendar.sort((a, b) => a.date.localeCompare(b.date));
+  }
 }

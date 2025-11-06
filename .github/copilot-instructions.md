@@ -6,6 +6,17 @@ This is a French-language Progressive Web App (PWA) for guided exercise routines
 
 ## Development Workflow - IMPORTANT
 
+### Development Server Setup
+
+**4 terminaux en mode watch (workflow recommandé):**
+
+1. **Terminal 1 - Backend**: `npx nx serve backend` (port 3000)
+2. **Terminal 2 - Frontend**: `npx nx serve frontend` (port 4200)
+3. **Terminal 3 - Tests frontend**: `npx nx test frontend --watch`
+4. **Terminal 4 - Tests backend e2e**: `npx nx run backend-e2e:e2e` (manuel, à la demande)
+
+> **Note pour l'agent**: Si les serveurs tournent déjà, **demander l'état des tests ou serveurs** plutôt que de relancer les commandes.
+
 ### Database Access
 
 - **ALWAYS use MongoDB MCP tools** for database operations instead of terminal commands
@@ -16,11 +27,12 @@ This is a French-language Progressive Web App (PWA) for guided exercise routines
 
 **BEFORE any git commit:**
 
-1. Run ALL tests: `npx nx test frontend --run` AND `npx nx run backend-e2e:e2e`
-2. Verify 100% pass rate (currently: 18 frontend + 23 backend = 41 tests)
-3. Fix any failing tests before proceeding
-4. Update tests when adding new features
-5. **Never commit with failing tests**
+1. Vérifier l'état des tests en cours (demander à l'utilisateur)
+2. Si nécessaire, lancer `npx nx test frontend --run` ET `npx nx run backend-e2e:e2e`
+3. Verify 100% pass rate
+4. Fix any failing tests before proceeding
+5. Update tests when adding new features
+6. **Never commit with failing tests**
 
 ### Git Workflow
 

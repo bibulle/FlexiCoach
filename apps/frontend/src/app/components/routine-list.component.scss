@@ -2,11 +2,46 @@
   padding: 0;
 }
 
+.header-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
 h2 {
   color: #0f172a;
   font-size: 20px;
   font-weight: 600;
-  margin-bottom: 1.5rem;
+  margin: 0;
+}
+
+.main-nav {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.nav-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 8px 16px;
+  background: #f1f5f9;
+  color: #475569;
+  text-decoration: none;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: #e2e8f0;
+    color: #1e293b;
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
 }
 
 .routines-grid {
