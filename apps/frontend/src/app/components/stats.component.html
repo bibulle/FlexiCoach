@@ -1,0 +1,45 @@
+<div class="stats-container">
+  <h2>📊 Vos Statistiques</h2>
+
+  <div *ngIf="loading" class="loading">Chargement...</div>
+
+  <div *ngIf="error" class="error">{{ error }}</div>
+
+  <div *ngIf="summary && !loading" class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon">🔥</div>
+      <div class="stat-content">
+        <div class="stat-value">{{ summary.currentStreak }}</div>
+        <div class="stat-label">Série actuelle</div>
+        <div class="stat-sublabel">Record: {{ summary.longestStreak }} jours</div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon">⏱️</div>
+      <div class="stat-content">
+        <div class="stat-value">{{ formattedMinutes }}</div>
+        <div class="stat-label">Temps total</div>
+        <div class="stat-sublabel">{{ summary.totalSessions }} séances</div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon">📈</div>
+      <div class="stat-content">
+        <div class="stat-value">{{ summary.adherenceRate }}%</div>
+        <div class="stat-label">Régularité</div>
+        <div class="stat-sublabel">Sur les 30 derniers jours</div>
+      </div>
+    </div>
+
+    <div class="stat-card" *ngIf="summary.favoriteRoutine">
+      <div class="stat-icon">🎯</div>
+      <div class="stat-content">
+        <div class="stat-value favorite-routine">{{ summary.favoriteRoutine }}</div>
+        <div class="stat-label">Routine favorite</div>
+        <div class="stat-sublabel">Votre préférée</div>
+      </div>
+    </div>
+  </div>
+</div>
