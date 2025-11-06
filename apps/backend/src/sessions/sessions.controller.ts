@@ -29,6 +29,11 @@ export class SessionsController {
     return this.sessionsService.getStats(userId);
   }
 
+  @Get('stats/summary')
+  getSummary(@Query('userId') userId?: string) {
+    return this.sessionsService.getSummary(userId);
+  }
+
   @Get('calendar')
   getCalendar(
     @Query('userId') userId?: string,

@@ -1,6 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { RouterTestingModule } from '@angular/router/testing';
 import { CalendarComponent } from './calendar.component';
 import { format, addMonths, subMonths } from 'date-fns';
+import { NO_ERRORS_SCHEMA } from '@angular/core';
 
 describe('CalendarComponent', () => {
   let component: CalendarComponent;
@@ -8,7 +10,8 @@ describe('CalendarComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [CalendarComponent],
+      imports: [CalendarComponent, RouterTestingModule],
+      schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
 
     fixture = TestBed.createComponent(CalendarComponent);

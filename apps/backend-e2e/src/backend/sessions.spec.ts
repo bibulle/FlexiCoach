@@ -49,6 +49,38 @@ describe('Sessions API', () => {
     });
   });
 
+  describe('GET /api/sessions/stats/summary', () => {
+    it('should return summary statistics', async () => {
+      const res = await axios.get(`${API_URL}/api/sessions/stats/summary`);
+
+      expect(res.status).toBe(200);
+      expect(res.data).toHaveProperty('currentStreak');
+      expect(res.data).toHaveProperty('longestStreak');
+      expect(res.data).toHaveProperty('totalSessions');
+      expect(res.data).toHaveProperty('totalMinutes');
+      expect(res.data).toHaveProperty('adherenceRate');
+      expect(res.data).toHaveProperty('favoriteRoutine');
+
+      expect(typeof res.data.currentStreak).toBe('number');
+      expect(typeof res.data.longestStreak).toBe('number');
+      expect(typeof res.data.totalSessions).toBe('number');
+      expect(typeof res.data.totalMinutes).toBe('number');
+      expect(typeof res.data.adherenceRate).toBe('number');
+
+      expect(res.data.adherenceRate).toBeGreaterThanOrEqual(0);
+      expect(res.data.adherenceRate).toBeLessThanOrEqual(100);
+    });
+
+    it('should filter summary by userId', async () => {
+      const res = await axios.get(
+        `${API_URL}/api/sessions/stats/summary?userId=test-user`
+      );
+
+      expect(res.status).toBe(200);
+      expect(res.data).toHaveProperty('currentStreak');
+    });
+  });
+
   describe('GET /api/sessions/calendar', () => {
     it('should return calendar data', async () => {
       const res = await axios.get(`${API_URL}/api/sessions/calendar`);

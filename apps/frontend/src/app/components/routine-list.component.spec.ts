@@ -1,16 +1,21 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
+import { RouterTestingModule } from '@angular/router/testing';
+import { NO_ERRORS_SCHEMA } from '@angular/core';
+import { provideHttpClient } from '@angular/common/http';
 import { of, throwError } from 'rxjs';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { RoutineListComponent } from './routine-list.component';
 import { RoutineService } from '../services/routine.service';
+import { StatsService } from '../services/stats.service';
 import { Routine } from '@flexicoach/shared';
 
 describe('RoutineListComponent', () => {
   let component: RoutineListComponent;
   let fixture: ComponentFixture<RoutineListComponent>;
   let mockRoutineService: any;
-  let mockRouter: any;
+  let mockStatsService: any;
+  let router: Router;
 
   const mockRoutines: Routine[] = [
     {
@@ -40,19 +45,34 @@ describe('RoutineListComponent', () => {
       getAll: vi.fn(),
     };
 
-    mockRouter = {
-      navigate: vi.fn(),
+    mockStatsService = {
+      getSummary: vi.fn(),
     };
 
     await TestBed.configureTestingModule({
-      imports: [RoutineListComponent],
+      imports: [RoutineListComponent, RouterTestingModule],
       providers: [
+        provideHttpClient(),
         { provide: RoutineService, useValue: mockRoutineService },
-        { provide: Router, useValue: mockRouter },
+        { provide: StatsService, useValue: mockStatsService },
       ],
+      schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
 
+    router = TestBed.inject(Router);
+    vi.spyOn(router, 'navigate');
+
     mockRoutineService.getAll.mockReturnValue(of(mockRoutines));
+    mockStatsService.getSummary.mockReturnValue(
+      of({
+        currentStreak: 5,
+        longestStreak: 10,
+        totalSessions: 25,
+        totalMinutes: 250,
+        adherenceRate: 75,
+        favoriteRoutine: 'douce-10min',
+      })
+    );
 
     fixture = TestBed.createComponent(RoutineListComponent);
     component = fixture.componentInstance;
@@ -96,6 +116,6 @@ describe('RoutineListComponent', () => {
 
     component.selectRoutine(routine);
 
-    expect(mockRouter.navigate).toHaveBeenCalledWith(['/routine', 'routine-1']);
+    expect(router.navigate).toHaveBeenCalledWith(['/routine', 'routine-1']);
   });
 });
