@@ -1,18 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { MatCardModule } from '@angular/material/card';
-import { MatIconModule } from '@angular/material/icon';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { StatsService, StatsSummary } from '../services/stats.service';
 
 @Component({
   selector: 'app-stats',
-  imports: [
-    CommonModule,
-    MatCardModule,
-    MatIconModule,
-    MatProgressSpinnerModule,
-  ],
+  imports: [CommonModule],
   templateUrl: './stats.component.html',
   styleUrl: './stats.component.scss',
 })
