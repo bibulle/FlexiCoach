@@ -57,13 +57,13 @@
     "webpack-cli": "^5.1.4"
   },
   "dependencies": {
-    "@angular/animations": "^20.3.10",
-    "@angular/cdk": "^20.2.11",
+    "@angular/animations": "~20.3.0",
+    "@angular/cdk": "^19.0.0",
     "@angular/common": "~20.3.0",
     "@angular/compiler": "~20.3.0",
     "@angular/core": "~20.3.0",
     "@angular/forms": "~20.3.0",
-    "@angular/material": "^20.2.11",
+    "@angular/material": "^19.0.0",
     "@angular/platform-browser": "~20.3.0",
     "@angular/router": "~20.3.0",
     "@nestjs/common": "^11.0.0",
