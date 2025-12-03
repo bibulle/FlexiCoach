@@ -1,49 +1,43 @@
 import {
   Controller,
   Get,
-  Post,
   Body,
   Patch,
-  Param,
-  Delete,
+  UseGuards,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { User } from '../schemas/user.schema';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { CurrentUser } from '../auth/current-user.decorator';
 
 @Controller('users')
+@UseGuards(JwtAuthGuard)
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  @Post()
-  create(@Body() user: Partial<User>) {
-    return this.usersService.create(user);
+  @Get('me')
+  getProfile(@CurrentUser() user: User) {
+    return this.usersService.findOne(user._id.toString());
   }
 
-  @Get()
-  findAll() {
-    return this.usersService.findAll();
+  @Patch('me')
+  updateProfile(@CurrentUser() user: User, @Body() updateData: Partial<User>) {
+    return this.usersService.update(user._id.toString(), updateData);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.usersService.findOne(id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() user: Partial<User>) {
-    return this.usersService.update(id, user);
-  }
-
-  @Patch(':id/settings')
+  @Patch('me/settings')
   updateSettings(
-    @Param('id') id: string,
+    @CurrentUser() user: User,
     @Body() settings: Partial<User['settings']>
   ) {
-    return this.usersService.updateSettings(id, settings);
+    return this.usersService.updateSettings(user._id.toString(), settings);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.usersService.remove(id);
+  @Patch('me/password')
+  async updatePassword(
+    @CurrentUser() user: User,
+    @Body() body: { newPassword: string }
+  ) {
+    return this.usersService.updatePassword(user._id.toString(), body.newPassword);
   }
 }

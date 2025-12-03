@@ -6,41 +6,46 @@ import {
   Patch,
   Param,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { SessionsService } from './sessions.service';
 import { Session } from '../schemas/session.schema';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { CurrentUser } from '../auth/current-user.decorator';
+import { User } from '../schemas/user.schema';
 
 @Controller('sessions')
+@UseGuards(JwtAuthGuard)
 export class SessionsController {
   constructor(private readonly sessionsService: SessionsService) {}
 
   @Post()
-  create(@Body() session: Partial<Session>) {
-    return this.sessionsService.create(session);
+  create(@CurrentUser() user: User, @Body() session: Partial<Session>) {
+    return this.sessionsService.create({ ...session, userId: user._id.toString() });
   }
 
   @Get()
-  findAll(@Query('userId') userId?: string) {
-    return this.sessionsService.findAll(userId);
+  findAll(@CurrentUser() user: User) {
+    return this.sessionsService.findAll(user._id.toString());
   }
 
   @Get('stats')
-  getStats(@Query('userId') userId?: string) {
-    return this.sessionsService.getStats(userId);
+  getStats(@CurrentUser() user: User) {
+    return this.sessionsService.getStats(user._id.toString());
   }
 
   @Get('stats/summary')
-  getSummary(@Query('userId') userId?: string) {
-    return this.sessionsService.getSummary(userId);
+  getSummary(@CurrentUser() user: User) {
+    return this.sessionsService.getSummary(user._id.toString());
   }
 
   @Get('calendar')
   getCalendar(
-    @Query('userId') userId?: string,
+    @CurrentUser() user: User,
     @Query('from') from?: string,
     @Query('to') to?: string
   ) {
-    return this.sessionsService.getCalendar(userId, from, to);
+    return this.sessionsService.getCalendar(user._id.toString(), from, to);
   }
 
   @Get(':id')
