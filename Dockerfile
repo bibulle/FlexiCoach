@@ -12,11 +12,13 @@ RUN npm ci
 # Copy source code
 COPY . .
 
-# Build backend
-RUN npx nx build backend --prod
+RUN npx nx run-many --parallel --target=build --configuration=production --projects=frontend,backend 
 
-# Build frontend
-RUN npx nx build frontend --prod
+# # Build backend
+# RUN npx nx build backend --prod
+
+# # Build frontend
+# RUN npx nx build frontend --prod
 
 # Production stage
 FROM node:20-alpine AS production
