@@ -1,66 +1,73 @@
-<div class="stats-container">
-    <h2 class="stats-title">
-        <mat-icon>analytics</mat-icon>
-        Vos Statistiques
-    </h2>
-
-    <div *ngIf="loading" class="loading">
-        <mat-spinner diameter="50"></mat-spinner>
-        <p>Chargement...</p>
-    </div>
-
-    <div *ngIf="error" class="error">
-        <mat-icon color="warn">error</mat-icon>
-        <p>{{ error }}</p>
-    </div>
-
-    <div *ngIf="summary && !loading" class="stats-grid">
+<div class="stats-section">
+    @if (loading) {
+    <p>Chargement des statistiques...</p>
+    } @else if (error) {
+    <p class="error">{{ error }}</p>
+    } @else if (summary) {
+    <div class="stats-grid">
         <!-- Streak Card -->
-        <mat-card appearance="outlined" class="stat-card">
-            <mat-card-header>
-                <mat-icon mat-card-avatar class="stat-icon fire">local_fire_department</mat-icon>
-                <mat-card-title>{{ summary.currentStreak }}</mat-card-title>
-                <mat-card-subtitle>Série actuelle</mat-card-subtitle>
-            </mat-card-header>
-            <mat-card-content>
-                <p class="stat-detail">Record: {{ summary.longestStreak }} jours</p>
-            </mat-card-content>
-        </mat-card>
+        <div class="stat-card">
+            <div class="stat-icon fire">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 23C7.029 23 3 18.971 3 14c0-2.761 1.261-5.244 3.25-6.895L7 6.5l.706 2.121c1.088-1.346 2.604-2.364 4.294-2.871V2l5 5-5 5V8.535c-1.458.406-2.685 1.39-3.382 2.711L8 12l-.618.754C6.493 13.718 6 14.805 6 16c0 3.309 2.691 6 6 6 3.309 0 6-2.691 6-6h3c0 4.971-4.029 9-9 9z"/>
+                </svg>
+            </div>
+            <div class="stat-content">
+                <div class="stat-value">{{ summary.currentStreak }}</div>
+                <div class="stat-label">Série actuelle</div>
+                <div class="stat-detail">Record: {{ summary.longestStreak }} jours</div>
+            </div>
+        </div>
 
         <!-- Time Card -->
-        <mat-card appearance="outlined" class="stat-card">
-            <mat-card-header>
-                <mat-icon mat-card-avatar class="stat-icon time">schedule</mat-icon>
-                <mat-card-title>{{ formattedMinutes }}</mat-card-title>
-                <mat-card-subtitle>Temps total</mat-card-subtitle>
-            </mat-card-header>
-            <mat-card-content>
-                <p class="stat-detail">{{ summary.totalSessions }} séances</p>
-            </mat-card-content>
-        </mat-card>
+        <div class="stat-card">
+            <div class="stat-icon time">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+            </div>
+            <div class="stat-content">
+                <div class="stat-value">{{ formattedMinutes }}</div>
+                <div class="stat-label">Temps total</div>
+                <div class="stat-detail">{{ summary.totalSessions }} séances</div>
+            </div>
+        </div>
 
         <!-- Adherence Card -->
-        <mat-card appearance="outlined" class="stat-card">
-            <mat-card-header>
-                <mat-icon mat-card-avatar class="stat-icon chart">trending_up</mat-icon>
-                <mat-card-title>{{ summary.adherenceRate }}%</mat-card-title>
-                <mat-card-subtitle>Régularité</mat-card-subtitle>
-            </mat-card-header>
-            <mat-card-content>
-                <p class="stat-detail">Sur les 30 derniers jours</p>
-            </mat-card-content>
-        </mat-card>
+        <div class="stat-card">
+            <div class="stat-icon chart">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline>
+                    <polyline points="16 7 22 7 22 13"></polyline>
+                </svg>
+            </div>
+            <div class="stat-content">
+                <div class="stat-value">{{ summary.adherenceRate }}%</div>
+                <div class="stat-label">Régularité</div>
+                <div class="stat-detail">Sur les 30 derniers jours</div>
+            </div>
+        </div>
 
         <!-- Favorite Routine Card -->
-        <mat-card appearance="outlined" class="stat-card" *ngIf="summary.favoriteRoutine">
-            <mat-card-header>
-                <mat-icon mat-card-avatar class="stat-icon favorite">emoji_events</mat-icon>
-                <mat-card-title class="favorite-routine">{{ summary.favoriteRoutine }}</mat-card-title>
-                <mat-card-subtitle>Routine favorite</mat-card-subtitle>
-            </mat-card-header>
-            <mat-card-content>
-                <p class="stat-detail">Votre préférée</p>
-            </mat-card-content>
-        </mat-card>
+        @if (summary.favoriteRoutine) {
+        <div class="stat-card">
+            <div class="stat-icon favorite">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="8" r="7"></circle>
+                    <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline>
+                </svg>
+            </div>
+            <div class="stat-content">
+                <div class="stat-value favorite-routine">{{ summary.favoriteRoutine }}</div>
+                <div class="stat-label">Routine favorite</div>
+                <div class="stat-detail">Votre préférée</div>
+            </div>
+        </div>
+        }
     </div>
+    }
 </div>

@@ -1,0 +1,75 @@
+const CACHE_NAME = 'flexicoach-v1';
+const urlsToCache = [
+  '/',
+  '/styles.css',
+  '/main.js',
+  '/polyfills.js',
+];
+
+// Installation du service worker
+self.addEventListener('install', (event) => {
+  console.log('[SW] Installing service worker...');
+  event.waitUntil(
+    caches.open(CACHE_NAME).then((cache) => {
+      console.log('[SW] Caching app shell');
+      return cache.addAll(urlsToCache);
+    })
+  );
+  self.skipWaiting();
+});
+
+// Activation du service worker
+self.addEventListener('activate', (event) => {
+  console.log('[SW] Activating service worker...');
+  event.waitUntil(
+    caches.keys().then((cacheNames) => {
+      return Promise.all(
+        cacheNames.map((cacheName) => {
+          if (cacheName !== CACHE_NAME) {
+            console.log('[SW] Deleting old cache:', cacheName);
+            return caches.delete(cacheName);
+          }
+        })
+      );
+    })
+  );
+  return self.clients.claim();
+});
+
+// Stratégie de cache: Network First, fallback to cache
+self.addEventListener('fetch', (event) => {
+  event.respondWith(
+    fetch(event.request)
+      .then((response) => {
+        // Si la requête réussit, on met à jour le cache
+        if (response && response.status === 200) {
+          const responseToCache = response.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, responseToCache);
+          });
+        }
+        return response;
+      })
+      .catch(() => {
+        // Si le réseau est indisponible, on utilise le cache
+        return caches.match(event.request).then((response) => {
+          if (response) {
+            return response;
+          }
+          // Si la ressource n'est pas en cache, on retourne une réponse par défaut pour les requêtes API
+          if (event.request.url.includes('/api/')) {
+            return new Response(
+              JSON.stringify({ error: 'Offline - No cached data available' }),
+              {
+                status: 503,
+                statusText: 'Service Unavailable',
+                headers: new Headers({
+                  'Content-Type': 'application/json',
+                }),
+              }
+            );
+          }
+        });
+      })
+  );
+});

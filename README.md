@@ -124,31 +124,33 @@ routines/              # Données JSON des routines
 
 ### Implémentées ✅
 
-- Liste des routines disponibles avec badges (durée, niveau, nombre d'exercices)
-- Lecteur de routine avec:
+- **Liste des routines** avec badges (durée, niveau, nombre d'exercices)
+- **Lecteur de routine** avec:
   - Timer compte à rebours
   - Instructions vocales (Web Speech API)
-  - Barre de progression
+  - Barre de progression fluide
   - Affichage des étapes
   - Périodes de repos automatiques (10s entre exercices)
-- API REST complète (routines, sessions, users)
-- Connexion MongoDB avec Mongoose
-- Tests unitaires (frontend: Vitest, backend-e2e: Jest)
-- Design moderne avec thème bleu
-
-### En cours ⏳
-
-- Enregistrement des sessions après complétion
-- Écran de complétion avec évaluation du ressenti
+- **Écran de complétion** avec évaluation du ressenti (1-5 étoiles)
+- **Enregistrement des sessions** en base de données
+- **Statistiques complètes**:
+  - Compteur de série actuelle et record
+  - Temps total d'entraînement
+  - Taux d'adhérence sur 30 jours
+  - Routine favorite
+- **Calendrier mensuel** avec suivi de l'adhérence quotidienne
+- **API REST complète** (routines, sessions, users, stats, calendar)
+- **Base de données MongoDB** avec Mongoose
+- **Tests** (frontend: Vitest, backend-e2e: Jest - 28 tests)
+- **Design unifié** avec cards blanches et ombres douces
 
 ### Planifiées 📋
 
-- Compteur de série (streak)
-- Vue calendrier des pratiques
-- Statistiques et graphiques de progrès
 - Authentification utilisateur (JWT)
-- Fonctionnalités PWA (service worker, manifest)
-- Page de paramètres
+- Fonctionnalités PWA (service worker, manifest, mode offline)
+- Page de paramètres (profil, préférences)
+- Notifications de rappel
+- Mode sombre
 
 ## 🎨 Design
 
@@ -192,17 +194,28 @@ npx nx build backend
 
 ### Configuration importante
 
-- `.npmrc` contient `legacy-peer-deps=true` pour résoudre les conflits de dépendances
+- Les dépendances Angular sont alignées (`~20.3.0`, pas besoin de `--legacy-peer-deps`)
 - Le frontend utilise un proxy (`proxy.conf.json`) pour rediriger `/api` vers `localhost:3000`
 - Les schémas MongoDB sont dans `apps/backend/src/schemas/`
 - Les modèles partagés sont dans `libs/shared/src/lib/models.ts`
 
 ## 🌐 API Endpoints
 
+### Routines
 - `GET /api/routines` - Liste toutes les routines
-- `GET /api/routines/:slug` - Détails d'une routine
+- `GET /api/routines/:slug` - Détails d'une routine par slug
+- `GET /api/routines/:id` - Détails d'une routine par ID
+
+### Sessions
 - `POST /api/sessions` - Créer une session de pratique
-- `GET /api/sessions/stats` - Statistiques utilisateur
+- `GET /api/sessions` - Liste des sessions (filtrable par userId)
+- `GET /api/sessions/:id` - Détails d'une session
+- `PATCH /api/sessions/:id/complete` - Marquer une session comme complétée
+- `GET /api/sessions/stats` - Statistiques basiques
+- `GET /api/sessions/stats/summary` - Statistiques détaillées (streaks, adhérence)
+- `GET /api/sessions/calendar` - Données calendrier (filtrable par dates)
+
+### Utilisateurs
 - `GET /api/users/:id` - Profil utilisateur
 
 ## 📄 Licence
