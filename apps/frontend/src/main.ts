@@ -4,8 +4,10 @@ import { AppComponent } from './app/app';
 
 bootstrapApplication(AppComponent, appConfig).catch((err) => console.error(err));
 
-// Enregistrement du Service Worker
-if ('serviceWorker' in navigator) {
+// Enregistrement du Service Worker (uniquement si activé via variable d'environnement)
+const enableServiceWorker = (import.meta as any).env?.VITE_ENABLE_SERVICE_WORKER === 'true';
+
+if (enableServiceWorker && 'serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker
       .register('/sw.js')
@@ -16,4 +18,6 @@ if ('serviceWorker' in navigator) {
         console.log('Échec de l\'enregistrement du Service Worker:', error);
       });
   });
+} else if (!enableServiceWorker) {
+  console.log('Service Worker désactivé (VITE_ENABLE_SERVICE_WORKER=false)');
 }

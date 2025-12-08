@@ -15,7 +15,15 @@ self.addEventListener('install', (event) => {
       return cache.addAll(urlsToCache);
     })
   );
-  self.skipWaiting();
+  // Ne pas activer automatiquement, attendre le message SKIP_WAITING
+});
+
+// Écouter les messages de l'application
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    console.log('[SW] SKIP_WAITING reçu, activation immédiate');
+    self.skipWaiting();
+  }
 });
 
 // Activation du service worker
