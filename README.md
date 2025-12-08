@@ -133,23 +133,25 @@ routines/              # Données JSON des routines
   - Périodes de repos automatiques (10s entre exercices)
 - **Écran de complétion** avec évaluation du ressenti (1-5 étoiles)
 - **Enregistrement des sessions** en base de données
+- **Authentification utilisateur** (JWT) avec login/inscription
+- **Administration** : gestion des utilisateurs, reset de mot de passe
 - **Statistiques complètes**:
   - Compteur de série actuelle et record
   - Temps total d'entraînement
   - Taux d'adhérence sur 30 jours
   - Routine favorite
 - **Calendrier mensuel** avec suivi de l'adhérence quotidienne
-- **API REST complète** (routines, sessions, users, stats, calendar)
+- **API REST complète** (routines, sessions, users, auth, admin, stats, calendar)
 - **Base de données MongoDB** avec Mongoose
-- **Tests** (frontend: Vitest, backend-e2e: Jest - 28 tests)
+- **Tests** (frontend: Vitest, backend-e2e: Jest - 28+ tests)
+- **Docker** avec CI/CD GitHub Actions
 - **Design unifié** avec cards blanches et ombres douces
 
 ### Planifiées 📋
 
-- Authentification utilisateur (JWT)
 - Fonctionnalités PWA (service worker, manifest, mode offline)
 - Page de paramètres (profil, préférences)
-- Notifications de rappel
+- Notifications de rappel (Web Push)
 - Mode sombre
 
 ## 🎨 Design
@@ -217,6 +219,15 @@ npx nx build backend
 
 ### Utilisateurs
 - `GET /api/users/:id` - Profil utilisateur
+
+### Authentification
+- `POST /api/auth/register` - Inscription
+- `POST /api/auth/login` - Connexion (retourne JWT)
+- `GET /api/auth/is-admin` - Vérifier si admin
+
+### Administration
+- `GET /api/admin/users` - Liste des utilisateurs (admin)
+- `PATCH /api/admin/password` - Reset mot de passe (admin)
 
 ## 📄 Licence
 
