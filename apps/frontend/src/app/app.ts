@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { RouterModule, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from './services/auth.service';
+import { APP_VERSION } from './version';
 
 @Component({
   imports: [RouterModule, CommonModule],
@@ -11,6 +12,7 @@ import { AuthService } from './services/auth.service';
 })
 export class AppComponent {
   protected title = 'FlexiCoach';
+  protected version = APP_VERSION;
 
   constructor(
     public authService: AuthService,

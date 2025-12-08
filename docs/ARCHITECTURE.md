@@ -1,4 +1,4 @@
-# Architecture Coach Dos
+# Architecture FlexiCoach
 
 ## Vue d'ensemble
 
@@ -7,78 +7,84 @@ Application PWA full-stack pour coaching d'exercices de dos avec suivi quotidien
 ## Structure du projet
 
 ```
-coach-dos/
-├── prototype/              # Prototype PWA vanilla (HTML/CSS/JS)
-│   ├── index.html         # Hub principal
-│   ├── app.js             # Logic app
-│   ├── assets/            # CSS et JS communs
-│   ├── data/              # ProgressManager
-│   ├── routines/          # Routines HTML individuelles
-│   ├── manifest.json      # PWA manifest
-│   └── sw.js              # Service Worker
+flexicoach/
+├── apps/
+│   ├── backend/              # API NestJS
+│   │   └── src/
+│   │       ├── auth/         # Authentification JWT (Passport)
+│   │       ├── admin/        # Gestion admin (users, passwords)
+│   │       ├── users/        # Profils utilisateurs
+│   │       ├── routines/     # CRUD routines
+│   │       ├── sessions/     # Enregistrement séances + stats
+│   │       ├── schemas/      # Schémas MongoDB/Mongoose
+│   │       └── scripts/      # Scripts utilitaires (seed)
+│   │
+│   ├── frontend/             # Application Angular
+│   │   └── src/
+│   │       ├── app/
+│   │       │   ├── components/   # Composants standalone
+│   │       │   │   ├── routine-list/
+│   │       │   │   ├── routine-player/
+│   │       │   │   ├── completion/
+│   │       │   │   ├── calendar/
+│   │       │   │   ├── stats/
+│   │       │   │   ├── login/
+│   │       │   │   ├── signup/
+│   │       │   │   └── admin/
+│   │       │   └── services/     # Services HTTP
+│   │       └── styles.sass       # Styles globaux
+│   │
+│   ├── backend-e2e/          # Tests e2e backend (Jest)
+│   └── frontend-e2e/         # Tests e2e frontend (Playwright)
 │
-├── backend/               # API NestJS (à créer)
-│   ├── src/
-│   │   ├── auth/          # Module authentification (JWT)
-│   │   ├── users/         # Gestion utilisateurs
-│   │   ├── routines/      # CRUD routines
-│   │   ├── sessions/      # Enregistrement séances
-│   │   ├── calendar/      # Agrégation par jour
-│   │   ├── stats/         # Statistiques et streaks
-│   │   └── sync/          # Endpoint offline-first
-│   ├── package.json
-│   └── tsconfig.json
+├── libs/
+│   └── shared/               # Bibliothèque partagée
+│       └── src/lib/models.ts # Interfaces TypeScript
 │
-├── frontend/              # Application Angular (à créer)
-│   ├── src/
-│   │   ├── app/
-│   │   │   ├── coach/             # CoachComponent JSON-driven
-│   │   │   ├── calendar/          # CalendarComponent
-│   │   │   ├── stats/             # StatsComponent
-│   │   │   ├── settings/          # SettingsComponent
-│   │   │   ├── reminders/         # RemindersComponent
-│   │   │   └── core/              # Services partagés
-│   │   ├── assets/
-│   │   ├── environments/
-│   │   └── manifest.webmanifest
-│   ├── angular.json
-│   ├── package.json
-│   └── tsconfig.json
+├── prototype/                # Prototype HTML/CSS/JS original
 │
-├── shared/                # Code partagé (à créer)
-│   ├── models/            # Interfaces TypeScript
-│   │   ├── user.model.ts
-│   │   ├── routine.model.ts
-│   │   ├── session.model.ts
-│   │   └── step.model.ts
-│   └── utils/             # Utilitaires communs
+├── routines/                 # Données JSON des routines
+│   ├── douce-10min.json
+│   └── bureau-5min.json
 │
-└── docs/                  # Documentation
-    ├── ARCHITECTURE.md    # Ce fichier
-    └── MIGRATION.md       # Plan de migration
+├── docs/                     # Documentation
+│   ├── ARCHITECTURE.md       # Ce fichier
+│   ├── SPECIFICATION.md      # Spécification fonctionnelle
+│   └── MIGRATION.md          # Plan de migration
+│
+├── Dockerfile                # Build multi-stage
+├── docker-test.sh            # Script de test Docker
+└── .github/workflows/        # CI/CD GitHub Actions
 ```
 
 ## Stack technique
 
 ### Backend (NestJS)
-- **Framework**: NestJS (TypeScript)
-- **Base de données**: MongoDB avec Mongoose
-- **Authentification**: JWT (Passport)
-- **API**: REST + endpoints de synchronisation offline
-- **Notifications**: Web Push (VAPID)
+- **Framework**: NestJS 11 (TypeScript)
+- **Base de données**: MongoDB 8.0.1 avec Mongoose 8.19
+- **Authentification**: JWT (Passport strategy)
+- **Validation**: class-validator, class-transformer
+- **Sécurité**: bcrypt (hachage mots de passe)
 
 ### Frontend (Angular)
-- **Framework**: Angular 18+
-- **PWA**: Service Worker (Workbox)
-- **État**: Services Angular + RxJS
-- **Offline**: IndexedDB + Background Sync
-- **UI**: CSS Custom Properties (design system existant)
+- **Framework**: Angular 20.3 (standalone components)
+- **Build**: Vite via Nx
+- **Tests**: Vitest
+- **État**: Services Angular + RxJS + Signals
+- **UI**: SASS avec CSS Custom Properties
 - **Voice**: Web Speech API (français)
+- **Audio**: Web Audio API (bips de secours)
 
-### Shared
-- **Langage**: TypeScript
-- **Models**: Interfaces partagées backend/frontend
-- **Validation**: Class-validator compatible
+### Monorepo (Nx)
+- **Version**: Nx 22.0.2
+- **Workspace**: Integrated monorepo
+- **Shared**: `@flexicoach/shared` pour les modèles TypeScript
+
+### DevOps
+- **Containerisation**: Docker (multi-stage build)
+- **CI/CD**: GitHub Actions
+- **Registry**: Docker Hub
+- **Déploiement**: Kubernetes (GitOps)
 
 ## Architecture des données
 
@@ -86,21 +92,17 @@ coach-dos/
 ```typescript
 {
   _id: ObjectId,
-  email?: string,
+  email: string,
+  password: string,          // bcrypt hash
   displayName?: string,
-  tz: string,
-  settings: {
+  timezone?: string,
+  settings?: {
     theme: 'light' | 'dark',
-    voiceRate: number,
-    voicePitch: number,
-    sound: boolean,
-    reminders: Array<{
-      hh: string,
-      mm: string,
-      days: number[],
-      enabled: boolean
-    }>
-  }
+    voiceEnabled: boolean,
+    notificationsEnabled: boolean
+  },
+  createdAt: Date,
+  updatedAt: Date
 }
 ```
 
@@ -108,12 +110,12 @@ coach-dos/
 ```typescript
 {
   _id: ObjectId,
-  slug: string,
+  slug: string,              // URL-friendly identifier
   name: string,
   description?: string,
   steps: Step[],
   totalSeconds: number,
-  version: number,
+  difficulty: 'beginner' | 'intermediate' | 'advanced',
   visibility: 'builtIn' | 'user',
   ownerId?: ObjectId
 }
@@ -127,8 +129,8 @@ coach-dos/
   mode: 'mouvement' | 'statique' | 'respiration',
   text: string,
   cues?: Array<{
-    at: number,
-    say: string
+    at: number,              // secondes depuis début
+    say: string              // texte à annoncer
   }>
 }
 ```
@@ -139,137 +141,89 @@ coach-dos/
   _id: ObjectId,
   userId: ObjectId,
   routineId: ObjectId,
-  startAt: Date,
-  endAt: Date,
-  durationSec: number,
+  startedAt: Date,
+  completedAt?: Date,
+  durationSeconds: number,
   completed: boolean,
-  progress?: number
-}
-```
-
-### DailySummary
-```typescript
-{
-  _id: ObjectId,
-  userId: ObjectId,
-  date: string, // 'YYYY-MM-DD'
-  routines: Array<{
-    routineId: ObjectId,
-    completed: boolean,
-    durationSec: number
-  }>,
-  totalSec: number,
-  streakAfter: number
+  feeling?: number           // 1-5 étoiles
 }
 ```
 
 ## API REST
 
-### Authentication
-- `POST /auth/signup` - Inscription
-- `POST /auth/login` - Connexion
-- `POST /auth/refresh` - Refresh token
+### Authentification
+- `POST /api/auth/register` - Inscription
+- `POST /api/auth/login` - Connexion (retourne JWT)
+- `GET /api/auth/is-admin` - Vérifier statut admin
 
 ### Routines
-- `GET /routines` - Liste routines (built-in + user)
-- `GET /routines/:id` - Détails routine
-- `POST /routines` - Créer routine
-- `PUT /routines/:id` - Modifier routine
-- `DELETE /routines/:id` - Supprimer routine
+- `GET /api/routines` - Liste des routines
+- `GET /api/routines/:slug` - Routine par slug
+- `GET /api/routines/:id` - Routine par ID
 
 ### Sessions
-- `POST /sessions/start` - Démarrer séance
-- `POST /sessions/:id/tick` - Update progression (optionnel)
-- `POST /sessions/:id/finish` - Terminer séance
+- `POST /api/sessions` - Créer une session
+- `GET /api/sessions` - Liste (filtrable par userId)
+- `GET /api/sessions/:id` - Détails session
+- `PATCH /api/sessions/:id/complete` - Marquer complétée + feeling
+- `GET /api/sessions/stats` - Stats basiques
+- `GET /api/sessions/stats/summary` - Stats détaillées (streaks, adhérence)
+- `GET /api/sessions/calendar` - Données calendrier
 
-### Calendar
-- `GET /calendar?from=YYYY-MM-DD&to=YYYY-MM-DD` - Données calendrier
+### Utilisateurs
+- `GET /api/users/:id` - Profil utilisateur
 
-### Stats
-- `GET /stats/summary?range=30d` - Statistiques (streaks, temps total)
+### Administration
+- `GET /api/admin/users` - Liste utilisateurs (admin)
+- `PATCH /api/admin/password` - Reset mot de passe (admin)
 
-### Settings
-- `GET /settings` - Paramètres utilisateur
-- `PUT /settings` - Modifier paramètres
+## Tests
 
-### Sync (offline-first)
-- `POST /sync` - Synchroniser events offline (start/finish)
+### Frontend (Vitest)
+- Tests unitaires des composants
+- 11 fichiers de specs
+- Mode watch pour développement
 
-## Stratégie offline-first
+### Backend E2E (Jest)
+- Tests d'intégration API
+- 28+ tests couvrant auth, routines, sessions
+- Nécessite backend en cours d'exécution
 
-### Frontend
-1. **IndexedDB** stocke :
-   - Routines téléchargées
-   - Sessions en attente de sync
-   - Paramètres utilisateur
-   - Cache calendrier
+## Déploiement
 
-2. **Service Worker** :
-   - Cache assets statiques
-   - Cache API responses (stale-while-revalidate)
-   - Background Sync pour `/sync`
+### Docker
+Le Dockerfile utilise un build multi-stage :
+1. **Builder**: Compile frontend (Angular) et backend (NestJS) avec Nx
+2. **Production**: Image minimale avec uniquement les dépendances de production
 
-3. **Flux offline** :
-   - Session démarre → écrit dans IndexedDB
-   - Session termine → événement dans queue
-   - Réseau disponible → Background Sync push vers `/sync`
+### Production
+- Le backend NestJS sert l'API sur `/api/*`
+- Le frontend Angular est servi comme fichiers statiques depuis `/`
+- Conteneur unique pour simplifier le déploiement
 
-## Migration depuis prototype
+## Fonctionnalités implémentées
 
-### Phase 1 : Extraction
-1. ✅ Déplacer prototype vers `prototype/`
-2. Extraire routines JSON depuis HTML
-3. Identifier code réutilisable (CoachEngine, VoiceManager)
+- ✅ Liste et lecture des routines
+- ✅ Timer avec annonces vocales (Web Speech API)
+- ✅ Enregistrement des sessions
+- ✅ Authentification JWT (login/signup)
+- ✅ Statistiques (streaks, temps total, adhérence)
+- ✅ Calendrier mensuel
+- ✅ Administration utilisateurs
+- ✅ Docker + CI/CD
 
-### Phase 2 : Backend
-1. Init NestJS project dans `backend/`
-2. Setup MongoDB + Mongoose
-3. Implémenter modules (auth, users, routines, sessions)
-4. Endpoints API REST
+## Fonctionnalités planifiées
 
-### Phase 3 : Frontend
-1. Init Angular project dans `frontend/`
-2. Setup PWA + Service Worker
-3. Migrer CoachEngine vers CoachComponent
-4. Implémenter modules (calendar, stats, settings)
-
-### Phase 4 : Intégration
-1. Connecter frontend → backend API
-2. Implémenter offline-first avec IndexedDB
-3. Tests end-to-end
-4. Déploiement
-
-## Principes de conception
-
-1. **Offline-first** : app fonctionnelle sans réseau
-2. **Progressive** : enrichissement progressif (PWA → native)
-3. **Accessible** : Web Speech API + contrôles clavier
-4. **Performant** : lazy loading, code splitting
-5. **Sécurisé** : JWT, HTTPS, CORS, validation
-6. **RGPD** : export/suppression données, consentement
-
-## Roadmap
-
-### Sprint 1 - MVP (2 semaines)
-- Backend NestJS avec auth + CRUD routines
-- Frontend Angular avec CoachComponent
-- Calendrier + enregistrement sessions
-- PWA offline basique
-
-### Sprint 2 - V1 (2 semaines)
-- Rappels et notifications Web Push
-- Statistiques et streaks
-- Multi-routines
-- Paramètres voix/son
-
-### Sprint 3 - V2 (3 semaines)
-- Éditeur de routine visuel
-- Import/Export JSON
-- Partage routines (URL/QR)
-- Mode Kiné (opt-in)
+- 📋 PWA offline (Service Worker, IndexedDB, Background Sync)
+- 📋 Page de paramètres (profil, préférences voix)
+- 📋 Notifications de rappel (Web Push)
+- 📋 Mode sombre
+- 📋 Éditeur de routine visuel (V2)
+- 📋 Import/Export JSON (V2)
+- 📋 Partage de routines (V2)
 
 ## Références
 
-- Spécification complète : `specification.md`
-- Copilot instructions : `.github/copilot-instructions.md`
+- Spécification complète : `docs/SPECIFICATION.md`
+- Guide Docker : `DOCKER.md`
 - Prototype fonctionnel : `prototype/`

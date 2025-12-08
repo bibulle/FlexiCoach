@@ -1,6 +1,6 @@
 <div class="app-container">
     <header>
-        <h1>{{ title }}</h1>
+        <h1>{{ title }} <span class="version">v{{ version }}</span></h1>
         @if (authService.isAuthenticated()) {
             <div class="header-actions">
                 @if (authService.isAdmin()) {

@@ -2,7 +2,9 @@
   "name": "@flexicoach/source",
   "version": "0.7.0",
   "license": "MIT",
-  "scripts": {},
+  "scripts": {
+    "version": "node scripts/update-version.js && git add apps/frontend/src/app/version.ts"
+  },
   "private": true,
   "devDependencies": {
     "@analogjs/vite-plugin-angular": "~1.19.1",
