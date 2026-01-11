@@ -3,17 +3,8 @@ import { JwtService } from '@nestjs/jwt';
 import { UsersService } from '../users/users.service';
 import * as bcrypt from 'bcrypt';
 import { JwtPayload } from './jwt.strategy';
-
-export interface RegisterDto {
-  email: string;
-  password: string;
-  displayName?: string;
-}
-
-export interface LoginDto {
-  email: string;
-  password: string;
-}
+import { RegisterDto } from './dto/register.dto';
+import { LoginDto } from './dto/login.dto';
 
 export interface AuthResponse {
   access_token: string;

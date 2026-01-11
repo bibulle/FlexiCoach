@@ -9,7 +9,10 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { SessionsService } from './sessions.service';
-import { Session } from '../schemas/session.schema';
+import { CreateSessionDto } from './dto/create-session.dto';
+import { UpdateSessionDto } from './dto/update-session.dto';
+import { CompleteSessionDto } from './dto/complete-session.dto';
+import { CalendarQueryDto } from './dto/calendar-query.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CurrentUser } from '../auth/current-user.decorator';
 import { User } from '../schemas/user.schema';
@@ -20,8 +23,8 @@ export class SessionsController {
   constructor(private readonly sessionsService: SessionsService) {}
 
   @Post()
-  create(@CurrentUser() user: User, @Body() session: Partial<Session>) {
-    return this.sessionsService.create({ ...session, userId: user._id.toString() });
+  create(@CurrentUser() user: User, @Body() createSessionDto: CreateSessionDto) {
+    return this.sessionsService.create({ ...createSessionDto, userId: user._id.toString() });
   }
 
   @Get()
@@ -42,10 +45,9 @@ export class SessionsController {
   @Get('calendar')
   getCalendar(
     @CurrentUser() user: User,
-    @Query('from') from?: string,
-    @Query('to') to?: string
+    @Query() query: CalendarQueryDto
   ) {
-    return this.sessionsService.getCalendar(user._id.toString(), from, to);
+    return this.sessionsService.getCalendar(user._id.toString(), query.from, query.to);
   }
 
   @Get(':id')
@@ -54,15 +56,15 @@ export class SessionsController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() session: Partial<Session>) {
-    return this.sessionsService.update(id, session);
+  update(@Param('id') id: string, @Body() updateSessionDto: UpdateSessionDto) {
+    return this.sessionsService.update(id, updateSessionDto);
   }
 
   @Patch(':id/complete')
   complete(
     @Param('id') id: string,
-    @Body() body: { completed: boolean; feeling?: number }
+    @Body() completeSessionDto: CompleteSessionDto
   ) {
-    return this.sessionsService.complete(id, body.completed, body.feeling);
+    return this.sessionsService.complete(id, completeSessionDto.completed, completeSessionDto.feeling);
   }
 }
