@@ -25,13 +25,15 @@ async function bootstrap() {
 
   // Serve static files in production
   if (process.env.NODE_ENV === 'production') {
-    const publicPath = join(__dirname, '../../..', 'public');
-    app.useStaticAssets(publicPath);
-    app.setBaseViewsDir(publicPath);
+    const express = require('express');
+    const publicPath = join(process.cwd(), 'public');
 
-    // Fallback to index.html for Angular routing
+    // Serve static assets first (index.html, JS, CSS, etc.)
+    app.use(express.static(publicPath));
+
+    // SPA fallback - serve index.html for all non-API routes that don't match static files
     app.use((req, res, next) => {
-      if (!req.path.startsWith('/api')) {
+      if (!req.path.startsWith('/api') && !req.path.match(/\.\w+$/)) {
         res.sendFile(join(publicPath, 'index.html'));
       } else {
         next();

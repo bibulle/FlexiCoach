@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
-import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -10,6 +10,7 @@ import { SessionsModule } from '../sessions/sessions.module';
 import { UsersModule } from '../users/users.module';
 import { AuthModule } from '../auth/auth.module';
 import { AdminModule } from '../admin/admin.module';
+import { ApiThrottlerGuard } from '../common/guards/api-throttler.guard';
 
 @Module({
   imports: [
@@ -23,7 +24,7 @@ import { AdminModule } from '../admin/admin.module';
     ThrottlerModule.forRoot([
       {
         ttl: 60000, // 60 seconds
-        limit: 10, // 10 requests per minute (default for all endpoints)
+        limit: 100, // 100 requests per minute (default for all endpoints)
       },
     ]),
     AuthModule,
@@ -37,7 +38,7 @@ import { AdminModule } from '../admin/admin.module';
     AppService,
     {
       provide: APP_GUARD,
-      useClass: ThrottlerGuard,
+      useClass: ApiThrottlerGuard,
     },
   ],
 })

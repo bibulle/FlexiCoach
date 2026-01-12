@@ -76,7 +76,7 @@ npx nx test frontend --watch
 npx nx test frontend --run
 ```
 
-### Tests e2e backend
+### Tests e2e backend (développement)
 
 **Exécution unique:**
 ```bash
@@ -84,6 +84,25 @@ npx nx run backend-e2e:e2e
 ```
 
 > ⚠️ **Important**: Le backend doit être lancé (`npx nx serve backend`) avant de lancer les tests e2e.
+
+### Tests e2e complets (production)
+
+Pour tester l'application complète en mode production avec MongoDB local:
+
+```bash
+./test-e2e-local.sh
+```
+
+Ce script:
+- ✅ Vérifie que MongoDB est installé (Homebrew)
+- ✅ Nettoie la base de données
+- ✅ Build le backend et le frontend en mode production
+- ✅ Démarre le backend sur le port 3000
+- ✅ Exécute tous les tests automatiques (validation, rate limiting)
+- ✅ Crée un utilisateur admin (`famille.martin@gmail.com` / `Martin2024!Test`)
+- ✅ Charge les routines de test
+
+L'environnement reste actif pour validation manuelle. Appuyez sur Ctrl+C pour arrêter.
 
 ## 📁 Structure du projet
 
