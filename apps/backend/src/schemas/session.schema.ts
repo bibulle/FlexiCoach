@@ -31,9 +31,15 @@ export class Session {
 
   @Prop({ type: Object })
   device?: {
-    ua: string;
-    platform: string;
+    ua?: string;
+    platform?: string;
   };
 }
 
 export const SessionSchema = SchemaFactory.createForClass(Session);
+
+// Add indexes for optimized queries
+SessionSchema.index({ userId: 1 });
+SessionSchema.index({ userId: 1, startAt: -1 });
+SessionSchema.index({ routineId: 1 });
+SessionSchema.index({ startAt: -1 });

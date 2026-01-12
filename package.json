@@ -1,6 +1,6 @@
 {
   "name": "@flexicoach/source",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "license": "MIT",
   "scripts": {
     "version": "node scripts/update-version.js && git add apps/frontend/src/app/version.ts"
@@ -76,10 +76,13 @@
     "@nestjs/mongoose": "^11.0.3",
     "@nestjs/passport": "^11.0.5",
     "@nestjs/platform-express": "^11.0.0",
+    "@nestjs/throttler": "^6.5.0",
     "@types/bcrypt": "^6.0.0",
     "@types/passport-jwt": "^4.0.1",
     "axios": "^1.6.0",
     "bcrypt": "^6.0.0",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.3",
     "date-fns": "^4.1.0",
     "mongoose": "^8.19.3",
     "passport": "^0.7.0",
