@@ -51,3 +51,7 @@ vitest.config.*.timestamp*
 
 # Environment variables
 .env
+
+# Logs
+logs/
+*.log

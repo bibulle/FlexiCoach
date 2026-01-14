@@ -8,9 +8,15 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app/app.module';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { join } from 'path';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
+
+  // Use Winston logger
+  app.useLogger(app.get(WINSTON_MODULE_NEST_PROVIDER));
+
   const globalPrefix = 'api';
   app.setGlobalPrefix(globalPrefix);
 
@@ -22,6 +28,9 @@ async function bootstrap() {
       transform: true,
     })
   );
+
+  // Enable global exception filter
+  app.useGlobalFilters(new AllExceptionsFilter(app.get(WINSTON_MODULE_NEST_PROVIDER)));
 
   // Serve static files in production
   if (process.env.NODE_ENV === 'production') {
