@@ -57,23 +57,26 @@
       "executor": "nx:noop"
     },
     "serve": {
-      "continuous": true,
-      "executor": "@nx/js:node",
-      "defaultConfiguration": "development",
-      "dependsOn": [
-        "build"
-      ],
+      "executor": "nx:run-commands",
+      "dependsOn": ["build:development"],
       "options": {
-        "buildTarget": "backend:build",
-        "runBuildTargetDependencies": false
+        "command": "node dist/apps/backend/main.js"
       },
       "configurations": {
         "development": {
-          "buildTarget": "backend:build:development"
+          "command": "node dist/apps/backend/main.js"
         },
         "production": {
-          "buildTarget": "backend:build:production"
+          "command": "node dist/apps/backend/main.js"
         }
+      }
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "apps/backend/jest.config.ts",
+        "passWithNoTests": false
       }
     }
   }

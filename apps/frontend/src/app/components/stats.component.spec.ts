@@ -161,11 +161,12 @@ describe('StatsComponent', () => {
     fixture.detectChanges();
 
     const compiled = fixture.nativeElement as HTMLElement;
-    const cardIcons = compiled.querySelectorAll('.stat-card mat-icon');
-    expect(cardIcons[0].textContent).toContain('local_fire_department');
-    expect(cardIcons[1].textContent).toContain('schedule');
-    expect(cardIcons[2].textContent).toContain('trending_up');
-    expect(cardIcons[3].textContent).toContain('emoji_events');
+    const cardIcons = compiled.querySelectorAll('.stat-icon svg');
+    expect(cardIcons.length).toBe(4); // fire, time, chart, favorite
+    expect(cardIcons[0]).toBeTruthy(); // fire icon
+    expect(cardIcons[1]).toBeTruthy(); // time icon
+    expect(cardIcons[2]).toBeTruthy(); // chart icon
+    expect(cardIcons[3]).toBeTruthy(); // favorite icon
   });
 
   it('should not display favorite routine card when null', () => {

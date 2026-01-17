@@ -1,9 +1,19 @@
 {
   "name": "@flexicoach/source",
-  "version": "0.7.1",
+  "version": "0.7.2",
   "license": "MIT",
   "scripts": {
-    "version": "node scripts/update-version.js && git add apps/frontend/src/app/version.ts"
+    "version": "node scripts/update-version.js && git add apps/frontend/src/app/version.ts",
+    "test": "nx run-many -t test --all",
+    "test:backend": "nx test backend",
+    "test:frontend": "nx test frontend",
+    "test:watch:backend": "nx test backend --watch",
+    "test:watch:frontend": "nx test frontend --watch",
+    "test:cov:backend": "nx test backend --coverage",
+    "test:cov:frontend": "nx test frontend --coverage",
+    "test:e2e:backend": "nx e2e-dev backend-e2e",
+    "test:e2e:frontend": "nx e2e frontend-e2e",
+    "test:all": "npm run test && npm run test:e2e:backend && npm run test:e2e:frontend"
   },
   "private": true,
   "devDependencies": {
@@ -48,10 +58,12 @@
     "jiti": "2.4.2",
     "jsdom": "~22.1.0",
     "jsonc-eslint-parser": "^2.1.0",
+    "mongodb-memory-server": "^10.4.3",
     "nx": "22.0.2",
     "prettier": "^2.6.2",
     "sharp": "^0.34.5",
     "ts-jest": "^29.4.5",
+    "ts-node": "^10.9.2",
     "tslib": "^2.3.0",
     "typescript": "~5.9.2",
     "typescript-eslint": "^8.40.0",
