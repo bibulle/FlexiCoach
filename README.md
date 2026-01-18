@@ -160,9 +160,17 @@ routines/              # Données JSON des routines
   - Taux d'adhérence sur 30 jours
   - Routine favorite
 - **Calendrier mensuel** avec suivi de l'adhérence quotidienne
+- **Éditeur de routines personnalisées** avec:
+  - Création et modification de routines
+  - Drag & drop pour réorganiser les étapes
+  - Modal d'édition d'étapes avec cues audio
+  - Export de routines en JSON (`.routine.json`)
+  - Import de routines depuis JSON
+  - Validation complète (durées, champs obligatoires)
+  - Gestion de l'ownership (routines utilisateur)
 - **API REST complète** (routines, sessions, users, auth, admin, stats, calendar)
 - **Base de données MongoDB** avec Mongoose
-- **Tests** (frontend: Vitest, backend-e2e: Jest - 28+ tests)
+- **Tests** (frontend: Vitest, backend-e2e: Jest - 135+ tests)
 - **Docker** avec CI/CD GitHub Actions
 - **Design unifié** avec cards blanches et ombres douces
 
@@ -223,9 +231,13 @@ npx nx build backend
 ## 🌐 API Endpoints
 
 ### Routines
-- `GET /api/routines` - Liste toutes les routines
-- `GET /api/routines/:slug` - Détails d'une routine par slug
-- `GET /api/routines/:id` - Détails d'une routine par ID
+- `GET /api/routines` - Liste routines (built-in + utilisateur) - **Protégé JWT**
+- `POST /api/routines` - Créer une routine utilisateur - **Protégé JWT**
+- `POST /api/routines/import` - Importer une routine depuis JSON - **Protégé JWT**
+- `GET /api/routines/:id` - Détails d'une routine par ID - **Protégé JWT**
+- `GET /api/routines/slug/:slug` - Détails d'une routine par slug - **Protégé JWT**
+- `PATCH /api/routines/:id` - Modifier une routine utilisateur - **Protégé JWT**
+- `DELETE /api/routines/:id` - Supprimer une routine utilisateur - **Protégé JWT**
 
 ### Sessions
 - `POST /api/sessions` - Créer une session de pratique

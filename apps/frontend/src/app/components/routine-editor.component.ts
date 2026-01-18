@@ -1,0 +1,278 @@
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { Router, RouterLink, ActivatedRoute } from '@angular/router';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormArray } from '@angular/forms';
+import { CdkDragDrop, moveItemInArray, DragDropModule } from '@angular/cdk/drag-drop';
+import { Routine, Step } from '@flexicoach/shared';
+import { RoutineService } from '../services/routine.service';
+import { StepEditorModalComponent } from './step-editor-modal.component';
+
+@Component({
+  selector: 'app-routine-editor',
+  standalone: true,
+  imports: [CommonModule, RouterLink, ReactiveFormsModule, DragDropModule, StepEditorModalComponent],
+  templateUrl: './routine-editor.component.html',
+  styleUrls: ['./routine-editor.component.scss'],
+})
+export class RoutineEditorComponent implements OnInit {
+  routineForm: FormGroup;
+  loading = false;
+  error = '';
+  success = '';
+  isEditMode = false;
+  routineId = '';
+  showStepModal = false;
+  currentStepIndex: number | null = null;
+
+  constructor(
+    private fb: FormBuilder,
+    private routineService: RoutineService,
+    private router: Router,
+    private route: ActivatedRoute
+  ) {
+    this.routineForm = this.fb.group({
+      name: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(50)]],
+      description: ['', Validators.maxLength(500)],
+      category: ['', Validators.maxLength(50)],
+      difficulty: ['beginner', Validators.required],
+      icon: ['', Validators.maxLength(50)],
+      steps: this.fb.array([], Validators.required),
+    });
+  }
+
+  ngOnInit() {
+    // Check if we're in edit mode
+    this.route.params.subscribe((params) => {
+      if (params['id']) {
+        this.isEditMode = true;
+        this.routineId = params['id'];
+        this.loadRoutine(this.routineId);
+      }
+    });
+  }
+
+  get steps(): FormArray {
+    return this.routineForm.get('steps') as FormArray;
+  }
+
+  loadRoutine(id: string) {
+    this.loading = true;
+    this.routineService.getById(id).subscribe({
+      next: (routine) => {
+        this.routineForm.patchValue({
+          name: routine.name,
+          description: routine.description || '',
+          category: routine.level,
+          difficulty: routine.level,
+          icon: '',
+        });
+
+        // Clear existing steps and add routine steps
+        this.steps.clear();
+        routine.steps.forEach((step) => {
+          this.steps.push(this.createStepFormGroup(step));
+        });
+
+        this.loading = false;
+      },
+      error: (err) => {
+        this.error = 'Erreur lors du chargement de la routine';
+        this.loading = false;
+        console.error('Error loading routine:', err);
+      },
+    });
+  }
+
+  createStepFormGroup(step?: Step): FormGroup {
+    return this.fb.group({
+      name: [step?.name || '', [Validators.required, Validators.maxLength(100)]],
+      seconds: [step?.seconds || 30, [Validators.required, Validators.min(5), Validators.max(300)]],
+      mode: [step?.mode || 'mouvement', Validators.required],
+      text: [step?.text || '', [Validators.required, Validators.minLength(1)]],
+      cues: [step?.cues || []],
+    });
+  }
+
+  openStepModal(index: number | null = null) {
+    this.currentStepIndex = index;
+    this.showStepModal = true;
+  }
+
+  closeStepModal() {
+    this.showStepModal = false;
+    this.currentStepIndex = null;
+  }
+
+  saveStep(stepData: Step) {
+    if (this.currentStepIndex !== null) {
+      // Edit existing step
+      this.steps.at(this.currentStepIndex).patchValue(stepData);
+    } else {
+      // Add new step
+      this.steps.push(this.createStepFormGroup(stepData));
+    }
+    this.closeStepModal();
+  }
+
+  deleteStep(index: number) {
+    if (confirm('Êtes-vous sûr de vouloir supprimer cette étape ?')) {
+      this.steps.removeAt(index);
+    }
+  }
+
+  onDrop(event: CdkDragDrop<Step[]>) {
+    const stepsArray = this.steps.controls;
+    moveItemInArray(stepsArray, event.previousIndex, event.currentIndex);
+    this.steps.setValue(stepsArray.map((control) => control.value));
+  }
+
+  getTotalDuration(): number {
+    const steps = this.steps.value as Step[];
+    return steps.reduce((acc, step) => acc + step.seconds, 0);
+  }
+
+  async onSubmit() {
+    if (this.routineForm.invalid) {
+      this.error = 'Veuillez remplir tous les champs obligatoires correctement';
+      return;
+    }
+
+    if (this.steps.length === 0) {
+      this.error = 'Vous devez ajouter au moins une étape';
+      return;
+    }
+
+    this.loading = true;
+    this.error = '';
+    this.success = '';
+
+    const routineData = {
+      ...this.routineForm.value,
+    };
+
+    const observable = this.isEditMode
+      ? this.routineService.update(this.routineId, routineData)
+      : this.routineService.create(routineData);
+
+    observable.subscribe({
+      next: (routine) => {
+        this.success = this.isEditMode
+          ? 'Routine modifiée avec succès'
+          : 'Routine créée avec succès';
+        this.loading = false;
+        setTimeout(() => {
+          this.router.navigate(['/']);
+        }, 1500);
+      },
+      error: (err) => {
+        this.error = 'Erreur lors de la sauvegarde de la routine';
+        this.loading = false;
+        console.error('Error saving routine:', err);
+      },
+    });
+  }
+
+  exportRoutine() {
+    if (this.routineForm.invalid || this.steps.length === 0) {
+      this.error = 'Veuillez compléter la routine avant de l\'exporter';
+      return;
+    }
+
+    const exportData = {
+      version: '1.0',
+      routine: {
+        ...this.routineForm.value,
+      },
+    };
+
+    const blob = new Blob([JSON.stringify(exportData, null, 2)], {
+      type: 'application/json',
+    });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${this.routineForm.value.name || 'routine'}.routine.json`;
+    link.click();
+    window.URL.revokeObjectURL(url);
+    this.success = 'Routine exportée avec succès';
+  }
+
+  onImportFile(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (!input.files || input.files.length === 0) {
+      return;
+    }
+
+    const file = input.files[0];
+
+    // Validate file size (1 MB max)
+    if (file.size > 1024 * 1024) {
+      this.error = 'Le fichier est trop volumineux (limite : 1 MB)';
+      return;
+    }
+
+    // Validate file extension
+    if (!file.name.endsWith('.routine.json') && !file.name.endsWith('.json')) {
+      this.error = 'Format de fichier invalide. Utilisez un fichier .routine.json';
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const content = e.target?.result as string;
+        const importData = JSON.parse(content);
+
+        // Support two formats:
+        // 1. New format: {version: "1.0", routine: {...}}
+        // 2. Legacy format: direct routine object {name, steps, ...}
+        let routine;
+
+        if (importData.version && importData.routine) {
+          // New format with version wrapper
+          if (importData.version !== '1.0') {
+            this.error = `Version non supportée : ${importData.version}`;
+            return;
+          }
+          routine = importData.routine;
+        } else if (importData.name && importData.steps) {
+          // Legacy format: direct routine object
+          routine = importData;
+        } else {
+          this.error = 'Structure de fichier invalide';
+          return;
+        }
+
+        // Load data into form
+        this.routineForm.patchValue({
+          name: routine.name || '',
+          description: routine.description || '',
+          category: routine.category || '',
+          difficulty: routine.difficulty || 'beginner',
+          icon: routine.icon || '',
+        });
+
+        // Clear and add steps
+        this.steps.clear();
+        if (routine.steps && Array.isArray(routine.steps)) {
+          routine.steps.forEach((step: Step) => {
+            this.steps.push(this.createStepFormGroup(step));
+          });
+        }
+
+        this.success = 'Routine importée avec succès';
+        this.error = '';
+      } catch (err) {
+        this.error = 'Erreur lors de la lecture du fichier';
+        console.error('Import error:', err);
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  cancel() {
+    if (confirm('Êtes-vous sûr de vouloir annuler ? Les modifications non sauvegardées seront perdues.')) {
+      this.router.navigate(['/']);
+    }
+  }
+}

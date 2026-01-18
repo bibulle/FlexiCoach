@@ -1,0 +1,127 @@
+<div class="modal-overlay" (click)="onCancel()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>{{ step ? 'Éditer l\'étape' : 'Ajouter une étape' }}</h2>
+      <button type="button" class="btn-close" (click)="onCancel()">×</button>
+    </div>
+
+    <form [formGroup]="stepForm" (ngSubmit)="onSave()">
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="step-name">Nom de l'étape *</label>
+          <input
+            id="step-name"
+            type="text"
+            formControlName="name"
+            placeholder="Ex: Étirement chat"
+            class="form-control"
+          />
+          @if (stepForm.get('name')?.invalid && stepForm.get('name')?.touched) {
+            <span class="error-text">Le nom est obligatoire (max 100 caractères)</span>
+          }
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="step-seconds">Durée (secondes) *</label>
+            <input
+              id="step-seconds"
+              type="number"
+              formControlName="seconds"
+              min="5"
+              max="300"
+              class="form-control"
+            />
+            @if (stepForm.get('seconds')?.invalid && stepForm.get('seconds')?.touched) {
+              <span class="error-text">Entre 5 et 300 secondes</span>
+            }
+          </div>
+
+          <div class="form-group">
+            <label for="step-mode">Mode *</label>
+            <select id="step-mode" formControlName="mode" class="form-control">
+              <option value="mouvement">Mouvement</option>
+              <option value="statique">Statique</option>
+              <option value="respiration">Respiration</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="step-text">Instructions *</label>
+          <textarea
+            id="step-text"
+            formControlName="text"
+            placeholder="Décrivez les mouvements ou la position..."
+            class="form-control"
+            rows="4"
+          ></textarea>
+          @if (stepForm.get('text')?.invalid && stepForm.get('text')?.touched) {
+            <span class="error-text">Les instructions sont obligatoires</span>
+          }
+        </div>
+
+        <!-- Cues Section -->
+        <div class="cues-section">
+          <div class="cues-header">
+            <label>Repères vocaux</label>
+            <button type="button" class="btn-add-cue" (click)="addCue()">
+              + Ajouter un repère
+            </button>
+          </div>
+
+          @if (cues.length === 0) {
+            <p class="cues-empty">Aucun repère vocal. Les repères permettent d'ajouter des instructions audio à des moments précis.</p>
+          } @else {
+            <div class="cues-list" formArrayName="cues">
+              @for (cue of cues.controls; track $index) {
+                <div class="cue-item" [formGroupName]="$index">
+                  <div class="cue-fields">
+                    <div class="form-group cue-at">
+                      <label [for]="'cue-at-' + $index">À (secondes)</label>
+                      <input
+                        [id]="'cue-at-' + $index"
+                        type="number"
+                        formControlName="at"
+                        min="0"
+                        [max]="stepForm.get('seconds')?.value"
+                        class="form-control"
+                      />
+                    </div>
+                    <div class="form-group cue-say">
+                      <label [for]="'cue-say-' + $index">Texte à dire</label>
+                      <input
+                        [id]="'cue-say-' + $index"
+                        type="text"
+                        formControlName="say"
+                        placeholder="Ex: Mi-parcours"
+                        class="form-control"
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      class="btn-remove-cue"
+                      (click)="removeCue($index)"
+                      title="Supprimer"
+                    >
+                      🗑️
+                    </button>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-cancel" (click)="onCancel()">
+          Annuler
+        </button>
+        <button type="submit" class="btn-save" [disabled]="stepForm.invalid">
+          {{ step ? 'Mettre à jour' : 'Ajouter' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

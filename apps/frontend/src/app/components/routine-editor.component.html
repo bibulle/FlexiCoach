@@ -1,0 +1,162 @@
+<div class="editor-container">
+  <div class="editor-header">
+    <h1>{{ isEditMode ? 'Éditer la routine' : 'Créer une routine' }}</h1>
+    <button class="btn-back" routerLink="/" type="button">← Retour</button>
+  </div>
+
+  @if (error) {
+    <div class="alert alert-error">{{ error }}</div>
+  }
+  @if (success) {
+    <div class="alert alert-success">{{ success }}</div>
+  }
+
+  <form [formGroup]="routineForm" (ngSubmit)="onSubmit()">
+    <!-- Metadata Section -->
+    <div class="card metadata-section">
+      <h2>Informations générales</h2>
+
+      <div class="form-group">
+        <label for="name">Nom de la routine *</label>
+        <input
+          id="name"
+          type="text"
+          formControlName="name"
+          placeholder="Ex: Routine matinale"
+          class="form-control"
+        />
+        @if (routineForm.get('name')?.invalid && routineForm.get('name')?.touched) {
+          <span class="error-text">Le nom doit contenir entre 3 et 50 caractères</span>
+        }
+      </div>
+
+      <div class="form-group">
+        <label for="description">Description</label>
+        <textarea
+          id="description"
+          formControlName="description"
+          placeholder="Décrivez votre routine..."
+          class="form-control"
+          rows="3"
+        ></textarea>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="category">Catégorie</label>
+          <input
+            id="category"
+            type="text"
+            formControlName="category"
+            placeholder="Ex: force, souplesse..."
+            class="form-control"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="difficulty">Difficulté *</label>
+          <select id="difficulty" formControlName="difficulty" class="form-control">
+            <option value="beginner">Débutant</option>
+            <option value="intermediate">Intermédiaire</option>
+            <option value="advanced">Avancé</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="duration-info">
+        <strong>Durée totale :</strong> {{ getTotalDuration() }} secondes ({{ (getTotalDuration() / 60) | number:'1.0-1' }} minutes)
+      </div>
+    </div>
+
+    <!-- Steps Section -->
+    <div class="card steps-section">
+      <div class="steps-header">
+        <h2>Étapes ({{ steps.length }})</h2>
+        <button type="button" class="btn-add" (click)="openStepModal(null)">
+          + Ajouter une étape
+        </button>
+      </div>
+
+      @if (steps.length === 0) {
+        <div class="empty-state">
+          <p>Aucune étape ajoutée. Commencez par ajouter une première étape.</p>
+        </div>
+      } @else {
+        <div
+          cdkDropList
+          class="steps-list"
+          (cdkDropListDropped)="onDrop($event)"
+        >
+          @for (step of steps.controls; track $index) {
+            <div class="step-item" cdkDrag>
+              <div class="step-drag-handle" cdkDragHandle>
+                <span class="drag-icon">☰</span>
+              </div>
+              <div class="step-content">
+                <div class="step-header">
+                  <span class="step-number">{{ $index + 1 }}</span>
+                  <strong>{{ step.get('name')?.value }}</strong>
+                  <span class="step-mode badge">{{ step.get('mode')?.value }}</span>
+                  <span class="step-duration">{{ step.get('seconds')?.value }}s</span>
+                </div>
+                <div class="step-text">{{ step.get('text')?.value }}</div>
+                @if (step.get('cues')?.value && step.get('cues')?.value.length > 0) {
+                  <div class="step-cues">
+                    <strong>Repères:</strong>
+                    @for (cue of step.get('cues')?.value; track cue.at) {
+                      <span class="cue-badge">{{ cue.at }}s: {{ cue.say }}</span>
+                    }
+                  </div>
+                }
+              </div>
+              <div class="step-actions">
+                <button type="button" class="btn-icon" (click)="openStepModal($index)" title="Éditer">
+                  ✏️
+                </button>
+                <button type="button" class="btn-icon btn-delete" (click)="deleteStep($index)" title="Supprimer">
+                  🗑️
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+
+    <!-- Actions -->
+    <div class="actions-section">
+      <div class="actions-left">
+        <button type="button" class="btn-secondary" (click)="exportRoutine()">
+          📥 Exporter
+        </button>
+        <label class="btn-secondary file-upload-btn">
+          📤 Importer
+          <input
+            type="file"
+            accept=".json,.routine.json"
+            (change)="onImportFile($event)"
+            style="display: none;"
+          />
+        </label>
+      </div>
+
+      <div class="actions-right">
+        <button type="button" class="btn-cancel" (click)="cancel()">
+          Annuler
+        </button>
+        <button type="submit" class="btn-primary" [disabled]="loading || routineForm.invalid || steps.length === 0">
+          {{ loading ? 'Sauvegarde...' : (isEditMode ? 'Mettre à jour' : 'Créer la routine') }}
+        </button>
+      </div>
+    </div>
+  </form>
+
+  <!-- Step Modal -->
+  @if (showStepModal) {
+    <app-step-editor-modal
+      [step]="currentStepIndex !== null ? steps.at(currentStepIndex).value : null"
+      (save)="saveStep($event)"
+      (cancel)="closeStepModal()"
+    ></app-step-editor-modal>
+  }
+</div>
