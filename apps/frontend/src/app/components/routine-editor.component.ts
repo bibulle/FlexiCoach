@@ -243,6 +243,25 @@ export class RoutineEditorComponent implements OnInit {
           return;
         }
 
+        // Helper function to strip MongoDB _id fields
+        const stripMongoIds = (obj: any): any => {
+          if (Array.isArray(obj)) {
+            return obj.map(item => stripMongoIds(item));
+          } else if (obj && typeof obj === 'object') {
+            const cleaned: any = {};
+            for (const key in obj) {
+              if (key !== '_id') {
+                cleaned[key] = stripMongoIds(obj[key]);
+              }
+            }
+            return cleaned;
+          }
+          return obj;
+        };
+
+        // Clean the routine data before loading into form
+        routine = stripMongoIds(routine);
+
         // Load data into form
         this.routineForm.patchValue({
           name: routine.name || '',

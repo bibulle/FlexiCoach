@@ -177,6 +177,18 @@ flexicoach/
 - `GET /api/admin/users` - Liste utilisateurs (admin)
 - `PATCH /api/admin/password` - Reset mot de passe (admin)
 
+## Contrôle d'accès et autorisation
+
+### Frontend
+- **Authentification**: Contrôlée par `authGuard` sur les routes protégées
+- **Administration**: Les éléments UI admin (création/édition de routines) sont conditionnés par `authService.isAdmin()` signal
+- **Masquage UI**: Les utilisateurs non-admin ne voient pas les boutons "Nouvelle routine", "Éditer", "Supprimer"
+
+### Backend
+- **Protection API**: Endpoints admin protégés par décorateurs/guards
+- **Validation stricte**: `forbidNonWhitelisted: true` sur ValidationPipe pour rejeter les champs non autorisés
+- **Rôles**: Seuls les administrateurs peuvent créer/modifier/supprimer des routines
+
 ## Tests
 
 ### Frontend (Vitest)

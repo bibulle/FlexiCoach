@@ -2,6 +2,15 @@
 
 Application Progressive Web App (PWA) pour routines d'exercices guidées avec suivi quotidien, visualisation des progrès et programmes d'entraînement multiples.
 
+## 📝 Version actuelle : 0.7.3
+
+### Corrections récentes
+- ✅ Scroll modal corrigé pour l'éditeur d'étapes avec nombreux repères vocaux
+- ✅ Erreur de validation MongoDB `_id` résolue lors de l'import/export
+- ✅ Actions de création/édition de routines masquées pour les non-admins
+
+Voir [CHANGELOG.md](./CHANGELOG.md) pour l'historique complet.
+
 ## 🏗️ Architecture
 
 Monorepo Nx avec:
