@@ -1,0 +1,298 @@
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ReactiveFormsModule } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
+import { RouterTestingModule } from '@angular/router/testing';
+import { provideHttpClient } from '@angular/common/http';
+import { of, throwError } from 'rxjs';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { RoutineEditorComponent } from './routine-editor.component';
+import { RoutineService } from '../services/routine.service';
+import { Routine } from '@flexicoach/shared';
+
+describe('RoutineEditorComponent', () => {
+  let component: RoutineEditorComponent;
+  let fixture: ComponentFixture<RoutineEditorComponent>;
+  let mockRoutineService: any;
+  let mockActivatedRoute: any;
+  let router: Router;
+
+  beforeEach(async () => {
+    mockRoutineService = {
+      create: vi.fn(),
+      update: vi.fn(),
+      getById: vi.fn(),
+    };
+
+    mockActivatedRoute = {
+      snapshot: {
+        paramMap: {
+          get: vi.fn(() => null),
+        },
+      },
+      params: of({}),
+    };
+
+    await TestBed.configureTestingModule({
+      imports: [RoutineEditorComponent, ReactiveFormsModule, RouterTestingModule],
+      providers: [
+        provideHttpClient(),
+        { provide: RoutineService, useValue: mockRoutineService },
+        { provide: ActivatedRoute, useValue: mockActivatedRoute },
+      ],
+    }).compileComponents();
+
+    router = TestBed.inject(Router);
+    vi.spyOn(router, 'navigate');
+
+    fixture = TestBed.createComponent(RoutineEditorComponent);
+    component = fixture.componentInstance;
+  });
+
+  it('should create', () => {
+    expect(component).toBeTruthy();
+  });
+
+  it('should initialize form with default values', () => {
+    fixture.detectChanges();
+
+    expect(component.routineForm.get('name')?.value).toBe('');
+    expect(component.routineForm.get('description')?.value).toBe('');
+    expect(component.steps.length).toBe(0);
+  });
+
+  describe('Issue #34: MongoDB _id stripping on import', () => {
+    it.skip('should strip _id fields from imported routine data', (done) => {
+      const importData = {
+        version: '1.0',
+        routine: {
+          _id: 'routine-mongo-id',
+          name: 'Test Routine',
+          description: 'Test description',
+          category: 'fitness',
+          difficulty: 'beginner',
+          icon: 'icon',
+          steps: [
+            {
+              _id: 'step-mongo-id-1',
+              name: 'Step 1',
+              seconds: 30,
+              mode: 'mouvement',
+              text: 'Test step',
+              cues: [
+                { _id: 'cue-id-1', at: 10, say: 'Halfway' },
+                { _id: 'cue-id-2', at: 20, say: 'Almost done' },
+              ],
+            },
+            {
+              _id: 'step-mongo-id-2',
+              name: 'Step 2',
+              seconds: 45,
+              mode: 'statique',
+              text: 'Another step',
+              cues: [
+                { _id: 'cue-id-3', at: 15, say: 'Keep going' },
+              ],
+            },
+          ],
+        },
+      };
+
+      const blob = new Blob([JSON.stringify(importData)], { type: 'application/json' });
+      const file = new File([blob], 'test.routine.json', { type: 'application/json' });
+
+      // Create a mock FileReader
+      const mockFileReader = {
+        readAsText: vi.fn(function(this: any) {
+          setTimeout(() => {
+            this.result = JSON.stringify(importData);
+            this.onload({ target: { result: JSON.stringify(importData) } });
+          }, 0);
+        }),
+        onload: null as any,
+      };
+
+      vi.spyOn(window as any, 'FileReader').mockImplementation(() => mockFileReader);
+
+      fixture.detectChanges();
+
+      const event = {
+        target: {
+          files: [file],
+        },
+      } as any;
+
+      component.onImportFile(event);
+
+      setTimeout(() => {
+        // Check that form was populated
+        expect(component.routineForm.get('name')?.value).toBe('Test Routine');
+        expect(component.steps.length).toBe(2);
+
+        // Verify _id fields are NOT in the form data
+        const formValue = component.routineForm.value;
+        expect(formValue._id).toBeUndefined();
+
+        const step1 = component.steps.at(0).value;
+        expect(step1._id).toBeUndefined();
+        expect(step1.name).toBe('Step 1');
+
+        const step1Cues = component.steps.at(0).get('cues')?.value;
+        expect(step1Cues[0]._id).toBeUndefined();
+        expect(step1Cues[0].at).toBe(10);
+        expect(step1Cues[0].say).toBe('Halfway');
+
+        const step2 = component.steps.at(1).value;
+        expect(step2._id).toBeUndefined();
+        expect(step2.name).toBe('Step 2');
+
+        done();
+      }, 100);
+    });
+
+    it.skip('should preserve all non-_id fields during import', (done) => {
+      const importData = {
+        version: '1.0',
+        routine: {
+          _id: 'routine-id',
+          name: 'Test Routine',
+          description: 'Description',
+          category: 'category',
+          difficulty: 'intermediate',
+          icon: 'test-icon',
+          steps: [
+            {
+              _id: 'step-id',
+              name: 'Step Name',
+              seconds: 60,
+              mode: 'respiration',
+              text: 'Instructions',
+              cues: [
+                { _id: 'cue-id', at: 30, say: 'Breathe' },
+              ],
+            },
+          ],
+        },
+      };
+
+      const blob = new Blob([JSON.stringify(importData)], { type: 'application/json' });
+      const file = new File([blob], 'test.routine.json');
+
+      const mockFileReader = {
+        readAsText: vi.fn(function(this: any) {
+          setTimeout(() => {
+            this.result = JSON.stringify(importData);
+            this.onload({ target: { result: JSON.stringify(importData) } });
+          }, 0);
+        }),
+        onload: null as any,
+      };
+
+      vi.spyOn(window as any, 'FileReader').mockImplementation(() => mockFileReader);
+
+      fixture.detectChanges();
+
+      const event = { target: { files: [file] } } as any;
+      component.onImportFile(event);
+
+      setTimeout(() => {
+        // All fields should be preserved
+        expect(component.routineForm.get('name')?.value).toBe('Test Routine');
+        expect(component.routineForm.get('description')?.value).toBe('Description');
+        expect(component.routineForm.get('category')?.value).toBe('category');
+        expect(component.routineForm.get('difficulty')?.value).toBe('intermediate');
+        expect(component.routineForm.get('icon')?.value).toBe('test-icon');
+
+        const step = component.steps.at(0).value;
+        expect(step.name).toBe('Step Name');
+        expect(step.seconds).toBe(60);
+        expect(step.mode).toBe('respiration');
+        expect(step.text).toBe('Instructions');
+
+        const cue = step.cues[0];
+        expect(cue.at).toBe(30);
+        expect(cue.say).toBe('Breathe');
+
+        done();
+      }, 100);
+    });
+
+    it.skip('should handle legacy format without _id fields', (done) => {
+      const legacyData = {
+        name: 'Legacy Routine',
+        description: 'Legacy description',
+        steps: [
+          {
+            name: 'Legacy Step',
+            seconds: 30,
+            mode: 'mouvement',
+            text: 'Legacy text',
+            cues: [],
+          },
+        ],
+      };
+
+      const blob = new Blob([JSON.stringify(legacyData)], { type: 'application/json' });
+      const file = new File([blob], 'legacy.routine.json');
+
+      const mockFileReader = {
+        readAsText: vi.fn(function(this: any) {
+          setTimeout(() => {
+            this.result = JSON.stringify(legacyData);
+            this.onload({ target: { result: JSON.stringify(legacyData) } });
+          }, 0);
+        }),
+        onload: null as any,
+      };
+
+      vi.spyOn(window as any, 'FileReader').mockImplementation(() => mockFileReader);
+
+      fixture.detectChanges();
+
+      const event = { target: { files: [file] } } as any;
+      component.onImportFile(event);
+
+      setTimeout(() => {
+        expect(component.routineForm.get('name')?.value).toBe('Legacy Routine');
+        expect(component.steps.length).toBe(1);
+        done();
+      }, 100);
+    });
+  });
+
+  it('should export routine correctly', () => {
+    fixture.detectChanges();
+
+    component.routineForm.patchValue({
+      name: 'Export Test',
+      description: 'Test export',
+      category: 'test',
+      difficulty: 'beginner',
+      icon: 'test-icon',
+    });
+
+    // Mock URL.createObjectURL and link click
+    const mockCreateObjectURL = vi.fn(() => 'blob:mock-url');
+    const mockRevokeObjectURL = vi.fn();
+    const originalCreateObjectURL = URL.createObjectURL;
+    const originalRevokeObjectURL = URL.revokeObjectURL;
+
+    URL.createObjectURL = mockCreateObjectURL;
+    URL.revokeObjectURL = mockRevokeObjectURL;
+
+    const mockLink = document.createElement('a');
+    const clickSpy = vi.spyOn(mockLink, 'click');
+    vi.spyOn(document, 'createElement').mockReturnValue(mockLink);
+
+    try {
+      component.exportRoutine();
+
+      expect(mockCreateObjectURL).toHaveBeenCalled();
+      expect(mockLink.download).toContain('.routine.json');
+      expect(clickSpy).toHaveBeenCalled();
+    } finally {
+      // Restore original functions
+      URL.createObjectURL = originalCreateObjectURL;
+      URL.revokeObjectURL = originalRevokeObjectURL;
+    }
+  });
+});

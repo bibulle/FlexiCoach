@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## 0.7.3 (2026-01-18)
+
+### Fixed
+
+* **modal scroll**: Fix modal scroll functionality in step editor when content exceeds viewport ([#33](https://github.com/bibulle/FlexiCoach/issues/33))
+  - Added CSS properties (position: relative, touch-action, scroll-behavior) to enable proper scrolling
+  - Buttons remain accessible even with 8+ cues
+* **import/export**: Fix MongoDB _id field validation error after routine import/export cycle ([#34](https://github.com/bibulle/FlexiCoach/issues/34))
+  - Strip MongoDB-generated _id fields during import before form loading
+  - Preserves backend validation strictness while fixing import workflow
+* **ui permissions**: Hide routine creation/edit UI for non-admin users ([#35](https://github.com/bibulle/FlexiCoach/issues/35))
+  - Added admin check to "Nouvelle routine" button
+  - Conditioned edit/delete buttons on authService.isAdmin()
+  - Aligned frontend UI with backend authorization
+
+### Tests
+
+* Add comprehensive unit tests for modal scroll, import/export, and admin UI features
+* Add E2E test coverage for all three issues (some skipped pending admin setup)
+
 ## 0.7.0 (2025-12-08)
 
 

@@ -5,8 +5,10 @@ import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { provideHttpClient } from '@angular/common/http';
 import { of, throwError } from 'rxjs';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { signal } from '@angular/core';
 import { RoutineListComponent } from './routine-list.component';
 import { RoutineService } from '../services/routine.service';
+import { AuthService } from '../services/auth.service';
 import { StatsService } from '../services/stats.service';
 import { Routine } from '@flexicoach/shared';
 
@@ -14,6 +16,7 @@ describe('RoutineListComponent', () => {
   let component: RoutineListComponent;
   let fixture: ComponentFixture<RoutineListComponent>;
   let mockRoutineService: any;
+  let mockAuthService: any;
   let mockStatsService: any;
   let router: Router;
 
@@ -43,6 +46,12 @@ describe('RoutineListComponent', () => {
   beforeEach(async () => {
     mockRoutineService = {
       getAll: vi.fn(),
+      delete: vi.fn(),
+    };
+
+    mockAuthService = {
+      isAdmin: signal(false),
+      isAuthenticated: signal(true),
     };
 
     mockStatsService = {
@@ -54,6 +63,7 @@ describe('RoutineListComponent', () => {
       providers: [
         provideHttpClient(),
         { provide: RoutineService, useValue: mockRoutineService },
+        { provide: AuthService, useValue: mockAuthService },
         { provide: StatsService, useValue: mockStatsService },
       ],
       schemas: [NO_ERRORS_SCHEMA],
@@ -117,5 +127,85 @@ describe('RoutineListComponent', () => {
     component.selectRoutine(routine);
 
     expect(router.navigate).toHaveBeenCalledWith(['/routine', 'routine-1']);
+  });
+
+  describe('Admin-only features (Issue #35)', () => {
+    it('should hide "Nouvelle routine" button for non-admin users', () => {
+      mockAuthService.isAdmin.set(false);
+      fixture.detectChanges();
+
+      const compiled = fixture.nativeElement;
+      const newRoutineLink = compiled.querySelector('a[href="/routines/new"]');
+      expect(newRoutineLink).toBeNull();
+    });
+
+    it('should show "Nouvelle routine" button for admin users', () => {
+      mockAuthService.isAdmin.set(true);
+      fixture.detectChanges();
+
+      const compiled = fixture.nativeElement;
+      const newRoutineLink = compiled.querySelector('a[href="/routines/new"]');
+      expect(newRoutineLink).toBeTruthy();
+    });
+
+    it('should hide edit/delete buttons for non-admin users even on user routines', () => {
+      mockAuthService.isAdmin.set(false);
+
+      const userRoutines: Routine[] = [{
+        ...mockRoutines[0],
+        visibility: 'user' as 'builtIn' | 'user',
+      }];
+
+      mockRoutineService.getAll.mockReturnValue(of(userRoutines));
+      component.loadRoutines();
+      fixture.detectChanges();
+
+      const compiled = fixture.nativeElement;
+      const editButtons = compiled.querySelectorAll('.btn-secondary');
+      const deleteButtons = compiled.querySelectorAll('.btn-danger');
+
+      expect(editButtons.length).toBe(0);
+      expect(deleteButtons.length).toBe(0);
+    });
+
+    it('should show edit/delete buttons for admin users on user routines', () => {
+      mockAuthService.isAdmin.set(true);
+
+      const userRoutines: Routine[] = [{
+        ...mockRoutines[0],
+        visibility: 'user' as 'builtIn' | 'user',
+      }];
+
+      mockRoutineService.getAll.mockReturnValue(of(userRoutines));
+      component.loadRoutines();
+      fixture.detectChanges();
+
+      const compiled = fixture.nativeElement;
+      const editButtons = compiled.querySelectorAll('.btn-secondary');
+      const deleteButtons = compiled.querySelectorAll('.btn-danger');
+
+      expect(editButtons.length).toBeGreaterThan(0);
+      expect(deleteButtons.length).toBeGreaterThan(0);
+    });
+
+    it('should not show edit/delete buttons on built-in routines even for admins', () => {
+      mockAuthService.isAdmin.set(true);
+
+      const builtInRoutines: Routine[] = [{
+        ...mockRoutines[0],
+        visibility: 'builtIn' as 'builtIn' | 'user',
+      }];
+
+      mockRoutineService.getAll.mockReturnValue(of(builtInRoutines));
+      component.loadRoutines();
+      fixture.detectChanges();
+
+      const compiled = fixture.nativeElement;
+      const editButtons = compiled.querySelectorAll('.btn-secondary');
+      const deleteButtons = compiled.querySelectorAll('.btn-danger');
+
+      expect(editButtons.length).toBe(0);
+      expect(deleteButtons.length).toBe(0);
+    });
   });
 });

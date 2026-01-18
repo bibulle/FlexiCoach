@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { Routine } from '@flexicoach/shared';
 import { RoutineService } from '../services/routine.service';
+import { AuthService } from '../services/auth.service';
 import { StatsComponent } from './stats.component';
 
 @Component({
@@ -17,7 +18,11 @@ export class RoutineListComponent implements OnInit {
   loading = false;
   error = '';
 
-  constructor(private routineService: RoutineService, private router: Router) {}
+  constructor(
+    private routineService: RoutineService,
+    private router: Router,
+    public authService: AuthService
+  ) {}
 
   ngOnInit() {
     this.loadRoutines();
