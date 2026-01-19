@@ -1,60 +1,12 @@
 .app-container
   width: 100%
-  max-width: 820px
-  margin: 0 auto
-  padding: 1rem
-
-  header
-    display: flex
-    justify-content: space-between
-    align-items: center
-    margin-bottom: 1.5rem
-
-    h1
-      font-size: 28px
-      font-weight: 600
-      letter-spacing: 0.2px
-      margin: 0
-
-      .version
-        font-size: 12px
-        font-weight: 400
-        color: #9ca3af
-        margin-left: 0.5rem
-
-    .header-actions
-      display: flex
-      align-items: center
-      gap: 1rem
-
-    .admin-link
-      padding: 0.5rem 1rem
-      background: #3b82f6
-      color: white
-      border-radius: 8px
-      font-size: 0.875rem
-      font-weight: 500
-      text-decoration: none
-      transition: all 0.2s
-
-      &:hover
-        background: #2563eb
-        transform: translateY(-1px)
-
-    .logout-btn
-      padding: 0.5rem 1rem
-      background: #ef4444
-      color: white
-      border: none
-      border-radius: 8px
-      font-size: 0.875rem
-      font-weight: 500
-      cursor: pointer
-      transition: all 0.2s
-
-      &:hover
-        background: #dc2626
-        transform: translateY(-1px)
+  min-height: 100vh
+  display: flex
+  flex-direction: column
 
   main
-    min-height: calc(100vh - 120px)
+    flex: 1
+    width: 100%
+    max-width: 1200px
+    margin: 0 auto
+    padding: 2rem 1rem

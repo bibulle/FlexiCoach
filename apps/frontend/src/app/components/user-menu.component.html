@@ -1,0 +1,21 @@
+<div class="user-menu">
+  @if (currentUser()) {
+    <button class="user-menu-trigger" (click)="toggleMenu()" type="button">
+      <span class="user-avatar">{{ getInitials() }}</span>
+      <span class="user-name">{{ getDisplayName() }}</span>
+      <span class="dropdown-icon">▼</span>
+    </button>
+
+    @if (isMenuOpen()) {
+      <div class="user-menu-dropdown">
+        <div class="user-info">
+          <div class="user-email">{{ currentUser()?.email }}</div>
+        </div>
+        <hr>
+        <button class="menu-item" (click)="logout()" type="button">
+          Déconnexion
+        </button>
+      </div>
+    }
+  }
+</div>

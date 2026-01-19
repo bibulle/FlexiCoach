@@ -270,6 +270,16 @@ describe('RoutineEditorComponent', () => {
       icon: 'test-icon',
     });
 
+    // Add at least one step for valid export
+    const stepGroup = component.createStepFormGroup({
+      name: 'Test Step',
+      seconds: 30,
+      mode: 'mouvement',
+      text: 'Test instruction',
+      cues: []
+    });
+    component.steps.push(stepGroup);
+
     // Mock URL.createObjectURL and link click
     const mockCreateObjectURL = vi.fn(() => 'blob:mock-url');
     const mockRevokeObjectURL = vi.fn();

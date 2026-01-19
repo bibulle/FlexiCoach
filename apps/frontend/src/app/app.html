@@ -1,17 +1,9 @@
 <div class="app-container">
-    <header>
-        <h1>{{ title }} <span class="version">v{{ version }}</span></h1>
-        @if (authService.isAuthenticated()) {
-            <div class="header-actions">
-                @if (authService.isAdmin()) {
-                    <a routerLink="/admin" class="admin-link">Administration</a>
-                }
-                <button class="logout-btn" (click)="logout()">Déconnexion</button>
-            </div>
-        }
-    </header>
+    <app-header></app-header>
+
     <main>
         <router-outlet></router-outlet>
     </main>
+
     <app-update-notification></app-update-notification>
 </div>

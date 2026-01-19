@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterLink, ActivatedRoute } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormArray } from '@angular/forms';
 import { CdkDragDrop, moveItemInArray, DragDropModule } from '@angular/cdk/drag-drop';
 import { Routine, Step } from '@flexicoach/shared';
@@ -10,7 +10,7 @@ import { StepEditorModalComponent } from './step-editor-modal.component';
 @Component({
   selector: 'app-routine-editor',
   standalone: true,
-  imports: [CommonModule, RouterLink, ReactiveFormsModule, DragDropModule, StepEditorModalComponent],
+  imports: [CommonModule, ReactiveFormsModule, DragDropModule, StepEditorModalComponent],
   templateUrl: './routine-editor.component.html',
   styleUrls: ['./routine-editor.component.scss'],
 })

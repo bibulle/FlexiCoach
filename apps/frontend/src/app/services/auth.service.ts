@@ -39,10 +39,7 @@ export class AuthService {
   public isAdmin = signal<boolean>(false);
 
   constructor(private http: HttpClient) {
-    // Check admin status on initialization if authenticated
-    if (this.hasToken()) {
-      this.checkAdminStatus();
-    }
+    // Admin status will be checked after DI resolution to avoid circular dependency
   }
 
   private getUserFromStorage(): AuthResponse['user'] | null {
