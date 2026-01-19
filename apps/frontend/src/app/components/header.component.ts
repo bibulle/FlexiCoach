@@ -4,6 +4,7 @@ import { Router, RouterLink, RouterLinkActive, NavigationEnd, ActivatedRoute } f
 import { filter, Subscription } from 'rxjs';
 import { AuthService } from '../services/auth.service';
 import { UserMenuComponent } from './user-menu.component';
+import { APP_VERSION } from '../version';
 
 interface Breadcrumb {
   label: string;
@@ -24,6 +25,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   breadcrumbs = signal<Breadcrumb[]>([]);
   private routerSubscription?: Subscription;
+  appVersion = APP_VERSION;
 
   ngOnInit(): void {
     // Build breadcrumbs on initial load

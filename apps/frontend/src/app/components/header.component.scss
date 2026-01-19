@@ -25,7 +25,8 @@
 .logo {
   text-decoration: none;
   display: flex;
-  align-items: center;
+  align-items: baseline;
+  gap: 4px;
 
   &:hover .logo-text {
     color: #357abd;
@@ -37,6 +38,13 @@
   font-weight: 700;
   color: #4a90e2;
   transition: color 0.2s;
+}
+
+.version {
+  font-size: 10px;
+  color: #999;
+  font-weight: 400;
+  vertical-align: super;
 }
 
 .main-nav {
@@ -115,6 +123,10 @@
 
   .logo-text {
     font-size: 20px;
+  }
+
+  .version {
+    font-size: 9px;
   }
 
   .main-nav {
