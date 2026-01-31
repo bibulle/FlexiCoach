@@ -10,11 +10,20 @@ export class User {
   @Prop({ required: true, unique: true })
   email: string;
 
-  @Prop({ required: true, select: false })
-  password: string;
+  @Prop({ required: false, select: false })
+  password?: string;
 
   @Prop()
   displayName?: string;
+
+  @Prop()
+  avatar?: string;
+
+  @Prop({ enum: ['local', 'google'], default: 'local' })
+  provider: string;
+
+  @Prop()
+  providerId?: string;
 
   @Prop({ default: 'Europe/Paris' })
   tz?: string;

@@ -1,7 +1,13 @@
 <div class="user-menu">
   @if (currentUser()) {
     <button class="user-menu-trigger" (click)="toggleMenu()" type="button">
-      <span class="user-avatar">{{ getInitials() }}</span>
+      <span class="user-avatar">
+        @if (currentUser()?.avatar) {
+          <img [src]="currentUser()?.avatar" alt="Avatar" />
+        } @else {
+          {{ getInitials() }}
+        }
+      </span>
       <span class="user-name">{{ getDisplayName() }}</span>
       <span class="dropdown-icon">▼</span>
     </button>
