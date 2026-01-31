@@ -2,12 +2,12 @@
 
 Application Progressive Web App (PWA) pour routines d'exercices guidées avec suivi quotidien, visualisation des progrès et programmes d'entraînement multiples.
 
-## 📝 Version actuelle : 0.7.3
+## 📝 Version actuelle : 0.7.4
 
 ### Corrections récentes
-- ✅ Scroll modal corrigé pour l'éditeur d'étapes avec nombreux repères vocaux
-- ✅ Erreur de validation MongoDB `_id` résolue lors de l'import/export
-- ✅ Actions de création/édition de routines masquées pour les non-admins
+- ✅ Authentification Google OAuth2 implémentée
+- ✅ Tests backend migrés vers mocks (compatibilité Apple Silicon)
+- ✅ Menu utilisateur avec navigation cohérente
 
 Voir [CHANGELOG.md](./CHANGELOG.md) pour l'historique complet.
 
@@ -179,7 +179,7 @@ routines/              # Données JSON des routines
   - Gestion de l'ownership (routines utilisateur)
 - **API REST complète** (routines, sessions, users, auth, admin, stats, calendar)
 - **Base de données MongoDB** avec Mongoose
-- **Tests** (frontend: Vitest, backend-e2e: Jest - 135+ tests)
+- **Tests** (frontend: Vitest 235 tests, backend: Jest 151 tests, E2E: Playwright + Jest)
 - **Docker** avec CI/CD GitHub Actions
 - **Design unifié** avec cards blanches et ombres douces
 
@@ -209,7 +209,7 @@ Le design s'inspire du prototype vanilla JS avec:
 - **MongoDB** 8.0.1 + Mongoose - Base de données
 - **Vitest** - Tests unitaires frontend
 - **Jest** - Tests e2e backend
-- **TypeScript** 5.8.0
+- **TypeScript** 5.9.2
 - **SASS** - Préprocesseur CSS
 
 ## 📝 Notes de développement

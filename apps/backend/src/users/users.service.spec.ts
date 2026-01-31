@@ -1,40 +1,75 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { MongooseModule, getModelToken } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { getModelToken } from '@nestjs/mongoose';
 import { UsersService } from './users.service';
-import { User, UserSchema, UserDocument } from '../schemas/user.schema';
-import {
-  rootMongooseTestModule,
-  closeInMongodConnection,
-} from '../test-utils/mongodb-test.module';
+import { User } from '../schemas/user.schema';
 import * as bcrypt from 'bcrypt';
+
+// Mock bcrypt
+jest.mock('bcrypt', () => ({
+  hash: jest.fn(),
+}));
 
 describe('UsersService', () => {
   let service: UsersService;
-  let moduleRef: TestingModule;
-  let userModel: Model<UserDocument>;
+  let mockUserModel: any;
 
-  beforeAll(async () => {
-    moduleRef = await Test.createTestingModule({
-      imports: [
-        rootMongooseTestModule(),
-        MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
+  const mockUser = {
+    _id: 'user-mongo-id',
+    email: 'test@example.com',
+    password: 'hashedPassword123',
+    displayName: 'Test User',
+    tz: 'Europe/Paris',
+    isAdmin: false,
+    settings: {
+      theme: 'light',
+      voiceRate: 1,
+      sound: true,
+    },
+    toString: () => 'user-mongo-id',
+  };
+
+  beforeEach(async () => {
+    // Reset bcrypt mock
+    (bcrypt.hash as jest.Mock).mockReset();
+
+    // Create mock functions
+    const mockExec = jest.fn();
+    const mockSelect = jest.fn().mockReturnValue({ exec: mockExec });
+    const mockFind = jest.fn().mockReturnValue({ exec: mockExec });
+    const mockFindOne = jest.fn().mockReturnValue({ exec: mockExec, select: mockSelect });
+    const mockFindById = jest.fn().mockReturnValue({ exec: mockExec });
+    const mockFindByIdAndUpdate = jest.fn().mockReturnValue({ exec: mockExec });
+    const mockFindByIdAndDelete = jest.fn().mockReturnValue({ exec: mockExec });
+
+    // Create a mock model constructor
+    mockUserModel = jest.fn().mockImplementation((data) => ({
+      ...data,
+      _id: 'new-user-id',
+      tz: data.tz || 'Europe/Paris',
+      save: jest.fn().mockResolvedValue({
+        ...mockUser,
+        ...data,
+        _id: 'new-user-id',
+        tz: data.tz || 'Europe/Paris',
+      }),
+    }));
+    mockUserModel.find = mockFind;
+    mockUserModel.findOne = mockFindOne;
+    mockUserModel.findById = mockFindById;
+    mockUserModel.findByIdAndUpdate = mockFindByIdAndUpdate;
+    mockUserModel.findByIdAndDelete = mockFindByIdAndDelete;
+
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        UsersService,
+        {
+          provide: getModelToken(User.name),
+          useValue: mockUserModel,
+        },
       ],
-      providers: [UsersService],
     }).compile();
 
-    service = moduleRef.get<UsersService>(UsersService);
-    userModel = moduleRef.get<Model<UserDocument>>(getModelToken(User.name));
-  }, 30000);
-
-  afterAll(async () => {
-    await moduleRef.close();
-    await closeInMongodConnection();
-  });
-
-  afterEach(async () => {
-    // Clean up database between tests
-    await userModel.deleteMany({});
+    service = module.get<UsersService>(UsersService);
   });
 
   it('should be defined', () => {
@@ -49,210 +84,250 @@ describe('UsersService', () => {
         displayName: 'Test User',
       };
 
-      const user = await service.create(userData);
+      const result = await service.create(userData);
 
-      expect(user).toBeDefined();
-      expect(user._id).toBeDefined();
-      expect(user.email).toBe(userData.email);
-      expect(user.password).toBe(userData.password);
-      expect(user.displayName).toBe(userData.displayName);
-      expect(user.tz).toBe('Europe/Paris'); // default value
+      expect(result).toBeDefined();
+      expect(result._id).toBeDefined();
+      expect(result.email).toBe(userData.email);
+      expect(result.password).toBe(userData.password);
+      expect(result.displayName).toBe(userData.displayName);
+      expect(result.tz).toBe('Europe/Paris'); // default value
+      expect(mockUserModel).toHaveBeenCalledWith(userData);
+    });
+
+    it('should create user without displayName', async () => {
+      const userData = {
+        email: 'minimal@example.com',
+        password: 'password123',
+      };
+
+      const result = await service.create(userData);
+
+      expect(result.email).toBe(userData.email);
     });
   });
 
   describe('findAll', () => {
     it('should return all users', async () => {
-      await service.create({
-        email: 'user1@example.com',
-        password: 'password1',
-      });
-      await service.create({
-        email: 'user2@example.com',
-        password: 'password2',
-      });
+      const mockUsers = [
+        { ...mockUser, email: 'user1@example.com' },
+        { ...mockUser, email: 'user2@example.com' },
+      ];
+      mockUserModel.find().exec.mockResolvedValue(mockUsers);
 
-      const users = await service.findAll();
+      const result = await service.findAll();
 
-      expect(users).toHaveLength(2);
-      expect(users[0].email).toBe('user1@example.com');
-      expect(users[1].email).toBe('user2@example.com');
+      expect(result).toHaveLength(2);
+      expect(result[0].email).toBe('user1@example.com');
+      expect(result[1].email).toBe('user2@example.com');
+      expect(mockUserModel.find).toHaveBeenCalled();
     });
 
     it('should return empty array when no users exist', async () => {
-      const users = await service.findAll();
-      expect(users).toHaveLength(0);
+      mockUserModel.find().exec.mockResolvedValue([]);
+
+      const result = await service.findAll();
+
+      expect(result).toHaveLength(0);
     });
   });
 
   describe('findOne', () => {
     it('should find user by ID', async () => {
-      const created = await service.create({
-        email: 'user@example.com',
-        password: 'password',
-      });
+      mockUserModel.findById().exec.mockResolvedValue(mockUser);
 
-      const found = await service.findOne(created._id.toString());
+      const result = await service.findOne('user-mongo-id');
 
-      expect(found).toBeDefined();
-      expect(found?._id.toString()).toBe(created._id.toString());
-      expect(found?.email).toBe('user@example.com');
+      expect(result).toBeDefined();
+      expect(result?.email).toBe('test@example.com');
+      expect(mockUserModel.findById).toHaveBeenCalledWith('user-mongo-id');
     });
 
     it('should return null for non-existent ID', async () => {
-      const found = await service.findOne('507f1f77bcf86cd799439011');
-      expect(found).toBeNull();
+      mockUserModel.findById().exec.mockResolvedValue(null);
+
+      const result = await service.findOne('non-existent-id');
+
+      expect(result).toBeNull();
     });
   });
 
   describe('findByEmail', () => {
     it('should find user by email', async () => {
-      await service.create({
-        email: 'test@example.com',
-        password: 'password',
-        displayName: 'Test',
-      });
+      mockUserModel.findOne().exec.mockResolvedValue(mockUser);
 
-      const user = await service.findByEmail('test@example.com');
+      const result = await service.findByEmail('test@example.com');
 
-      expect(user).toBeDefined();
-      expect(user?.email).toBe('test@example.com');
-      expect(user?.displayName).toBe('Test');
-    });
-
-    it('should not include password field by default', async () => {
-      await service.create({
-        email: 'test@example.com',
-        password: 'password',
-      });
-
-      const user = await service.findByEmail('test@example.com');
-
-      expect(user).toBeDefined();
-      expect((user as any).password).toBeUndefined();
+      expect(result).toBeDefined();
+      expect(result?.email).toBe('test@example.com');
+      expect(result?.displayName).toBe('Test User');
+      expect(mockUserModel.findOne).toHaveBeenCalledWith({ email: 'test@example.com' });
     });
 
     it('should return null for non-existent email', async () => {
-      const user = await service.findByEmail('nonexistent@example.com');
-      expect(user).toBeNull();
+      mockUserModel.findOne().exec.mockResolvedValue(null);
+
+      const result = await service.findByEmail('nonexistent@example.com');
+
+      expect(result).toBeNull();
     });
   });
 
   describe('findByEmailWithPassword', () => {
     it('should include password field', async () => {
-      await service.create({
-        email: 'test@example.com',
-        password: 'secretPassword',
-      });
+      const userWithPassword = { ...mockUser, password: 'secretPassword' };
+      mockUserModel.findOne().select().exec.mockResolvedValue(userWithPassword);
 
-      const user = await service.findByEmailWithPassword('test@example.com');
+      const result = await service.findByEmailWithPassword('test@example.com');
 
-      expect(user).toBeDefined();
-      expect(user?.email).toBe('test@example.com');
-      expect((user as any).password).toBe('secretPassword');
+      expect(result).toBeDefined();
+      expect(result?.email).toBe('test@example.com');
+      expect((result as any).password).toBe('secretPassword');
+      expect(mockUserModel.findOne).toHaveBeenCalledWith({ email: 'test@example.com' });
     });
   });
 
   describe('update', () => {
     it('should update user successfully', async () => {
-      const created = await service.create({
-        email: 'test@example.com',
-        password: 'password',
-        displayName: 'Original Name',
-      });
+      const updatedUser = {
+        ...mockUser,
+        displayName: 'Updated Name',
+        tz: 'America/New_York',
+      };
+      mockUserModel.findByIdAndUpdate().exec.mockResolvedValue(updatedUser);
 
-      const updated = await service.update(created._id.toString(), {
+      const result = await service.update('user-mongo-id', {
         displayName: 'Updated Name',
         tz: 'America/New_York',
       });
 
-      expect(updated).toBeDefined();
-      expect(updated?.displayName).toBe('Updated Name');
-      expect(updated?.tz).toBe('America/New_York');
-      expect(updated?.email).toBe('test@example.com'); // unchanged
+      expect(result).toBeDefined();
+      expect(result?.displayName).toBe('Updated Name');
+      expect(result?.tz).toBe('America/New_York');
+      expect(mockUserModel.findByIdAndUpdate).toHaveBeenCalledWith(
+        'user-mongo-id',
+        { displayName: 'Updated Name', tz: 'America/New_York' },
+        { new: true }
+      );
     });
 
     it('should return null for non-existent ID', async () => {
-      const updated = await service.update('507f1f77bcf86cd799439011', {
+      mockUserModel.findByIdAndUpdate().exec.mockResolvedValue(null);
+
+      const result = await service.update('non-existent-id', {
         displayName: 'Test',
       });
-      expect(updated).toBeNull();
+
+      expect(result).toBeNull();
+    });
+
+    it('should update only provided fields', async () => {
+      mockUserModel.findByIdAndUpdate().exec.mockResolvedValue({
+        ...mockUser,
+        displayName: 'New Name',
+      });
+
+      await service.update('user-mongo-id', { displayName: 'New Name' });
+
+      expect(mockUserModel.findByIdAndUpdate).toHaveBeenCalledWith(
+        'user-mongo-id',
+        { displayName: 'New Name' },
+        { new: true }
+      );
     });
   });
 
   describe('updateSettings', () => {
     it('should update user settings', async () => {
-      const created = await service.create({
-        email: 'test@example.com',
-        password: 'password',
-      });
-
       const settings = {
         theme: 'dark' as const,
         voiceRate: 1.2,
         sound: true,
       };
 
-      const updated = await service.updateSettings(
-        created._id.toString(),
-        settings
-      );
+      const updatedUser = {
+        ...mockUser,
+        settings,
+      };
+      mockUserModel.findByIdAndUpdate().exec.mockResolvedValue(updatedUser);
 
-      expect(updated).toBeDefined();
-      expect(updated?.settings?.theme).toBe('dark');
-      expect(updated?.settings?.voiceRate).toBe(1.2);
-      expect(updated?.settings?.sound).toBe(true);
+      const result = await service.updateSettings('user-mongo-id', settings);
+
+      expect(result).toBeDefined();
+      expect(result?.settings?.theme).toBe('dark');
+      expect(result?.settings?.voiceRate).toBe(1.2);
+      expect(result?.settings?.sound).toBe(true);
+      expect(mockUserModel.findByIdAndUpdate).toHaveBeenCalledWith(
+        'user-mongo-id',
+        { $set: { settings } },
+        { new: true }
+      );
+    });
+
+    it('should update partial settings', async () => {
+      const partialSettings = { theme: 'dark' as const };
+      mockUserModel.findByIdAndUpdate().exec.mockResolvedValue({
+        ...mockUser,
+        settings: { ...mockUser.settings, ...partialSettings },
+      });
+
+      await service.updateSettings('user-mongo-id', partialSettings);
+
+      expect(mockUserModel.findByIdAndUpdate).toHaveBeenCalledWith(
+        'user-mongo-id',
+        { $set: { settings: partialSettings } },
+        { new: true }
+      );
     });
   });
 
   describe('updatePassword', () => {
     it('should hash and update password', async () => {
-      const created = await service.create({
-        email: 'test@example.com',
-        password: 'oldPassword',
-      });
-
       const newPassword = 'newPassword123';
-      const updated = await service.updatePassword(
-        created._id.toString(),
-        newPassword
-      );
+      const hashedPassword = 'hashedNewPassword123';
+      (bcrypt.hash as jest.Mock).mockResolvedValue(hashedPassword);
 
-      expect(updated).toBeDefined();
+      const updatedUser = { ...mockUser, password: hashedPassword };
+      mockUserModel.findByIdAndUpdate().exec.mockResolvedValue(updatedUser);
 
-      // Verify password was hashed
-      const userWithPassword = await service.findByEmailWithPassword(
-        'test@example.com'
-      );
-      expect(userWithPassword).toBeDefined();
+      const result = await service.updatePassword('user-mongo-id', newPassword);
 
-      const isMatch = await bcrypt.compare(
-        newPassword,
-        (userWithPassword as any).password
+      expect(result).toBeDefined();
+      expect(bcrypt.hash).toHaveBeenCalledWith(newPassword, 10);
+      expect(mockUserModel.findByIdAndUpdate).toHaveBeenCalledWith(
+        'user-mongo-id',
+        { password: hashedPassword },
+        { new: true }
       );
-      expect(isMatch).toBe(true);
+    });
+
+    it('should return null for non-existent user', async () => {
+      (bcrypt.hash as jest.Mock).mockResolvedValue('hashedPassword');
+      mockUserModel.findByIdAndUpdate().exec.mockResolvedValue(null);
+
+      const result = await service.updatePassword('non-existent-id', 'newPassword');
+
+      expect(result).toBeNull();
     });
   });
 
   describe('remove', () => {
     it('should delete user', async () => {
-      const created = await service.create({
-        email: 'test@example.com',
-        password: 'password',
-      });
+      mockUserModel.findByIdAndDelete().exec.mockResolvedValue(mockUser);
 
-      const deleted = await service.remove(created._id.toString());
+      const result = await service.remove('user-mongo-id');
 
-      expect(deleted).toBeDefined();
-      expect(deleted?._id.toString()).toBe(created._id.toString());
-
-      // Verify user is deleted
-      const found = await service.findOne(created._id.toString());
-      expect(found).toBeNull();
+      expect(result).toBeDefined();
+      expect(result?.email).toBe('test@example.com');
+      expect(mockUserModel.findByIdAndDelete).toHaveBeenCalledWith('user-mongo-id');
     });
 
     it('should return null for non-existent ID', async () => {
-      const deleted = await service.remove('507f1f77bcf86cd799439011');
-      expect(deleted).toBeNull();
+      mockUserModel.findByIdAndDelete().exec.mockResolvedValue(null);
+
+      const result = await service.remove('non-existent-id');
+
+      expect(result).toBeNull();
     });
   });
 });
