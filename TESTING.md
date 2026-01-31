@@ -1,60 +1,150 @@
 # Tests - FlexiCoach
 
-## Statut des tests (Issue #39 - Google OAuth)
+## Statut des tests
 
 ### ✅ Tests qui passent
 
-**Frontend** : Tous les tests passent
+**Frontend** : Tous les tests passent (235 tests, 3 skipped)
 - Auth tests : OK
-- Component tests : OK
-- Service tests : OK
+- Component tests : OK (calendar, completion, login, signup, routine-player, routine-list, routine-editor, etc.)
+- Service tests : OK (auth.service, session.service, stats.service, sw-update.service)
+- Guard/Interceptor tests : OK (auth.guard, auth.interceptor)
 
-**Backend - Tests Auth** : Tous les tests passent
-- ✅ AuthService (8/8 tests)
-  - should be defined
-  - should register a new user with valid data
-  - should throw ConflictException if email already exists
-  - should login with valid credentials
-  - should throw UnauthorizedException if password is invalid
-  - should throw UnauthorizedException if user does not exist
-  - should return user without password for valid credentials
-  - should return null for invalid credentials
+**Backend** : Tous les tests passent (151 tests)
+- ✅ AuthService (8 tests)
 - ✅ AuthController tests : OK
 - ✅ AdminGuard tests : OK
+- ✅ RoutinesService (19 tests) - Tests avec mocks
+- ✅ RoutinesController tests : OK
+- ✅ UsersService (15 tests) - Tests avec mocks
+- ✅ UsersController tests : OK
+- ✅ SessionsService (26 tests) - Tests avec mocks
+- ✅ SessionsController tests : OK
+- ✅ AdminService tests : OK
+- ✅ AdminController tests : OK
+- ✅ AllExceptionsFilter tests : OK
+- ✅ HttpLoggerMiddleware tests : OK
+- ✅ AppService/AppController tests : OK
 
-### ⚠️ Problème connu (non lié à OAuth)
+### Architecture des tests
 
-**MongoDB Memory Server ne démarre pas** sur cet environnement (erreur système -88).
+Les tests des services backend (RoutinesService, UsersService, SessionsService) utilisent des mocks Mongoose au lieu de MongoDB Memory Server. Cette approche :
+- ✅ Fonctionne sur toutes les architectures (ARM64/Apple Silicon, x86_64)
+- ✅ Est plus rapide à exécuter
+- ✅ Isole les tests unitaires des dépendances externes
+- ✅ Suit les meilleures pratiques de tests unitaires
 
-Tests affectés (qui utilisent MongoDB Memory Server) :
-- routines.service.spec.ts (53 tests)
-- users.service.spec.ts
-- sessions.service.spec.ts
+Les tests d'intégration avec une vraie base de données sont couverts par les tests E2E.
 
-**Ce problème existait AVANT l'implémentation OAuth et n'est PAS causé par nos modifications.**
+## Commandes de test
 
-#### Analyse de la cause
+### Tests unitaires
 
-L'erreur `-88` (ENOSYS) est causée par un problème d'architecture :
-- Système : ARM64 (Apple Silicon)
-- MongoDB installé : x86_64 architecture
-- Erreur : `spawn Unknown system error -88`
+```bash
+# Tous les tests unitaires
+npm run test
 
-Cette erreur se produit lorsque MongoDB Memory Server essaie de lancer le binaire mongod, mais échoue en raison d'une incompatibilité d'architecture entre ARM64 et x86_64 dans le contexte des tests Jest.
+# Tests unitaires backend uniquement
+npm run test:backend
 
-#### Tentatives de correction effectuées
+# Tests unitaires frontend uniquement
+npm run test:frontend
 
-1. **Configuration `.mongodb-memory-server.json`** : Ajout d'un fichier de configuration pour forcer l'utilisation du binaire système (`/usr/local/bin/mongod`)
-2. **Variable d'environnement** : Test avec `MONGOMS_SYSTEM_BINARY=/usr/local/bin/mongod`
+# Mode watch (développement)
+npm run test:watch:backend
+npm run test:watch:frontend
 
-Ces configurations n'ont pas résolu le problème car l'erreur est au niveau du spawn système dans l'environnement de test Jest.
+# Avec couverture de code
+npm run test:cov:backend
+npm run test:cov:frontend
+```
 
-#### Solution recommandée
+### Tests E2E
 
-Pour résoudre ce problème dans un environnement de production ou CI/CD :
-- Installer MongoDB ARM64 natif pour Apple Silicon
-- Ou utiliser une vraie base MongoDB dans les tests plutôt que Memory Server
-- Ou exécuter les tests dans un conteneur Docker avec l'architecture appropriée
+```bash
+# Tests E2E backend (nécessite backend en cours d'exécution)
+npm run test:e2e:backend
+
+# Tests E2E frontend (Playwright)
+npm run test:e2e:frontend
+
+# Tous les tests (unitaires + E2E)
+npm run test:all
+```
+
+### Tests E2E complets (production)
+
+Pour tester l'application complète en mode production avec MongoDB local :
+
+```bash
+./test-e2e-local.sh
+```
+
+Ce script :
+- ✅ Vérifie que MongoDB est installé (Homebrew)
+- ✅ Nettoie la base de données
+- ✅ Build le backend et le frontend en mode production
+- ✅ Démarre le backend sur le port 3000
+- ✅ Exécute tous les tests automatiques
+- ✅ Crée un utilisateur admin
+- ✅ Charge les routines de test
+
+## Structure des tests
+
+```
+apps/
+├── backend/src/
+│   ├── auth/
+│   │   ├── auth.service.spec.ts      # Tests auth service
+│   │   ├── auth.controller.spec.ts   # Tests auth controller
+│   │   └── admin.guard.spec.ts       # Tests admin guard
+│   ├── routines/
+│   │   ├── routines.service.spec.ts  # Tests routines (mocks)
+│   │   └── routines.controller.spec.ts
+│   ├── sessions/
+│   │   ├── sessions.service.spec.ts  # Tests sessions (mocks)
+│   │   └── sessions.controller.spec.ts
+│   ├── users/
+│   │   ├── users.service.spec.ts     # Tests users (mocks)
+│   │   └── users.controller.spec.ts
+│   ├── admin/
+│   │   ├── admin.service.spec.ts
+│   │   └── admin.controller.spec.ts
+│   ├── app/
+│   │   ├── app.service.spec.ts
+│   │   └── app.controller.spec.ts
+│   └── common/
+│       ├── filters/all-exceptions.filter.spec.ts
+│       └── middleware/http-logger.middleware.spec.ts
+├── backend-e2e/src/backend/
+│   ├── auth.spec.ts                  # E2E auth
+│   ├── users.spec.ts                 # E2E users
+│   ├── sessions.spec.ts              # E2E sessions
+│   ├── routines.spec.ts              # E2E routines
+│   ├── routines-editor.spec.ts       # E2E routine editing
+│   └── backend.spec.ts               # E2E général
+├── frontend/src/app/
+│   ├── components/
+│   │   ├── calendar/calendar.component.spec.ts
+│   │   ├── completion/completion.component.spec.ts
+│   │   ├── login/login.component.spec.ts
+│   │   ├── signup/signup.component.spec.ts
+│   │   ├── routine-player/routine-player.component.spec.ts
+│   │   ├── routine-list/routine-list.component.spec.ts
+│   │   ├── routine-editor/routine-editor.component.spec.ts
+│   │   └── ... (13 component tests)
+│   └── services/
+│       ├── auth.service.spec.ts
+│       ├── session.service.spec.ts
+│       ├── stats.service.spec.ts
+│       └── sw-update.service.spec.ts
+└── frontend-e2e/src/
+    ├── auth.spec.ts                  # E2E auth flows
+    ├── navigation.spec.ts            # E2E navigation
+    ├── routines.spec.ts              # E2E routines
+    ├── admin.spec.ts                 # E2E admin panel
+    └── stats.spec.ts                 # E2E statistics
+```
 
 ## Comment tester manuellement
 
@@ -62,7 +152,7 @@ Pour résoudre ce problème dans un environnement de production ou CI/CD :
 
 ```bash
 # Démarrer le backend
-npm start
+npx nx serve backend
 
 # Le backend démarre sur http://localhost:3000
 ```
@@ -71,7 +161,7 @@ npm start
 
 ```bash
 # Démarrer le frontend
-nx serve frontend
+npx nx serve frontend
 
 # Le frontend démarre sur http://localhost:4200
 ```
@@ -86,7 +176,7 @@ nx serve frontend
 6. Vérifier la redirection vers l'app avec session active
 7. Vérifier que l'avatar Google s'affiche dans le menu utilisateur
 
-### 4. Test de liaison automatique
+### 4. Test de liaison automatique de compte
 
 1. Créer un compte avec email/password
 2. Se déconnecter
@@ -96,75 +186,71 @@ nx serve frontend
 6. Se déconnecter et se reconnecter avec email/password → devrait fonctionner
 7. Se déconnecter et se reconnecter avec Google → devrait fonctionner
 
-## Tests E2E
+## Configuration des tests
 
-```bash
-# Backend E2E
-npm run test:e2e:backend
+### Backend (Jest)
 
-# Frontend E2E
-npm run test:e2e:frontend
+```typescript
+// apps/backend/jest.config.ts
+{
+  displayName: 'backend',
+  preset: '../../jest.preset.js',
+  testEnvironment: 'node',
+  coverageThreshold: {
+    global: {
+      branches: 80,
+      functions: 80,
+      lines: 80,
+      statements: 80
+    }
+  }
+}
 ```
 
-## Statut de l'implémentation OAuth (Issue #39)
+### Frontend (Vitest)
 
-### ✅ Implémentation complète
+```typescript
+// apps/frontend/vite.config.mts
+{
+  test: {
+    environment: 'jsdom',
+    setupFiles: ['src/test-setup.ts'],
+    include: ['**/*.{test,spec}.{js,ts,tsx}']
+  }
+}
+```
 
-L'implémentation de Google OAuth2 est **TERMINÉE ET FONCTIONNELLE** :
+### Frontend E2E (Playwright)
 
-**Backend** :
-- ✅ Package `passport-google-oauth20` installé
-- ✅ GoogleStrategy créée avec vérifications de sécurité (email vérifié, providerId valide)
-- ✅ Schéma User mis à jour (password optionnel, provider, providerId, avatar)
-- ✅ Méthode `validateOAuthUser()` avec liaison automatique des comptes
-- ✅ Routes OAuth (`/api/auth/google` et `/api/auth/google/callback`)
-- ✅ Protection contre les comptes OAuth sans mot de passe
-- ✅ Tous les tests auth passent (8/8 tests)
+```typescript
+// apps/frontend-e2e/playwright.config.ts
+{
+  baseURL: 'http://localhost:4200',
+  testDir: './src',
+  projects: [
+    { name: 'chromium' },
+    { name: 'firefox' },
+    { name: 'webkit' }
+  ]
+}
+```
 
-**Frontend** :
-- ✅ AuthCallbackComponent créé pour gérer le callback OAuth
-- ✅ Boutons "Se connecter avec Google" ajoutés à Login et Signup
-- ✅ AuthService mis à jour avec méthode `handleOAuthCallback()`
-- ✅ UserMenuComponent affiche l'avatar Google quand disponible
-- ✅ Styles et icône Google ajoutés
-- ✅ Route `/auth/callback` configurée
-- ✅ Tous les tests frontend passent
+## Couverture de code
 
-**Documentation** :
-- ✅ Guide complet de configuration Google Cloud Console (`docs/google-oauth-setup.md`)
-- ✅ Variables d'environnement documentées dans `.env.example`
-- ✅ Documentation des tests dans `TESTING.md`
+Les seuils de couverture sont configurés à 80% pour le backend :
+- branches: 80%
+- functions: 80%
+- lines: 80%
+- statements: 80%
 
-### 🎯 Prêt pour validation utilisateur
-
-L'implémentation OAuth est prête pour :
-1. Configuration des identifiants Google Cloud Console (suivre `docs/google-oauth-setup.md`)
-2. Test manuel du flow OAuth complet
-3. Validation et commit
-
-### ⚠️ Note sur les tests MongoDB Memory Server
-
-Les 53 tests qui échouent (routines/users/sessions services) sont dus à un problème d'architecture système (ARM64 vs x86_64) **non lié à l'implémentation OAuth**. Ces tests échouaient AVANT l'implémentation OAuth.
-
-**Preuve que l'OAuth fonctionne** :
-- Tous les tests auth (8/8) passent ✅
-- Tous les tests controller passent ✅
-- Tous les tests frontend passent ✅
-- Le code OAuth n'a aucune dépendance sur les services affectés
-
-## Commandes de test
+Pour générer les rapports de couverture :
 
 ```bash
-# Tous les tests
-npm run test:all
-
-# Tests unitaires backend uniquement
-npm run test:backend
-
-# Tests unitaires frontend uniquement
-npm run test:frontend
-
-# Tests avec coverage
+# Backend
 npm run test:cov:backend
+# Rapport dans: coverage/apps/backend/
+
+# Frontend
 npm run test:cov:frontend
+# Rapport dans: coverage/apps/frontend/
 ```
