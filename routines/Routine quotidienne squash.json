@@ -1,0 +1,135 @@
+{
+  "version": "1.0",
+  "routine": {
+    "name": "Routine quotidienne squash",
+    "description": "Routine quotidienne d’entretien pour jeune joueur de squash : mobilité, gainage et prévention des blessures.",
+    "category": "maintenance",
+    "difficulty": "beginner",
+    "icon": "",
+    "steps": [
+      {
+        "name": "Respiration + centrage",
+        "seconds": 60,
+        "mode": "respiration",
+        "text": "Debout ou assis. Inspire par le nez, expire lentement. Sens le bassin et les appuis.",
+        "cues": [
+          {
+            "at": 30,
+            "say": "Relâche les épaules, posture stable."
+          }
+        ]
+      },
+      {
+        "name": "Mobilité cervicale",
+        "seconds": 60,
+        "mode": "mouvement",
+        "text": "Inclinaisons et rotations lentes de la tête. Sans à-coups.",
+        "cues": [
+          {
+            "at": 30,
+            "say": "Change de sens."
+          }
+        ]
+      },
+      {
+        "name": "Mobilité thoracique",
+        "seconds": 60,
+        "mode": "mouvement",
+        "text": "Bras croisés. Rotations contrôlées du buste droite/gauche. Respiration fluide.",
+        "cues": [
+          {
+            "at": 30,
+            "say": "Garde le bassin stable."
+          }
+        ]
+      },
+      {
+        "name": "Ouverture de hanches",
+        "seconds": 60,
+        "mode": "mouvement",
+        "text": "Cercles de hanches amples et lents. 30 s dans chaque sens.",
+        "cues": [
+          {
+            "at": 30,
+            "say": "Change de sens."
+          }
+        ]
+      },
+      {
+        "name": "Étirement ischio-jambiers",
+        "seconds": 70,
+        "mode": "statique",
+        "text": "Talon posé devant. Bascule du bassin, dos droit. 30 s par jambe.",
+        "cues": [
+          {
+            "at": 30,
+            "say": "Change de jambe."
+          },
+          {
+            "at": 40,
+            "say": "Respire profondément."
+          }
+        ]
+      },
+      {
+        "name": "Étirement fléchisseurs de hanche",
+        "seconds": 70,
+        "mode": "statique",
+        "text": "Fente basse. Bassin lourd, buste droit. 30 s par jambe.",
+        "cues": [
+          {
+            "at": 30,
+            "say": "Change de jambe."
+          },
+          {
+            "at": 40,
+            "say": "Garde le bassin stable."
+          }
+        ]
+      },
+      {
+        "name": "Gainage frontal",
+        "seconds": 60,
+        "mode": "statique",
+        "text": "Planche sur les coudes. Corps aligné, respiration calme.",
+        "cues": [
+          {
+            "at": 30,
+            "say": "Engage légèrement les abdos."
+          }
+        ]
+      },
+      {
+        "name": "Gainage latéral",
+        "seconds": 60,
+        "mode": "statique",
+        "text": "Planche latérale. 30 s côté droit, 30 s côté gauche.",
+        "cues": [
+          {
+            "at": 30,
+            "say": "Change de côté."
+          }
+        ]
+      },
+      {
+        "name": "Équilibre et contrôle",
+        "seconds": 60,
+        "mode": "statique",
+        "text": "Équilibre sur une jambe, genou légèrement fléchi. Alterne.",
+        "cues": [
+          {
+            "at": 30,
+            "say": "Change de jambe."
+          }
+        ]
+      },
+      {
+        "name": "Retour au calme",
+        "seconds": 30,
+        "mode": "respiration",
+        "text": "Respiration lente. Sensations de relâchement et de stabilité.",
+        "cues": []
+      }
+    ]
+  }
+}

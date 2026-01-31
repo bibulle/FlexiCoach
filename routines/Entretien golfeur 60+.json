@@ -1,0 +1,131 @@
+{
+  "version": "1.0",
+  "routine": {
+    "name": "Entretien golfeur 60+",
+    "description": "Routine douce d’entretien pour golfeur : mobilité, rotation et stabilité pour préserver le swing.",
+    "category": "maintenance",
+    "difficulty": "beginner",
+    "icon": "",
+    "steps": [
+      {
+        "name": "Respiration + posture",
+        "seconds": 60,
+        "mode": "respiration",
+        "text": "Debout, pieds largeur des hanches. Grandis-toi. Inspire par le nez, expire lentement par la bouche.",
+        "cues": [
+          {
+            "at": 30,
+            "say": "Relâche les épaules et allonge la nuque."
+          }
+        ]
+      },
+      {
+        "name": "Mobilité cervicale",
+        "seconds": 60,
+        "mode": "mouvement",
+        "text": "Mouvements lents de la tête : droite, gauche, puis petits cercles. Sans forcer.",
+        "cues": [
+          {
+            "at": 30,
+            "say": "Change de sens, reste fluide."
+          }
+        ]
+      },
+      {
+        "name": "Rotations thoraciques debout",
+        "seconds": 60,
+        "mode": "mouvement",
+        "text": "Bras croisés sur la poitrine. Rotation douce du buste droite/gauche. Bassin stable.",
+        "cues": [
+          {
+            "at": 30,
+            "say": "Respire et garde les hanches fixes."
+          }
+        ]
+      },
+      {
+        "name": "Cercles de hanches",
+        "seconds": 60,
+        "mode": "mouvement",
+        "text": "Mains sur les hanches. Cercles lents et amples. 30 s dans chaque sens.",
+        "cues": [
+          {
+            "at": 30,
+            "say": "Change de sens."
+          }
+        ]
+      },
+      {
+        "name": "Étirement ischio-jambiers",
+        "seconds": 70,
+        "mode": "statique",
+        "text": "Debout, talon posé devant. 30 s jambe droite, 10 s transition, 30 s jambe gauche.",
+        "cues": [
+          {
+            "at": 30,
+            "say": "Change de jambe."
+          },
+          {
+            "at": 40,
+            "say": "Reprends doucement côté gauche."
+          }
+        ]
+      },
+      {
+        "name": "Ouverture des épaules",
+        "seconds": 60,
+        "mode": "mouvement",
+        "text": "Bras tendus devant, ouvre les bras sur l’inspiration, referme sur l’expiration.",
+        "cues": [
+          {
+            "at": 30,
+            "say": "Amplitude confortable, sans tension."
+          }
+        ]
+      },
+      {
+        "name": "Équilibre unipodal",
+        "seconds": 60,
+        "mode": "statique",
+        "text": "Debout sur une jambe. 30 s jambe droite, 30 s jambe gauche. Regard fixe.",
+        "cues": [
+          {
+            "at": 30,
+            "say": "Change de jambe."
+          }
+        ]
+      },
+      {
+        "name": "Gainage oblique léger",
+        "seconds": 60,
+        "mode": "statique",
+        "text": "Debout, mains sur les hanches. Engage légèrement les abdos en rotation isométrique.",
+        "cues": [
+          {
+            "at": 30,
+            "say": "Change le sens de la rotation."
+          }
+        ]
+      },
+      {
+        "name": "Étirement dos et épaules",
+        "seconds": 60,
+        "mode": "statique",
+        "text": "Bras devant, arrondis doucement le dos. Respiration lente.",
+        "cues": [
+          {
+            "at": 30,
+            "say": "Relâche la nuque."
+          }
+        ]
+      },
+      {
+        "name": "Retour au calme",
+        "seconds": 30,
+        "mode": "respiration",
+        "text": "Respiration calme. Sensations de légèreté et de mobilité.",
+        "cues": []
+      }
+    ]
+  }
+}
