@@ -25,12 +25,18 @@
 .logo {
   text-decoration: none;
   display: flex;
-  align-items: baseline;
-  gap: 4px;
+  align-items: center;
+  gap: 8px;
 
   &:hover .logo-text {
     color: #357abd;
   }
+}
+
+.logo-icon {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
 }
 
 .logo-text {
@@ -119,6 +125,11 @@
 
   .header-left {
     gap: 16px;
+  }
+
+  .logo-icon {
+    width: 30px;
+    height: 30px;
   }
 
   .logo-text {
