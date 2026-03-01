@@ -55,6 +55,16 @@ describe('HeaderComponent', () => {
     expect(logoText.textContent).toBe('FlexiCoach');
   });
 
+  it('should display logo icon image', () => {
+    fixture.detectChanges();
+
+    const logoIcon = fixture.nativeElement.querySelector('.logo-icon');
+    expect(logoIcon).toBeTruthy();
+    expect(logoIcon.tagName.toLowerCase()).toBe('img');
+    expect(logoIcon.getAttribute('src')).toBe('/logo.svg');
+    expect(logoIcon.getAttribute('alt')).toBe('FlexiCoach');
+  });
+
   it('should display navigation when authenticated', () => {
     mockAuthService._setAuthenticated(true);
     fixture.detectChanges();
