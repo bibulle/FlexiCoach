@@ -46,6 +46,9 @@ Thumbs.db
 
 .angular
 
+# Claude Code local settings
+.claude/settings.local.json
+
 vite.config.*.timestamp*
 vitest.config.*.timestamp*
 
