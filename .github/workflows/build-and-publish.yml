@@ -17,9 +17,34 @@ env:
   K8S_FILE: flexicoach/30-deployment.yaml
 
 jobs:
-  # define job to build and publish docker image
+  # Run tests before building
+  test:
+    name: Run tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run backend unit tests
+        run: npx nx test backend
+
+      - name: Run frontend unit tests
+        run: npx nx test frontend
+
+  # Build and publish docker image (only after tests pass)
   build-and-push-docker-image:
     name: Build Docker image and push to repositories
+    needs: test
     # run only when code is compiling and tests are passing
     runs-on: ubuntu-latest
 

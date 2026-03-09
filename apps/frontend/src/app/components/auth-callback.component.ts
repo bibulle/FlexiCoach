@@ -40,8 +40,7 @@ export class AuthCallbackComponent implements OnInit {
 
   ngOnInit(): void {
     this.route.queryParams.subscribe(params => {
-      const token = params['token'];
-      const userJson = params['user'];
+      const code = params['code'];
       const error = params['error'];
 
       if (error) {
@@ -49,14 +48,16 @@ export class AuthCallbackComponent implements OnInit {
         return;
       }
 
-      if (token && userJson) {
-        try {
-          this.authService.handleOAuthCallback(token, userJson);
-          this.router.navigate(['/']);
-        } catch (err) {
-          console.error('Error handling OAuth callback:', err);
-          this.errorMessage = 'Une erreur est survenue lors de l\'authentification.';
-        }
+      if (code) {
+        this.authService.exchangeOAuthCode(code).subscribe({
+          next: () => {
+            this.router.navigate(['/']);
+          },
+          error: (err) => {
+            console.error('Error exchanging OAuth code:', err);
+            this.errorMessage = 'Une erreur est survenue lors de l\'authentification.';
+          },
+        });
       } else {
         this.errorMessage = 'Paramètres d\'authentification manquants.';
       }

@@ -1,17 +1,33 @@
-import { Controller, Post, Get, Body, HttpCode, HttpStatus, UseGuards, Req, Res } from '@nestjs/common';
+import { Controller, Post, Get, Body, HttpCode, HttpStatus, UseGuards, Req, Res, UnauthorizedException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { Throttle } from '@nestjs/throttler';
 import { AuthGuard } from '@nestjs/passport';
 import { Response } from 'express';
 import { AuthService } from './auth.service';
+import { AuthCodeStore } from './auth-code.store';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
+import { ExchangeCodeDto } from './dto/exchange-code.dto';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import { CurrentUser } from './current-user.decorator';
 import { User } from '../schemas/user.schema';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private authService: AuthService) {}
+  private readonly frontendUrl: string;
+  private readonly adminEmails: string[];
+
+  constructor(
+    private authService: AuthService,
+    private authCodeStore: AuthCodeStore,
+    private configService: ConfigService,
+  ) {
+    this.frontendUrl = this.configService.get<string>('FRONTEND_URL') || 'http://localhost:4200';
+    this.adminEmails = (this.configService.get<string>('ADMIN_EMAILS') || '')
+      .split(',')
+      .map(email => email.trim())
+      .filter(email => email.length > 0);
+  }
 
   @Post('register')
   @Throttle({ default: { limit: 3, ttl: 3600000 } }) // 3 requests per hour
@@ -29,10 +45,20 @@ export class AuthController {
   @Get('is-admin')
   @UseGuards(JwtAuthGuard)
   async isAdmin(@CurrentUser() user: User) {
-    const adminEmails = (process.env.ADMIN_EMAILS || '')
-      .split(',')
-      .map(email => email.trim());
-    return { isAdmin: adminEmails.includes(user.email) };
+    return { isAdmin: this.adminEmails.includes(user.email) };
+  }
+
+  @Post('exchange')
+  @HttpCode(HttpStatus.OK)
+  async exchangeCode(@Body() exchangeCodeDto: ExchangeCodeDto) {
+    const result = this.authCodeStore.exchangeCode(exchangeCodeDto.code);
+    if (!result) {
+      throw new UnauthorizedException('Invalid or expired authorization code');
+    }
+    return {
+      access_token: result.token,
+      user: result.user,
+    };
   }
 
   @Get('google')
@@ -47,32 +73,23 @@ export class AuthController {
     try {
       const user = req.user;
 
-      // Générer un JWT token
+      // Générer un JWT token via la méthode publique
       const payload = { sub: user._id.toString(), email: user.email };
-      const token = this.authService['jwtService'].sign(payload);
+      const token = this.authService.generateToken(payload);
 
-      // URL du frontend (dev ou prod)
-      const frontendUrl = process.env.NODE_ENV === 'production'
-        ? 'https://coach.bibulle.fr'
-        : 'http://localhost:4200';
-
-      // Encoder les données utilisateur pour les passer en query param
-      const userJson = encodeURIComponent(JSON.stringify({
+      // Générer un code d'échange temporaire (single-use, 60s TTL)
+      const code = this.authCodeStore.generateCode(token, {
         _id: user._id.toString(),
         email: user.email,
         displayName: user.displayName,
         avatar: user.avatar,
-      }));
+      });
 
-      // Rediriger vers le frontend avec le token et les données utilisateur
-      res.redirect(`${frontendUrl}/auth/callback?token=${token}&user=${userJson}`);
+      // Rediriger vers le frontend avec le code (pas le token)
+      res.redirect(`${this.frontendUrl}/auth/callback?code=${code}`);
     } catch (error) {
       // En cas d'erreur, rediriger vers login avec message d'erreur
-      const frontendUrl = process.env.NODE_ENV === 'production'
-        ? 'https://coach.bibulle.fr'
-        : 'http://localhost:4200';
-
-      res.redirect(`${frontendUrl}/login?error=${encodeURIComponent('Erreur lors de l\'authentification Google')}`);
+      res.redirect(`${this.frontendUrl}/login?error=${encodeURIComponent('Erreur lors de l\'authentification Google')}`);
     }
   }
 }

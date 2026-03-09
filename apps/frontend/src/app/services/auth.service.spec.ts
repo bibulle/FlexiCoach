@@ -153,6 +153,36 @@ describe('AuthService', () => {
     });
   });
 
+  describe('exchangeOAuthCode', () => {
+    it('should make POST request to exchange endpoint and handle response', async () => {
+      const mockResponse: AuthResponse = {
+        access_token: 'oauth-token',
+        user: {
+          _id: '456',
+          email: 'oauth@example.com',
+          displayName: 'OAuth User',
+          avatar: 'https://avatar.url',
+        },
+      };
+
+      const responsePromise = firstValueFrom(service.exchangeOAuthCode('temp-code-123'));
+
+      const req = httpMock.expectOne('/api/auth/exchange');
+      expect(req.request.method).toBe('POST');
+      expect(req.request.body).toEqual({ code: 'temp-code-123' });
+      req.flush(mockResponse);
+
+      // handleAuthResponse() calls checkAdminStatus() which makes a GET request
+      const adminReq = httpMock.expectOne('/api/auth/is-admin');
+      adminReq.flush({ isAdmin: false });
+
+      const response = await responsePromise;
+      expect(response).toEqual(mockResponse);
+      expect(localStorage.getItem('auth_token')).toBe('oauth-token');
+      expect(service.isAuthenticated()).toBe(true);
+    });
+  });
+
   describe('getAllUsers', () => {
     it('should call admin endpoint', async () => {
       const mockUsers = [

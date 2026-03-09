@@ -175,6 +175,18 @@ describe('AuthService', () => {
     });
   });
 
+  describe('generateToken', () => {
+    it('should call jwtService.sign and return the token', () => {
+      const payload = { sub: 'user123', email: 'test@example.com' };
+      jwtService.sign.mockReturnValue('generated-jwt-token');
+
+      const result = service.generateToken(payload);
+
+      expect(jwtService.sign).toHaveBeenCalledWith(payload);
+      expect(result).toBe('generated-jwt-token');
+    });
+  });
+
   describe('validateUser', () => {
     it('should return user without password for valid credentials', async () => {
       const email = 'user@example.com';
