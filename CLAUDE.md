@@ -98,6 +98,33 @@ Ne demander de tester que lorsque les environnements sont fonctionnels et stable
 
 ---
 
+## Lancement des serveurs dans un worktree
+
+Dans un git worktree, le fichier `.env` et le dossier `dist/` ne sont pas présents par défaut.
+Suivre ces étapes dans le répertoire du worktree avant de lancer les serveurs :
+
+### Backend
+```bash
+# 1. Copier le .env depuis le repo principal
+cp /Users/eric/Documents/Dev/FlexiCoach/.env .env
+
+# 2. Builder le backend (le serve nx dépend d'un build préalable)
+npx nx build backend
+
+# 3. Lancer le backend directement
+node dist/apps/backend/main.js &
+```
+
+### Frontend
+Le frontend se lance normalement via `preview_start` (`.claude/launch.json`) sans prérequis supplémentaire.
+
+### Pourquoi ces étapes ?
+- Le backend NestJS charge le `.env` depuis la racine du worktree (`ConfigModule.forRoot({ envFilePath: '.env' })`)
+- `nx serve backend` exécute `node dist/apps/backend/main.js` sans recompiler si le dist est absent
+- Sans `.env`, le backend crashe au démarrage sur `OAuth2Strategy requires a clientID option`
+
+---
+
 ## Méthodologie attendue
 - Travailler par étapes : analyse → proposition → implémentation → validation
 - Justifier les choix effectués
