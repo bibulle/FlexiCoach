@@ -106,12 +106,9 @@ export class AuthService {
     return this.http.patch(`/api/admin/users/${userId}/password`, { newPassword });
   }
 
-  handleOAuthCallback(token: string, userJson: string): void {
-    const user = JSON.parse(decodeURIComponent(userJson));
-    localStorage.setItem(this.TOKEN_KEY, token);
-    localStorage.setItem(this.USER_KEY, JSON.stringify(user));
-    this.currentUserSubject.next(user);
-    this.isAuthenticated.set(true);
-    this.checkAdminStatus();
+  exchangeOAuthCode(code: string): Observable<AuthResponse> {
+    return this.http.post<AuthResponse>('/api/auth/exchange', { code }).pipe(
+      tap((response) => this.handleAuthResponse(response))
+    );
   }
 }
