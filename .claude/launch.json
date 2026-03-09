@@ -9,8 +9,8 @@
     },
     {
       "name": "backend",
-      "runtimeExecutable": "npx",
-      "runtimeArgs": ["nx", "serve", "backend"],
+      "runtimeExecutable": "bash",
+      "runtimeArgs": ["-c", "npx nx build backend --configuration=development && node dist/apps/backend/main.js"],
       "port": 3000
     }
   ]
