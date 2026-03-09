@@ -1,5 +1,6 @@
 const { NxAppWebpackPlugin } = require('@nx/webpack/app-plugin');
 const { join } = require('path');
+const webpack = require('webpack');
 
 module.exports = {
   output: {
@@ -10,6 +11,10 @@ module.exports = {
     }),
   },
   plugins: [
+    new webpack.IgnorePlugin({ resourceRegExp: /^@nestjs\/microservices$/ }),
+    new webpack.IgnorePlugin({ resourceRegExp: /^@nestjs\/microservices\/microservices-module$/ }),
+    new webpack.IgnorePlugin({ resourceRegExp: /^@nestjs\/websockets$/ }),
+    new webpack.IgnorePlugin({ resourceRegExp: /^@nestjs\/websockets\/socket-module$/ }),
     new NxAppWebpackPlugin({
       target: 'node',
       compiler: 'tsc',
