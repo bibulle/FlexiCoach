@@ -61,7 +61,11 @@ describe('RoutineEditorComponent', () => {
   });
 
   describe('Issue #34: MongoDB _id stripping on import', () => {
-    it.skip('should strip _id fields from imported routine data', (done) => {
+    afterEach(() => {
+      vi.unstubAllGlobals();
+    });
+
+    it('should strip _id fields from imported routine data', () => {
       const importData = {
         version: '1.0',
         routine: {
@@ -100,18 +104,15 @@ describe('RoutineEditorComponent', () => {
       const blob = new Blob([JSON.stringify(importData)], { type: 'application/json' });
       const file = new File([blob], 'test.routine.json', { type: 'application/json' });
 
-      // Create a mock FileReader
-      const mockFileReader = {
-        readAsText: vi.fn(function(this: any) {
-          setTimeout(() => {
-            this.result = JSON.stringify(importData);
-            this.onload({ target: { result: JSON.stringify(importData) } });
-          }, 0);
+      // Mock FileReader: readAsText triggers onload synchronously
+      // (the component sets reader.onload before calling reader.readAsText)
+      const mockFileReader: any = {
+        readAsText: vi.fn(function () {
+          mockFileReader.onload({ target: { result: JSON.stringify(importData) } });
         }),
         onload: null as any,
       };
-
-      vi.spyOn(window as any, 'FileReader').mockImplementation(() => mockFileReader);
+      vi.stubGlobal('FileReader', vi.fn(() => mockFileReader));
 
       fixture.detectChanges();
 
@@ -123,33 +124,29 @@ describe('RoutineEditorComponent', () => {
 
       component.onImportFile(event);
 
-      setTimeout(() => {
-        // Check that form was populated
-        expect(component.routineForm.get('name')?.value).toBe('Test Routine');
-        expect(component.steps.length).toBe(2);
+      // Assertions are synchronous — onload was triggered immediately by readAsText
+      expect(component.routineForm.get('name')?.value).toBe('Test Routine');
+      expect(component.steps.length).toBe(2);
 
-        // Verify _id fields are NOT in the form data
-        const formValue = component.routineForm.value;
-        expect(formValue._id).toBeUndefined();
+      // Verify _id fields are NOT in the form data
+      const formValue = component.routineForm.value;
+      expect(formValue._id).toBeUndefined();
 
-        const step1 = component.steps.at(0).value;
-        expect(step1._id).toBeUndefined();
-        expect(step1.name).toBe('Step 1');
+      const step1 = component.steps.at(0).value;
+      expect(step1._id).toBeUndefined();
+      expect(step1.name).toBe('Step 1');
 
-        const step1Cues = component.steps.at(0).get('cues')?.value;
-        expect(step1Cues[0]._id).toBeUndefined();
-        expect(step1Cues[0].at).toBe(10);
-        expect(step1Cues[0].say).toBe('Halfway');
+      const step1Cues = component.steps.at(0).get('cues')?.value;
+      expect(step1Cues[0]._id).toBeUndefined();
+      expect(step1Cues[0].at).toBe(10);
+      expect(step1Cues[0].say).toBe('Halfway');
 
-        const step2 = component.steps.at(1).value;
-        expect(step2._id).toBeUndefined();
-        expect(step2.name).toBe('Step 2');
-
-        done();
-      }, 100);
+      const step2 = component.steps.at(1).value;
+      expect(step2._id).toBeUndefined();
+      expect(step2.name).toBe('Step 2');
     });
 
-    it.skip('should preserve all non-_id fields during import', (done) => {
+    it('should preserve all non-_id fields during import', () => {
       const importData = {
         version: '1.0',
         routine: {
@@ -177,46 +174,38 @@ describe('RoutineEditorComponent', () => {
       const blob = new Blob([JSON.stringify(importData)], { type: 'application/json' });
       const file = new File([blob], 'test.routine.json');
 
-      const mockFileReader = {
-        readAsText: vi.fn(function(this: any) {
-          setTimeout(() => {
-            this.result = JSON.stringify(importData);
-            this.onload({ target: { result: JSON.stringify(importData) } });
-          }, 0);
+      const mockFileReader: any = {
+        readAsText: vi.fn(function () {
+          mockFileReader.onload({ target: { result: JSON.stringify(importData) } });
         }),
         onload: null as any,
       };
-
-      vi.spyOn(window as any, 'FileReader').mockImplementation(() => mockFileReader);
+      vi.stubGlobal('FileReader', vi.fn(() => mockFileReader));
 
       fixture.detectChanges();
 
       const event = { target: { files: [file] } } as any;
       component.onImportFile(event);
 
-      setTimeout(() => {
-        // All fields should be preserved
-        expect(component.routineForm.get('name')?.value).toBe('Test Routine');
-        expect(component.routineForm.get('description')?.value).toBe('Description');
-        expect(component.routineForm.get('category')?.value).toBe('category');
-        expect(component.routineForm.get('difficulty')?.value).toBe('intermediate');
-        expect(component.routineForm.get('icon')?.value).toBe('test-icon');
+      // All fields should be preserved
+      expect(component.routineForm.get('name')?.value).toBe('Test Routine');
+      expect(component.routineForm.get('description')?.value).toBe('Description');
+      expect(component.routineForm.get('category')?.value).toBe('category');
+      expect(component.routineForm.get('difficulty')?.value).toBe('intermediate');
+      expect(component.routineForm.get('icon')?.value).toBe('test-icon');
 
-        const step = component.steps.at(0).value;
-        expect(step.name).toBe('Step Name');
-        expect(step.seconds).toBe(60);
-        expect(step.mode).toBe('respiration');
-        expect(step.text).toBe('Instructions');
+      const step = component.steps.at(0).value;
+      expect(step.name).toBe('Step Name');
+      expect(step.seconds).toBe(60);
+      expect(step.mode).toBe('respiration');
+      expect(step.text).toBe('Instructions');
 
-        const cue = step.cues[0];
-        expect(cue.at).toBe(30);
-        expect(cue.say).toBe('Breathe');
-
-        done();
-      }, 100);
+      const cue = step.cues[0];
+      expect(cue.at).toBe(30);
+      expect(cue.say).toBe('Breathe');
     });
 
-    it.skip('should handle legacy format without _id fields', (done) => {
+    it('should handle legacy format without _id fields', () => {
       const legacyData = {
         name: 'Legacy Routine',
         description: 'Legacy description',
@@ -234,28 +223,21 @@ describe('RoutineEditorComponent', () => {
       const blob = new Blob([JSON.stringify(legacyData)], { type: 'application/json' });
       const file = new File([blob], 'legacy.routine.json');
 
-      const mockFileReader = {
-        readAsText: vi.fn(function(this: any) {
-          setTimeout(() => {
-            this.result = JSON.stringify(legacyData);
-            this.onload({ target: { result: JSON.stringify(legacyData) } });
-          }, 0);
+      const mockFileReader: any = {
+        readAsText: vi.fn(function () {
+          mockFileReader.onload({ target: { result: JSON.stringify(legacyData) } });
         }),
         onload: null as any,
       };
-
-      vi.spyOn(window as any, 'FileReader').mockImplementation(() => mockFileReader);
+      vi.stubGlobal('FileReader', vi.fn(() => mockFileReader));
 
       fixture.detectChanges();
 
       const event = { target: { files: [file] } } as any;
       component.onImportFile(event);
 
-      setTimeout(() => {
-        expect(component.routineForm.get('name')?.value).toBe('Legacy Routine');
-        expect(component.steps.length).toBe(1);
-        done();
-      }, 100);
+      expect(component.routineForm.get('name')?.value).toBe('Legacy Routine');
+      expect(component.steps.length).toBe(1);
     });
   });
 
