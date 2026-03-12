@@ -20,7 +20,7 @@ export class StepEditorModalComponent implements OnInit, OnDestroy {
   constructor(private fb: FormBuilder) {
     this.stepForm = this.fb.group({
       name: ['', [Validators.required, Validators.maxLength(100)]],
-      seconds: [30, [Validators.required, Validators.min(5), Validators.max(300)]],
+      seconds: [30, [Validators.required, Validators.min(5)]],
       mode: ['mouvement', Validators.required],
       text: ['', [Validators.required, Validators.minLength(1)]],
       cues: this.fb.array([]),
