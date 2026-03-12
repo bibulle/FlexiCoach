@@ -29,11 +29,10 @@
               type="number"
               formControlName="seconds"
               min="5"
-              max="300"
               class="form-control"
             />
             @if (stepForm.get('seconds')?.invalid && stepForm.get('seconds')?.touched) {
-              <span class="error-text">Entre 5 et 300 secondes</span>
+              <span class="error-text">Minimum 5 secondes</span>
             }
           </div>
 

@@ -36,7 +36,7 @@ export class RoutineEditorComponent implements OnInit {
       category: ['', Validators.maxLength(50)],
       difficulty: ['beginner', Validators.required],
       icon: ['', Validators.maxLength(50)],
-      steps: this.fb.array([], Validators.required),
+      steps: this.fb.array([]),
     });
   }
 
@@ -86,7 +86,7 @@ export class RoutineEditorComponent implements OnInit {
   createStepFormGroup(step?: Step): FormGroup {
     return this.fb.group({
       name: [step?.name || '', [Validators.required, Validators.maxLength(100)]],
-      seconds: [step?.seconds || 30, [Validators.required, Validators.min(5), Validators.max(300)]],
+      seconds: [step?.seconds || 30, [Validators.required, Validators.min(5)]],
       mode: [step?.mode || 'mouvement', Validators.required],
       text: [step?.text || '', [Validators.required, Validators.minLength(1)]],
       cues: [step?.cues || []],

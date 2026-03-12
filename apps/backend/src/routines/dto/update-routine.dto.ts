@@ -7,7 +7,6 @@ import {
   IsEnum,
   ValidateNested,
   Min,
-  Max,
   MinLength,
   MaxLength,
   ArrayMinSize,
@@ -31,7 +30,6 @@ class StepDto {
 
   @IsNumber()
   @Min(5)
-  @Max(300)
   seconds: number;
 
   @IsEnum(['mouvement', 'statique', 'respiration'])
