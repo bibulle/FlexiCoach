@@ -17,6 +17,15 @@
         <div class="user-info">
           <div class="user-email">{{ currentUser()?.email }}</div>
         </div>
+        @if (authService.isAdmin()) {
+          <hr>
+          <button class="menu-item menu-item-admin" (click)="toggleAdminMode()" type="button">
+            <span>Mode administration</span>
+            <span class="toggle-indicator" [class.active]="authService.isAdminMode()">
+              {{ authService.isAdminMode() ? 'ON' : 'OFF' }}
+            </span>
+          </button>
+        }
         <hr>
         <button class="menu-item" (click)="logout()" type="button">
           Déconnexion

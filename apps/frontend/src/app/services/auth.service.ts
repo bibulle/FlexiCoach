@@ -38,6 +38,7 @@ export class AuthService {
   // Signal for reactive components
   public isAuthenticated = signal<boolean>(this.hasToken());
   public isAdmin = signal<boolean>(false);
+  public isAdminMode = signal<boolean>(false);
 
   constructor(private http: HttpClient) {
     // Admin status will be checked after DI resolution to avoid circular dependency
@@ -72,6 +73,7 @@ export class AuthService {
     this.currentUserSubject.next(null);
     this.isAuthenticated.set(false);
     this.isAdmin.set(false);
+    this.isAdminMode.set(false);
   }
 
   getToken(): string | null {
@@ -89,6 +91,10 @@ export class AuthService {
     this.currentUserSubject.next(response.user);
     this.isAuthenticated.set(true);
     this.checkAdminStatus();
+  }
+
+  toggleAdminMode(): void {
+    this.isAdminMode.update(value => !value);
   }
 
   checkAdminStatus(): void {

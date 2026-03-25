@@ -16,14 +16,17 @@ describe('HeaderComponent', () => {
   beforeEach(async () => {
     const isAuthenticatedSignal = signal(true);
     const isAdminSignal = signal(false);
+    const isAdminModeSignal = signal(false);
 
     mockAuthService = {
       isAuthenticated: () => isAuthenticatedSignal(),
       isAdmin: () => isAdminSignal(),
+      isAdminMode: () => isAdminModeSignal(),
       currentUser$: new BehaviorSubject(null),
       logout: vi.fn(),
       _setAuthenticated: (value: boolean) => isAuthenticatedSignal.set(value),
       _setAdmin: (value: boolean) => isAdminSignal.set(value),
+      _setAdminMode: (value: boolean) => isAdminModeSignal.set(value),
     };
 
     await TestBed.configureTestingModule({
@@ -86,9 +89,9 @@ describe('HeaderComponent', () => {
     expect(navLinks.length).toBe(0);
   });
 
-  it('should display Admin link when user is admin', () => {
+  it('should display Admin link when admin mode is on', () => {
     mockAuthService._setAuthenticated(true);
-    mockAuthService._setAdmin(true);
+    mockAuthService._setAdminMode(true);
     fixture.detectChanges();
 
     const navLinks = fixture.nativeElement.querySelectorAll('.nav-link');
@@ -98,9 +101,9 @@ describe('HeaderComponent', () => {
     expect(adminLink).toBeTruthy();
   });
 
-  it('should not display Admin link when user is not admin', () => {
+  it('should not display Admin link when admin mode is off', () => {
     mockAuthService._setAuthenticated(true);
-    mockAuthService._setAdmin(false);
+    mockAuthService._setAdminMode(false);
     fixture.detectChanges();
 
     const navLinks = fixture.nativeElement.querySelectorAll('.nav-link');

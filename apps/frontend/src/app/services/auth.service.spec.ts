@@ -99,6 +99,25 @@ describe('AuthService', () => {
     });
   });
 
+  describe('isAdminMode', () => {
+    it('should be false by default', () => {
+      expect(service.isAdminMode()).toBe(false);
+    });
+  });
+
+  describe('toggleAdminMode', () => {
+    it('should toggle isAdminMode from false to true', () => {
+      service.toggleAdminMode();
+      expect(service.isAdminMode()).toBe(true);
+    });
+
+    it('should toggle isAdminMode back to false', () => {
+      service.toggleAdminMode();
+      service.toggleAdminMode();
+      expect(service.isAdminMode()).toBe(false);
+    });
+  });
+
   describe('logout', () => {
     it('should clear localStorage and reset signals', () => {
       // Setup: simulate logged in state
@@ -111,6 +130,15 @@ describe('AuthService', () => {
       expect(localStorage.getItem('current_user')).toBeNull();
       expect(service.isAuthenticated()).toBe(false);
       expect(service.isAdmin()).toBe(false);
+    });
+
+    it('should reset isAdminMode to false', () => {
+      service.toggleAdminMode();
+      expect(service.isAdminMode()).toBe(true);
+
+      service.logout();
+
+      expect(service.isAdminMode()).toBe(false);
     });
   });
 
