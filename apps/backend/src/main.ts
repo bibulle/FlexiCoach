@@ -25,8 +25,9 @@ async function bootstrap() {
         ...helmet.contentSecurityPolicy.getDefaultDirectives(),
         // Allow Google profile pictures from OAuth
         'img-src': ["'self'", 'data:', 'https://lh3.googleusercontent.com'],
-        // Allow inline event handlers (needed for Angular event bindings)
-        'script-src-attr': null,
+        // Allow the 'onload' event handler injected by Angular's beasties CSS optimizer
+        // hash of: this.media='all'
+        'script-src-attr': ["'unsafe-hashes'", "'sha256-MhtPZXr7+LpJUY5qtMutB+qWfQtMaPccfe7QXtCcEYc='"],
       },
     } : false,
   }));
