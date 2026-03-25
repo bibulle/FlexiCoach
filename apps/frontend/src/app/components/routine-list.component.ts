@@ -49,21 +49,4 @@ export class RoutineListComponent implements OnInit {
     this.router.navigate(['/routine', routine.slug]);
   }
 
-  editRoutine(routine: Routine) {
-    this.router.navigate(['/routines', routine.id, 'edit']);
-  }
-
-  deleteRoutine(routine: Routine) {
-    if (confirm(`Êtes-vous sûr de vouloir supprimer la routine "${routine.name}" ?`)) {
-      this.routineService.delete(routine.id).subscribe({
-        next: () => {
-          this.loadRoutines();
-        },
-        error: (err) => {
-          this.error = 'Erreur lors de la suppression de la routine';
-          console.error('Error deleting routine:', err);
-        },
-      });
-    }
-  }
 }

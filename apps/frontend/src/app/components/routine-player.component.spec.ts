@@ -1,10 +1,12 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Router } from '@angular/router';
 import { of, throwError } from 'rxjs';
+import { signal } from '@angular/core';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { RoutinePlayerComponent } from './routine-player.component';
 import { RoutineService } from '../services/routine.service';
 import { SessionService } from '../services/session.service';
+import { AuthService } from '../services/auth.service';
 import { Routine } from '@flexicoach/shared';
 
 describe('RoutinePlayerComponent', () => {
@@ -12,6 +14,7 @@ describe('RoutinePlayerComponent', () => {
   let fixture: ComponentFixture<RoutinePlayerComponent>;
   let mockRoutineService: any;
   let mockSessionService: any;
+  let mockAuthService: any;
   let mockRouter: any;
   let mockActivatedRoute: any;
 
@@ -65,6 +68,12 @@ describe('RoutinePlayerComponent', () => {
 
     mockRoutineService = {
       getBySlug: vi.fn(),
+      delete: vi.fn(),
+    };
+
+    mockAuthService = {
+      isAdmin: signal(false),
+      isAdminMode: signal(false),
     };
 
     mockSessionService = {
@@ -88,6 +97,7 @@ describe('RoutinePlayerComponent', () => {
       providers: [
         { provide: RoutineService, useValue: mockRoutineService },
         { provide: SessionService, useValue: mockSessionService },
+        { provide: AuthService, useValue: mockAuthService },
         { provide: Router, useValue: mockRouter },
         { provide: ActivatedRoute, useValue: mockActivatedRoute },
       ],
@@ -205,5 +215,76 @@ describe('RoutinePlayerComponent', () => {
     // However component counts from startIndex = 0 + 1 = 1, so only step 2
     // So: 30 (current) + 50 (step 2) = 80 (no rest after last step)
     expect(remaining).toBe(80);
+  });
+
+  describe('Admin actions on routine page', () => {
+    it('should not show admin actions when admin mode is off', () => {
+      const userRoutine = { ...mockRoutine, visibility: 'user' as 'builtIn' | 'user' };
+      mockRoutineService.getBySlug.mockReturnValue(of(userRoutine));
+      mockAuthService.isAdminMode.set(false);
+      fixture.detectChanges();
+
+      const adminActions = fixture.nativeElement.querySelector('.admin-actions');
+      expect(adminActions).toBeNull();
+    });
+
+    it('should show admin actions when admin mode is on and routine is user-created', () => {
+      const userRoutine = { ...mockRoutine, visibility: 'user' as 'builtIn' | 'user' };
+      mockRoutineService.getBySlug.mockReturnValue(of(userRoutine));
+      mockAuthService.isAdminMode.set(true);
+      fixture.detectChanges();
+
+      const adminActions = fixture.nativeElement.querySelector('.admin-actions');
+      expect(adminActions).toBeTruthy();
+
+      const buttons = adminActions.querySelectorAll('button');
+      expect(buttons.length).toBe(2);
+    });
+
+    it('should not show admin actions on built-in routines even in admin mode', () => {
+      const builtInRoutine = { ...mockRoutine, visibility: 'builtIn' as 'builtIn' | 'user' };
+      mockRoutineService.getBySlug.mockReturnValue(of(builtInRoutine));
+      mockAuthService.isAdminMode.set(true);
+      fixture.detectChanges();
+
+      const adminActions = fixture.nativeElement.querySelector('.admin-actions');
+      expect(adminActions).toBeNull();
+    });
+
+    it('should navigate to edit page when editRoutine is called', () => {
+      fixture.detectChanges();
+
+      component.editRoutine();
+
+      expect(mockRouter.navigate).toHaveBeenCalledWith(['/routines', 'test-routine', 'edit']);
+    });
+
+    it('should not navigate when editRoutine is called with no routine', () => {
+      component.routine = null;
+
+      component.editRoutine();
+
+      expect(mockRouter.navigate).not.toHaveBeenCalled();
+    });
+
+    it('should delete routine and navigate to home on confirm', () => {
+      fixture.detectChanges();
+      mockRoutineService.delete.mockReturnValue(of({}));
+      vi.spyOn(global, 'confirm').mockReturnValue(true);
+
+      component.deleteRoutine();
+
+      expect(mockRoutineService.delete).toHaveBeenCalledWith('test-routine');
+      expect(mockRouter.navigate).toHaveBeenCalledWith(['/']);
+    });
+
+    it('should not delete routine when user cancels', () => {
+      fixture.detectChanges();
+      vi.spyOn(global, 'confirm').mockReturnValue(false);
+
+      component.deleteRoutine();
+
+      expect(mockRoutineService.delete).not.toHaveBeenCalled();
+    });
   });
 });

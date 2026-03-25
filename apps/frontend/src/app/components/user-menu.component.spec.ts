@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import { provideRouter } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
+import { signal } from '@angular/core';
 import { vi } from 'vitest';
 import { UserMenuComponent } from './user-menu.component';
 import { AuthService } from '../services/auth.service';
@@ -19,6 +20,9 @@ describe('UserMenuComponent', () => {
     mockAuthService = {
       currentUser$: currentUserSubject.asObservable(),
       logout: vi.fn(),
+      isAdmin: signal(false),
+      isAdminMode: signal(false),
+      toggleAdminMode: vi.fn(),
     };
 
     await TestBed.configureTestingModule({
@@ -153,5 +157,78 @@ describe('UserMenuComponent', () => {
     component.logout();
 
     expect(component.isMenuOpen()).toBe(false);
+  });
+
+  describe('Admin mode toggle', () => {
+    it('should not show admin toggle for non-admin users', () => {
+      const user = { _id: '1', email: 'test@example.com', displayName: 'John Doe' };
+      currentUserSubject.next(user);
+      mockAuthService.isAdmin.set(false);
+      fixture.detectChanges();
+
+      component.toggleMenu();
+      fixture.detectChanges();
+
+      const adminToggle = fixture.nativeElement.querySelector('.menu-item-admin');
+      expect(adminToggle).toBeNull();
+    });
+
+    it('should show admin toggle for admin users', () => {
+      const user = { _id: '1', email: 'test@example.com', displayName: 'John Doe' };
+      currentUserSubject.next(user);
+      mockAuthService.isAdmin.set(true);
+      fixture.detectChanges();
+
+      component.toggleMenu();
+      fixture.detectChanges();
+
+      const adminToggle = fixture.nativeElement.querySelector('.menu-item-admin');
+      expect(adminToggle).toBeTruthy();
+    });
+
+    it('should show OFF indicator when admin mode is disabled', () => {
+      const user = { _id: '1', email: 'test@example.com', displayName: 'John Doe' };
+      currentUserSubject.next(user);
+      mockAuthService.isAdmin.set(true);
+      mockAuthService.isAdminMode.set(false);
+      fixture.detectChanges();
+
+      component.toggleMenu();
+      fixture.detectChanges();
+
+      const indicator = fixture.nativeElement.querySelector('.toggle-indicator');
+      expect(indicator.textContent.trim()).toBe('OFF');
+      expect(indicator.classList.contains('active')).toBe(false);
+    });
+
+    it('should show ON indicator when admin mode is enabled', () => {
+      const user = { _id: '1', email: 'test@example.com', displayName: 'John Doe' };
+      currentUserSubject.next(user);
+      mockAuthService.isAdmin.set(true);
+      mockAuthService.isAdminMode.set(true);
+      fixture.detectChanges();
+
+      component.toggleMenu();
+      fixture.detectChanges();
+
+      const indicator = fixture.nativeElement.querySelector('.toggle-indicator');
+      expect(indicator.textContent.trim()).toBe('ON');
+      expect(indicator.classList.contains('active')).toBe(true);
+    });
+
+    it('should call toggleAdminMode when toggle is clicked', () => {
+      const user = { _id: '1', email: 'test@example.com', displayName: 'John Doe' };
+      currentUserSubject.next(user);
+      mockAuthService.isAdmin.set(true);
+      fixture.detectChanges();
+
+      component.toggleMenu();
+      fixture.detectChanges();
+
+      const adminToggle = fixture.nativeElement.querySelector('.menu-item-admin');
+      adminToggle.click();
+
+      expect(mockAuthService.toggleAdminMode).toHaveBeenCalled();
+    });
   });
 });

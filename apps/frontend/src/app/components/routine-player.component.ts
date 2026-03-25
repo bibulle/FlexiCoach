@@ -4,6 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Routine, Step } from '@flexicoach/shared';
 import { RoutineService } from '../services/routine.service';
 import { SessionService } from '../services/session.service';
+import { AuthService } from '../services/auth.service';
 
 @Component({
   selector: 'app-routine-player',
@@ -32,7 +33,8 @@ export class RoutinePlayerComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
     private routineService: RoutineService,
-    private sessionService: SessionService
+    private sessionService: SessionService,
+    public authService: AuthService
   ) {
     // Load voices
     if (this.synth) {
@@ -346,6 +348,25 @@ export class RoutinePlayerComponent implements OnInit, OnDestroy {
       }, duration * 1000);
     } catch (e) {
       console.error('Beep error:', e);
+    }
+  }
+
+  editRoutine() {
+    if (!this.routine) return;
+    this.router.navigate(['/routines', this.routine.id, 'edit']);
+  }
+
+  deleteRoutine() {
+    if (!this.routine) return;
+    if (confirm(`Êtes-vous sûr de vouloir supprimer la routine "${this.routine.name}" ?`)) {
+      this.routineService.delete(this.routine.id).subscribe({
+        next: () => {
+          this.router.navigate(['/']);
+        },
+        error: (err) => {
+          console.error('Error deleting routine:', err);
+        },
+      });
     }
   }
 

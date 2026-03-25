@@ -46,11 +46,11 @@ describe('RoutineListComponent', () => {
   beforeEach(async () => {
     mockRoutineService = {
       getAll: vi.fn(),
-      delete: vi.fn(),
     };
 
     mockAuthService = {
       isAdmin: signal(false),
+      isAdminMode: signal(false),
       isAuthenticated: signal(true),
     };
 
@@ -129,9 +129,9 @@ describe('RoutineListComponent', () => {
     expect(router.navigate).toHaveBeenCalledWith(['/routine', 'routine-1']);
   });
 
-  describe('Admin-only features (Issue #35)', () => {
-    it('should hide "Nouvelle routine" button for non-admin users', () => {
-      mockAuthService.isAdmin.set(false);
+  describe('Admin mode features', () => {
+    it('should hide "Nouvelle routine" button when admin mode is off', () => {
+      mockAuthService.isAdminMode.set(false);
       fixture.detectChanges();
 
       const compiled = fixture.nativeElement;
@@ -139,8 +139,8 @@ describe('RoutineListComponent', () => {
       expect(newRoutineLink).toBeNull();
     });
 
-    it('should show "Nouvelle routine" button for admin users', () => {
-      mockAuthService.isAdmin.set(true);
+    it('should show "Nouvelle routine" button when admin mode is on', () => {
+      mockAuthService.isAdminMode.set(true);
       fixture.detectChanges();
 
       const compiled = fixture.nativeElement;
@@ -148,8 +148,9 @@ describe('RoutineListComponent', () => {
       expect(newRoutineLink).toBeTruthy();
     });
 
-    it('should hide edit/delete buttons for non-admin users even on user routines', () => {
-      mockAuthService.isAdmin.set(false);
+    it('should not show edit/delete buttons in the list (moved to player)', () => {
+      mockAuthService.isAdmin.set(true);
+      mockAuthService.isAdminMode.set(true);
 
       const userRoutines: Routine[] = [{
         ...mockRoutines[0],
@@ -157,46 +158,6 @@ describe('RoutineListComponent', () => {
       }];
 
       mockRoutineService.getAll.mockReturnValue(of(userRoutines));
-      component.loadRoutines();
-      fixture.detectChanges();
-
-      const compiled = fixture.nativeElement;
-      const editButtons = compiled.querySelectorAll('.btn-secondary');
-      const deleteButtons = compiled.querySelectorAll('.btn-danger');
-
-      expect(editButtons.length).toBe(0);
-      expect(deleteButtons.length).toBe(0);
-    });
-
-    it('should show edit/delete buttons for admin users on user routines', () => {
-      mockAuthService.isAdmin.set(true);
-
-      const userRoutines: Routine[] = [{
-        ...mockRoutines[0],
-        visibility: 'user' as 'builtIn' | 'user',
-      }];
-
-      mockRoutineService.getAll.mockReturnValue(of(userRoutines));
-      component.loadRoutines();
-      fixture.detectChanges();
-
-      const compiled = fixture.nativeElement;
-      const editButtons = compiled.querySelectorAll('.btn-secondary');
-      const deleteButtons = compiled.querySelectorAll('.btn-danger');
-
-      expect(editButtons.length).toBeGreaterThan(0);
-      expect(deleteButtons.length).toBeGreaterThan(0);
-    });
-
-    it('should not show edit/delete buttons on built-in routines even for admins', () => {
-      mockAuthService.isAdmin.set(true);
-
-      const builtInRoutines: Routine[] = [{
-        ...mockRoutines[0],
-        visibility: 'builtIn' as 'builtIn' | 'user',
-      }];
-
-      mockRoutineService.getAll.mockReturnValue(of(builtInRoutines));
       component.loadRoutines();
       fixture.detectChanges();
 

@@ -3,6 +3,13 @@
         <h1>{{ routine.name }}</h1>
         <p class="subtitle">{{ routine.description }}</p>
 
+        @if (authService.isAdminMode() && routine.visibility === 'user') {
+          <div class="admin-actions">
+            <button class="secondary" (click)="editRoutine()">Éditer</button>
+            <button class="danger" (click)="deleteRoutine()">Supprimer</button>
+          </div>
+        }
+
         <div class="timer-section">
             <div class="timer-display">
                 <div class="time-remaining">{{ formatTime(timeLeft) }}</div>

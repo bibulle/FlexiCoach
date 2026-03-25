@@ -11,7 +11,7 @@ import { AuthService } from '../services/auth.service';
   styleUrls: ['./user-menu.component.scss']
 })
 export class UserMenuComponent {
-  private authService = inject(AuthService);
+  authService = inject(AuthService);
   private router = inject(Router);
 
   isMenuOpen = signal(false);
@@ -69,6 +69,10 @@ export class UserMenuComponent {
     }
 
     return 'Utilisateur';
+  }
+
+  toggleAdminMode(): void {
+    this.authService.toggleAdminMode();
   }
 
   logout(): void {

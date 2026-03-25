@@ -96,6 +96,27 @@ hr {
   &:hover {
     background: #f8f8f8;
   }
+
+  &.menu-item-admin {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: #475569;
+
+    .toggle-indicator {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: #e2e8f0;
+      color: #64748b;
+
+      &.active {
+        background: #3b82f6;
+        color: white;
+      }
+    }
+  }
 }
 
 @media (max-width: 768px) {
