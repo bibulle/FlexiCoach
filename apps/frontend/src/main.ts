@@ -19,5 +19,5 @@ if (enableServiceWorker && 'serviceWorker' in navigator) {
       });
   });
 } else if (!enableServiceWorker) {
-  console.log('Service Worker désactivé (VITE_ENABLE_SERVICE_WORKER=false)');
+  console.debug('Service Worker désactivé (VITE_ENABLE_SERVICE_WORKER=false)');
 }

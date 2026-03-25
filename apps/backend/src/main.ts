@@ -20,7 +20,15 @@ async function bootstrap() {
 
   // Security: HTTP headers hardening
   app.use(helmet({
-    contentSecurityPolicy: process.env.NODE_ENV === 'production' ? undefined : false,
+    contentSecurityPolicy: process.env.NODE_ENV === 'production' ? {
+      directives: {
+        ...helmet.contentSecurityPolicy.getDefaultDirectives(),
+        // Allow Google profile pictures from OAuth
+        'img-src': ["'self'", 'data:', 'https://lh3.googleusercontent.com'],
+        // Allow inline event handlers (needed for Angular event bindings)
+        'script-src-attr': null,
+      },
+    } : false,
   }));
 
   // Security: CORS configuration

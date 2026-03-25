@@ -3,14 +3,14 @@
   "configurations": [
     {
       "name": "frontend",
-      "runtimeExecutable": "npx",
-      "runtimeArgs": ["nx", "serve", "frontend"],
+      "runtimeExecutable": "bash",
+      "runtimeArgs": ["-c", "npx nx serve frontend --port 4200"],
       "port": 4200
     },
     {
       "name": "backend",
       "runtimeExecutable": "bash",
-      "runtimeArgs": ["-c", "npx nx build backend --configuration=development && node dist/apps/backend/main.js"],
+      "runtimeArgs": ["-c", "npx tsc -p apps/backend/tsconfig.app.json --outDir dist/apps/backend && node dist/apps/backend/main.js"],
       "port": 3000
     }
   ]
