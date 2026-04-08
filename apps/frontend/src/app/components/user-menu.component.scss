@@ -32,6 +32,11 @@
   font-weight: 600;
   font-size: 14px;
   text-transform: uppercase;
+  overflow: hidden;
+
+  &.has-image {
+    background: transparent;
+  }
 
   img {
     width: 100%;
