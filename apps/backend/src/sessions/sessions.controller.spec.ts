@@ -150,7 +150,7 @@ describe('SessionsController', () => {
         totalSessions: 25,
         totalMinutes: 1250,
         adherenceRate: 75,
-        favoriteRoutine: 'routine1',
+        favoriteRoutine: 'Routine Matinale',
       };
 
       service.getSummary.mockResolvedValue(summary);
