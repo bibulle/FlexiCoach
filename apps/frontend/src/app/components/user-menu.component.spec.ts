@@ -88,6 +88,24 @@ describe('UserMenuComponent', () => {
     expect(component.getInitials()).toBe('Jo');
   });
 
+  it('should add has-image class when user has avatar', () => {
+    const user = { _id: '1', email: 'test@example.com', displayName: 'John Doe', avatar: 'https://example.com/avatar.jpg' };
+    currentUserSubject.next(user);
+    fixture.detectChanges();
+
+    const avatar = fixture.nativeElement.querySelector('.user-avatar');
+    expect(avatar.classList.contains('has-image')).toBe(true);
+  });
+
+  it('should not add has-image class when user has no avatar', () => {
+    const user = { _id: '1', email: 'test@example.com', displayName: 'John Doe' };
+    currentUserSubject.next(user);
+    fixture.detectChanges();
+
+    const avatar = fixture.nativeElement.querySelector('.user-avatar');
+    expect(avatar.classList.contains('has-image')).toBe(false);
+  });
+
   it('should calculate initials from email when no displayName', () => {
     const user = { _id: '1', email: 'testuser@example.com' };
     currentUserSubject.next(user);
