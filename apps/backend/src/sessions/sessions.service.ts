@@ -2,11 +2,13 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Session, SessionDocument } from '../schemas/session.schema';
+import { Routine, RoutineDocument } from '../schemas/routine.schema';
 
 @Injectable()
 export class SessionsService {
   constructor(
-    @InjectModel(Session.name) private sessionModel: Model<SessionDocument>
+    @InjectModel(Session.name) private sessionModel: Model<SessionDocument>,
+    @InjectModel(Routine.name) private routineModel: Model<RoutineDocument>
   ) {}
 
   async create(session: Partial<Session>): Promise<Session> {
@@ -203,14 +205,21 @@ export class SessionsService {
       routineCounts.set(routineId, (routineCounts.get(routineId) || 0) + 1);
     });
 
-    let favoriteRoutine: string | null = null;
+    let favoriteRoutineId: string | null = null;
     let maxCount = 0;
     routineCounts.forEach((count, routineId) => {
       if (count > maxCount) {
         maxCount = count;
-        favoriteRoutine = routineId;
+        favoriteRoutineId = routineId;
       }
     });
+
+    // Resolve the routine name from its ID
+    let favoriteRoutine: string | null = null;
+    if (favoriteRoutineId) {
+      const routine = await this.routineModel.findOne({ id: favoriteRoutineId }).exec();
+      favoriteRoutine = routine ? routine.name : favoriteRoutineId;
+    }
 
     return {
       currentStreak,

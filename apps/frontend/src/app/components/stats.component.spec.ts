@@ -15,7 +15,7 @@ describe('StatsComponent', () => {
     totalSessions: 25,
     totalMinutes: 250,
     adherenceRate: 75,
-    favoriteRoutine: 'douce-10min',
+    favoriteRoutine: 'Douce 10 min',
   };
 
   beforeEach(async () => {
@@ -75,7 +75,7 @@ describe('StatsComponent', () => {
     expect(compiled.textContent).toContain('5'); // currentStreak
     expect(compiled.textContent).toContain('10 jours'); // longestStreak
     expect(compiled.textContent).toContain('75%'); // adherenceRate
-    expect(compiled.textContent).toContain('douce-10min'); // favoriteRoutine
+    expect(compiled.textContent).toContain('Douce 10 min'); // favoriteRoutine
   });
 
   it('should format minutes correctly (only minutes)', () => {

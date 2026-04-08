@@ -2,10 +2,12 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { getModelToken } from '@nestjs/mongoose';
 import { SessionsService } from './sessions.service';
 import { Session } from '../schemas/session.schema';
+import { Routine } from '../schemas/routine.schema';
 
 describe('SessionsService', () => {
   let service: SessionsService;
   let mockSessionModel: any;
+  let mockRoutineModel: any;
 
   const mockSession = {
     _id: 'session-mongo-id',
@@ -40,12 +42,23 @@ describe('SessionsService', () => {
     mockSessionModel.findById = mockFindById;
     mockSessionModel.findByIdAndUpdate = mockFindByIdAndUpdate;
 
+    // Create mock routine model
+    const mockRoutineExec = jest.fn().mockResolvedValue(null);
+    const mockRoutineFindOne = jest.fn().mockReturnValue({ exec: mockRoutineExec });
+    mockRoutineModel = {
+      findOne: mockRoutineFindOne,
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         SessionsService,
         {
           provide: getModelToken(Session.name),
           useValue: mockSessionModel,
+        },
+        {
+          provide: getModelToken(Routine.name),
+          useValue: mockRoutineModel,
         },
       ],
     }).compile();
@@ -378,17 +391,35 @@ describe('SessionsService', () => {
       expect(result.longestStreak).toBe(5);
     });
 
-    it('should find favorite routine', async () => {
+    it('should find favorite routine and resolve its name', async () => {
       const mockSessions = [
         { ...mockSession, startAt: new Date(), routineId: 'routine1', durationSec: 600 },
         { ...mockSession, startAt: new Date(), routineId: 'routine1', durationSec: 600 },
         { ...mockSession, startAt: new Date(), routineId: 'routine2', durationSec: 600 },
       ];
       mockSessionModel.find().exec.mockResolvedValue(mockSessions);
+      mockRoutineModel.findOne.mockReturnValue({
+        exec: jest.fn().mockResolvedValue({ id: 'routine1', name: 'Douce 10 min' }),
+      });
 
       const result = await service.getSummary('user1');
 
-      expect(result.favoriteRoutine).toBe('routine1');
+      expect(result.favoriteRoutine).toBe('Douce 10 min');
+      expect(mockRoutineModel.findOne).toHaveBeenCalledWith({ id: 'routine1' });
+    });
+
+    it('should fallback to routine ID when routine not found in database', async () => {
+      const mockSessions = [
+        { ...mockSession, startAt: new Date(), routineId: 'deleted-routine', durationSec: 600 },
+      ];
+      mockSessionModel.find().exec.mockResolvedValue(mockSessions);
+      mockRoutineModel.findOne.mockReturnValue({
+        exec: jest.fn().mockResolvedValue(null),
+      });
+
+      const result = await service.getSummary('user1');
+
+      expect(result.favoriteRoutine).toBe('deleted-routine');
     });
 
     it('should return null for favoriteRoutine when no sessions', async () => {
