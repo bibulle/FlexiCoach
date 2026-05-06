@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="fr" data-tone="wellness" data-viewport="desktop" style="--accent: #5e9970; --accent-soft: #dcebe0;">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FlexiCoach — Variations affinées</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Architects+Daughter&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>
+  body { padding: 24px 32px 80px; max-width: 1320px; margin: 0 auto; }
+  .top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 18px; padding-bottom: 12px; border-bottom: 1.5px dashed var(--ink-soft); }
+  .top h1 { font-family: var(--font-hand); font-size: 38px; margin: 0; }
+  .top .crumb { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-faint); }
+  .top a { color: var(--accent); text-decoration: none; border-bottom: 1.5px dashed var(--accent); padding-bottom: 1px; }
+  .lead { font-family: var(--font-note); color: var(--ink-soft); max-width: 760px; margin: 0 0 28px; font-size: 16px; }
+  .section { margin: 50px 0; }
+  .section-head { display: flex; gap: 14px; align-items: baseline; margin-bottom: 6px; }
+  .section-head .num { font-family: var(--font-mono); font-size: 12px; font-weight: 700; color: var(--accent); padding: 3px 8px; border: 1.5px solid var(--accent); border-radius: 4px; }
+  .section-head h2 { font-family: var(--font-hand); font-size: 32px; margin: 0; font-weight: 700; }
+  .section .sub { color: var(--ink-soft); margin: 0 0 22px; max-width: 700px; }
+  .row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+  @media (max-width: 1100px) { .row3 { grid-template-columns: 1fr; } }
+  .card { background: var(--paper); border: 1.5px solid var(--ink); border-radius: 16px; padding: 18px; box-shadow: 4px 4px 0 var(--ink-faint); }
+  .card .vlabel { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--accent); font-weight: 700; margin-bottom: 6px; }
+  .card .vtitle { font-family: var(--font-hand); font-size: 24px; font-weight: 700; margin: 0 0 4px; }
+  .card .vblurb { font-size: 13px; color: var(--ink-soft); margin: 0 0 14px; min-height: 38px; }
+  .frame { border: 1.5px solid var(--ink); border-radius: 12px; padding: 18px; background: var(--paper); min-height: 540px; position: relative; overflow: hidden; }
+
+  /* shared sketch primitives */
+  .row { display: flex; align-items: center; gap: 8px; }
+  .stack { display: flex; flex-direction: column; }
+  .center { text-align: center; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+  .tiny { font-size: 11px; }
+  .muted { color: var(--ink-faint); }
+  .accent-text { color: var(--accent); }
+  .calm-text { color: var(--calm); }
+  .sk-h { font-family: var(--font-hand); font-weight: 700; line-height: 1.1; }
+  .sk-h.sm { font-size: 14px; }
+  .sk-h.md { font-size: 17px; }
+  .sk-h.lg { font-size: 22px; }
+  .sk-h.xl { font-size: 26px; }
+  .sk-note { font-family: var(--font-note); color: var(--ink-soft); font-size: 13px; }
+  .sk-pill { display: inline-flex; align-items: center; gap: 4px; border: 1.2px solid var(--ink); border-radius: 999px; padding: 3px 10px; font-size: 11px; background: var(--paper); }
+  .sk-pill.solid { background: var(--ink); color: var(--paper); }
+  .sk-pill.tiny { font-size: 10px; padding: 2px 7px; }
+  .sk-btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; border: 1.5px solid var(--ink); border-radius: 8px; padding: 6px 12px; font-family: var(--font-hand); font-weight: 700; cursor: pointer; background: var(--paper); }
+  .sk-btn.primary { background: var(--accent); color: var(--paper); border-color: var(--accent); }
+  .sk-btn.ghost { background: transparent; }
+  .sk-btn.big { padding: 10px 18px; font-size: 16px; }
+  .sk-box { border: 1.2px solid var(--ink); border-radius: 10px; padding: 10px; background: var(--paper); }
+  .sk-box.accent { background: var(--accent-soft); border-color: var(--accent); }
+  .sk-box.dashed { border-style: dashed; }
+  .sk-arrow { font-family: var(--font-hand); font-size: 18px; }
+  .fc-header { display: flex; align-items: center; gap: 12px; padding-bottom: 8px; border-bottom: 1px dashed var(--ink-faint); margin-bottom: 12px; }
+  .fc-header .logo { font-family: var(--font-hand); font-size: 22px; font-weight: 700; }
+  .fc-header .logo .dot { color: var(--accent); }
+  .fc-header .avatar { margin-left: auto; width: 30px; height: 30px; border-radius: 15px; border: 1.5px solid var(--ink); display: grid; place-items: center; font-family: var(--font-hand); font-weight: 700; }
+
+  /* tweaks panel host */
+  .tw-host { position: fixed; top: 16px; right: 16px; z-index: 1000; }
+</style>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel" src="refined-variations.jsx"></script>
+
+<script type="text/babel">
+const ACCENTS = [
+  { name: 'forest',  value: '#5e9970', soft: '#dcebe0' },
+  { name: 'ocean',   value: '#3b6fb6', soft: '#dde8f6' },
+  { name: 'sunset',  value: '#c97343', soft: '#f4e0d3' },
+  { name: 'plum',    value: '#8a5a8e', soft: '#ebdcec' },
+  { name: 'graphite',value: '#3a3a3a', soft: '#dadada' },
+];
+
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "tone": "wellness",
+  "accentIndex": 0
+}/*EDITMODE-END*/;
+
+function App() {
+  const [tweaks, setTweaks] = React.useState(TWEAK_DEFAULTS);
+  const [active, setActive] = React.useState(false);
+
+  React.useEffect(() => {
+    const handler = (e) => {
+      if (e.data?.type === '__activate_edit_mode') setActive(true);
+      if (e.data?.type === '__deactivate_edit_mode') setActive(false);
+    };
+    window.addEventListener('message', handler);
+    window.parent.postMessage({type: '__edit_mode_available'}, '*');
+    return () => window.removeEventListener('message', handler);
+  }, []);
+
+  React.useEffect(() => {
+    const a = ACCENTS[tweaks.accentIndex || 0];
+    document.documentElement.style.setProperty('--accent', a.value);
+    document.documentElement.style.setProperty('--accent-soft', a.soft);
+    document.documentElement.dataset.tone = tweaks.tone;
+  }, [tweaks]);
+
+  const update = (patch) => {
+    const next = { ...tweaks, ...patch };
+    setTweaks(next);
+    window.parent.postMessage({type: '__edit_mode_set_keys', edits: patch}, '*');
+  };
+
+  const Sub = ({ vlabel, vtitle, blurb, children }) => (
+    <div className="card">
+      <div className="vlabel">{vlabel}</div>
+      <div className="vtitle">{vtitle}</div>
+      <div className="vblurb">{blurb}</div>
+      <div className="frame">{children}</div>
+    </div>
+  );
+
+  return (
+    <>
+      <div className="top">
+        <div>
+          <div className="crumb">Variations affinées · niveau 2</div>
+          <h1>3 directions × 3 nuances chacune.</h1>
+        </div>
+        <div><a href="FlexiCoach Wireframes.html">← retour exploration initiale</a></div>
+      </div>
+      <p className="lead">
+        À partir de tes choix — Accueil V2 (anneau de vitalité), Calendrier V2 (heatmap annuelle), Lecteur V3 (timeline parcourue) — voici trois nuances par écran. L'objectif : trouver la version qui colle vraiment, ou mixer les meilleurs ingrédients de chacune avant de passer en hi-fi.
+      </p>
+
+      {active && (
+        <div className="tw-host">
+          <div style={{ background: 'var(--paper)', border: '1.5px solid var(--ink)', borderRadius: 12, padding: 14, width: 240, boxShadow: '4px 4px 0 var(--ink-faint)' }}>
+            <div className="sk-h md" style={{ marginBottom: 10 }}>Tweaks</div>
+            <div className="tiny muted" style={{ marginBottom: 4 }}>Ton</div>
+            <div className="row" style={{ gap: 4, marginBottom: 12 }}>
+              {['sport', 'wellness'].map(t => (
+                <button key={t} onClick={() => update({ tone: t })}
+                        className={`sk-pill ${tweaks.tone === t ? 'solid' : ''}`}
+                        style={{ flex: 1, justifyContent: 'center', cursor: 'pointer', textTransform: 'capitalize' }}>{t}</button>
+              ))}
+            </div>
+            <div className="tiny muted" style={{ marginBottom: 4 }}>Accent</div>
+            <div className="row" style={{ gap: 6, flexWrap: 'wrap' }}>
+              {ACCENTS.map((a, i) => (
+                <button key={a.name} onClick={() => update({ accentIndex: i })}
+                        title={a.name}
+                        style={{ width: 26, height: 26, borderRadius: 13, background: a.value,
+                                 border: tweaks.accentIndex === i ? '2.5px solid var(--ink)' : '1px solid var(--ink-faint)',
+                                 cursor: 'pointer' }} />
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      <section className="section">
+        <div className="section-head"><span className="num">01</span><h2>Accueil — anneau de vitalité</h2></div>
+        <p className="sub">Comment l'anneau s'articule avec les stats : un anneau triple (objectifs multiples), un anneau XXL hero (focus radical), ou un anneau comparatif (motivation par delta vs hier).</p>
+        <div className="row3">
+          <Sub vlabel="A · multi-anneaux" vtitle="Trois objectifs concentriques" blurb="Apple-Watch style. Chaque anneau = un objectif (temps, série, routine). Permet de voir d'un coup où on en est sur plusieurs axes.">
+            <window.HomeV2a />
+          </Sub>
+          <Sub vlabel="B · hero anneau" vtitle="Un anneau XXL, hiérarchie radicale" blurb="L'anneau prend toute la place. Stats reléguées en grille compacte sous. Pour qui veut un dashboard vraiment focalisé.">
+            <window.HomeV2b />
+          </Sub>
+          <Sub vlabel="C · comparatif" vtitle="Anneau + delta vs hier" blurb="Anneau accompagné de barres de comparaison hier/aujourd'hui/objectif. Motivation par progression visible jour après jour.">
+            <window.HomeV2c />
+          </Sub>
+        </div>
+      </section>
+
+      <section className="section">
+        <div className="section-head"><span className="num">02</span><h2>Calendrier — heatmap annuelle</h2></div>
+        <p className="sub">La heatmap GitHub-like s'enrichit différemment : encart stats latéral, courbe de tendance dessus, ou détail jour interactif quand on clique.</p>
+        <div className="row3">
+          <Sub vlabel="A · heatmap + stats" vtitle="Encart latéral mensuel" blurb="Heatmap propre + colonne droite avec série en cours et top 3 mois. Lecture passive, regard d'ensemble.">
+            <window.CalV2a />
+          </Sub>
+          <Sub vlabel="B · heatmap + courbe" vtitle="Tendance au-dessus, détail dessous" blurb="Une courbe d'évolution mensuelle agrégée + la heatmap brute pour zoomer. Macro puis micro.">
+            <window.CalV2b />
+          </Sub>
+          <Sub vlabel="C · heatmap + détail jour" vtitle="Sélection interactive d'un jour" blurb="Cliquer un jour ouvre la fiche détail à droite (séances, durée, ressenti). Plus dynamique, plus utile au quotidien.">
+            <window.CalV2c />
+          </Sub>
+        </div>
+      </section>
+
+      <section className="section">
+        <div className="section-head"><span className="num">03</span><h2>Lecteur — timeline parcourue</h2></div>
+        <p className="sub">La timeline reste la métaphore. On l'oriente différemment : barre horizontale en haut, liste verticale latérale, ou arc semi-circulaire sculpté.</p>
+        <div className="row3">
+          <Sub vlabel="A · barre horizontale" vtitle="Timeline en haut, chrono dessous" blurb="Lecture évidente : on voit la progression comme une barre de lecteur vidéo. Couleurs par mode. Chrono central très grand.">
+            <window.PlayerV3a />
+          </Sub>
+          <Sub vlabel="B · timeline verticale" vtitle="Liste d'étapes à gauche, chrono à droite" blurb="Style chapitres. On voit toutes les étapes à venir avec leur durée. L'utilisateur peut anticiper. Plus desktop-friendly.">
+            <window.PlayerV3b />
+          </Sub>
+          <Sub vlabel="C · arc semi-circulaire" vtitle="Jauge sculptée, segments par mode" blurb="Métaphore d'horloge / cadran. Chaque segment a sa taille et sa couleur. Plus expressif, un peu plus chargé.">
+            <window.PlayerV3c />
+          </Sub>
+        </div>
+      </section>
+
+      <section className="section" style={{ marginTop: 80, paddingTop: 24, borderTop: '1.5px dashed var(--ink-soft)' }}>
+        <div className="sk-h xl">Et après ?</div>
+        <p className="sub" style={{ marginTop: 6 }}>
+          Choisis ta combinaison gagnante (ex. <i>"Accueil B + Calendrier C + Lecteur A"</i>) ou un mix d'éléments précis. On peut aussi continuer à itérer sur l'une de ces nuances, ou passer en hi-fi avec le vrai design system du brief.
+        </p>
+      </section>
+    </>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
