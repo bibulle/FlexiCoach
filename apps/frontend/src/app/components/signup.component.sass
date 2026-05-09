@@ -1,148 +1,228 @@
-.auth-container
+/* Réutilise exactement les mêmes styles que login */
+
+/* Mobile-first */
+.auth-shell
   min-height: 100vh
+  background: var(--surface-2)
+
+.auth-desktop
+  display: none
+
+.auth-mobile
+  display: flex
+  flex-direction: column
+  padding: 36px 22px 32px
+
+.mobile-logo
   display: flex
   align-items: center
-  justify-content: center
-  background: #f8f9fa
-  padding: 2rem
+  gap: 10px
+  font-weight: 700
+  font-size: 18px
+  color: var(--ink)
+  margin-bottom: 28px
 
-.auth-card
-  background: white
-  border: 1px solid #e5e7eb
-  border-radius: 16px
-  padding: 2.5rem 2rem
-  max-width: 420px
-  width: 100%
-  box-shadow: 0 8px 24px rgba(2, 6, 23, 0.08)
+.mobile-icon
+  width: 32px
+  height: 32px
+  border-radius: 10px
+  background: linear-gradient(135deg, var(--primary-400), var(--primary-600))
+  color: white
+  display: grid
+  place-items: center
+  font-weight: 800
+  font-size: 14px
 
-h1
-  margin: 0 0 0.25rem 0
-  color: #1a202c
-  font-size: 1.75rem
-  font-weight: 600
-  text-align: center
+.auth-subtitle
+  color: var(--ink-3)
+  margin: 4px 0 28px
 
-.subtitle
-  margin: 0 0 2rem 0
-  color: #64748b
-  font-size: 0.875rem
-  text-align: center
-
-.error-message
+.auth-error
   background: #fef2f2
   border: 1px solid #fecaca
-  color: #dc2626
-  padding: 0.75rem 1rem
-  border-radius: 8px
-  margin-bottom: 1.5rem
-  font-size: 0.875rem
+  color: var(--error)
+  padding: 12px 16px
+  border-radius: var(--radius)
+  margin-bottom: 20px
+  font-size: 14px
 
-.form-group
-  margin-bottom: 1.25rem
-
-label
-  display: block
-  margin-bottom: 0.375rem
-  color: #334155
-  font-weight: 500
-  font-size: 0.875rem
-
-input
+.google-btn
   width: 100%
-  padding: 0.625rem 0.875rem
-  border: 1px solid #d1d5db
-  border-radius: 8px
-  font-size: 0.9375rem
-  transition: all 0.15s
-  box-sizing: border-box
-  font-family: inherit
+  margin-bottom: 16px
 
-  &:focus
-    outline: none
-    border-color: #3b82f6
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1)
+.auth-or
+  display: flex
+  align-items: center
+  gap: 12px
+  margin: 20px 0
+  color: var(--ink-4)
+  font-size: 12px
 
-  &.invalid
-    border-color: #ef4444
+.auth-or-line
+  flex: 1
+  height: 1px
+  background: var(--line)
+
+.auth-or-text
+  white-space: nowrap
+
+.form-field
+  margin-bottom: 14px
+
+  label
+    display: block
+    font-size: 13px
+    font-weight: 500
+    color: var(--ink-2)
+    margin-bottom: 6px
+
+.input-invalid
+  border-color: var(--error) !important
 
 .field-error
   display: block
-  color: #dc2626
-  font-size: 0.75rem
-  margin-top: 0.25rem
+  color: var(--error)
+  font-size: 12px
+  margin-top: 4px
+
+.cgu-label
+  display: flex
+  align-items: flex-start
+  gap: 8px
+  font-size: 13px
+  color: var(--ink-3)
+  margin: 4px 0 22px
+  cursor: pointer
+  line-height: 1.4
+
+  input[type="checkbox"]
+    margin-top: 2px
+    flex-shrink: 0
+
+.cgu-link
+  color: var(--primary-600)
+  text-decoration: none
+  &:hover
+    text-decoration: underline
 
 .submit-btn
   width: 100%
-  padding: 0.75rem
-  background: #3b82f6
-  color: white
-  border: none
-  border-radius: 8px
-  font-size: 0.9375rem
-  font-weight: 600
-  cursor: pointer
-  transition: all 0.15s
-  margin-top: 0.5rem
-
-  &:hover:not(:disabled)
-    background: #2563eb
-
+  margin-bottom: 18px
   &:disabled
-    background: #94a3b8
+    opacity: 0.6
     cursor: not-allowed
-    opacity: 0.7
+    transform: none !important
 
-.link-text
+.auth-switch
   text-align: center
-  margin-top: 1.5rem
-  color: #64748b
-  font-size: 0.875rem
+  font-size: 13px
+  color: var(--ink-3)
+  margin: 0
 
   a
-    color: #3b82f6
+    color: var(--primary-600)
+    font-weight: 600
     text-decoration: none
-    font-weight: 500
-
     &:hover
       text-decoration: underline
 
-.google-signin-btn
-  display: flex
-  align-items: center
-  justify-content: center
-  gap: 12px
-  width: 100%
-  padding: 0.75rem 1.5rem
-  background: white
-  border: 1px solid #d1d5db
-  border-radius: 8px
-  font-size: 0.9375rem
-  font-weight: 500
-  color: #334155
-  cursor: pointer
-  transition: all 0.15s
-  margin-bottom: 1rem
+/* === Desktop (≥768px) === */
+@media (min-width: 768px)
+  .auth-desktop
+    display: grid
+    grid-template-columns: 1fr 1fr
+    min-height: 100vh
 
-  &:hover
-    background: #f8f9fa
-    border-color: #4285f4
-    box-shadow: 0 2px 4px rgba(66, 133, 244, 0.3)
+  .auth-mobile
+    display: none
 
-  svg
-    flex-shrink: 0
+  .auth-brand
+    background: linear-gradient(160deg, var(--primary-700) 0%, var(--primary-500) 60%, #0e7490 100%)
+    color: white
+    padding: 60px 56px
+    display: flex
+    flex-direction: column
+    justify-content: space-between
+    position: relative
+    overflow: hidden
 
-.divider
-  display: flex
-  align-items: center
-  margin: 1.5rem 0
-  color: #94a3b8
-  font-size: 0.75rem
+  .brand-overlay
+    position: absolute
+    inset: 0
+    background: radial-gradient(circle at 80% 10%, rgba(255,255,255,0.18), transparent 50%)
+    pointer-events: none
 
-  &::before,
-  &::after
-    content: ''
-    flex: 1
-    border-bottom: 1px solid #e5e7eb
+  .brand-logo
+    position: relative
+    display: flex
+    align-items: center
+    gap: 10px
+    font-weight: 700
+    font-size: 20px
+    color: white
 
-  span
-    padding: 0 1rem
+  .brand-icon
+    width: 36px
+    height: 36px
+    border-radius: 10px
+    background: white
+    color: var(--primary-600)
+    display: grid
+    place-items: center
+    font-weight: 800
+    font-size: 16px
+
+  .brand-hero
+    position: relative
+
+    h2
+      font-family: var(--font-display)
+      font-size: 38px
+      line-height: 1.1
+      font-weight: 700
+      letter-spacing: -0.02em
+      margin: 0 0 18px
+      color: white
+
+    p
+      font-size: 16px
+      line-height: 1.6
+      opacity: 0.9
+      margin: 0
+      max-width: 420px
+
+  .brand-stats
+    display: flex
+    gap: 24px
+    margin-top: 32px
+
+  .brand-stat
+    display: flex
+    flex-direction: column
+
+  .brand-stat-value
+    font-family: var(--font-mono)
+    font-weight: 700
+    font-size: 18px
+
+  .brand-stat-label
+    font-size: 13px
+    opacity: 0.7
+
+  .brand-version
+    position: relative
+    font-size: 12px
+    opacity: 0.6
+
+  .auth-form-panel
+    display: grid
+    place-items: center
+    padding: 60px 56px
+    background: var(--surface)
+
+  .auth-form-wrapper
+    width: 100%
+    max-width: 380px
+
+    .auth-subtitle
+      margin-bottom: 32px
