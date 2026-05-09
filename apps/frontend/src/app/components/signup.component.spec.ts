@@ -43,6 +43,7 @@ describe('SignupComponent', () => {
       email: '',
       password: '',
       confirmPassword: '',
+      acceptCgu: false,
     });
     expect(component.loading).toBe(false);
     expect(component.errorMessage).toBe('');
@@ -98,6 +99,7 @@ describe('SignupComponent', () => {
       email: 'test@example.com',
       password: 'password123',
       confirmPassword: 'password123',
+      acceptCgu: true,
     });
 
     expect(component.signupForm.hasError('passwordMismatch')).toBe(false);
@@ -110,6 +112,7 @@ describe('SignupComponent', () => {
       email: 'test@example.com',
       password: 'password123',
       confirmPassword: 'password123',
+      acceptCgu: true,
     });
 
     expect(component.signupForm.valid).toBe(true);
@@ -123,6 +126,7 @@ describe('SignupComponent', () => {
       email: 'test@example.com',
       password: 'password123',
       confirmPassword: 'password123',
+      acceptCgu: true,
     });
 
     component.onSubmit();
@@ -142,6 +146,7 @@ describe('SignupComponent', () => {
       email: 'test@example.com',
       password: 'password123',
       confirmPassword: 'password123',
+      acceptCgu: true,
     });
 
     component.onSubmit();
@@ -158,6 +163,7 @@ describe('SignupComponent', () => {
       email: 'test@example.com',
       password: 'password123',
       confirmPassword: 'password123',
+      acceptCgu: true,
     });
 
     component.onSubmit();
@@ -173,6 +179,7 @@ describe('SignupComponent', () => {
       email: 'test@example.com',
       password: 'password123',
       confirmPassword: 'password123',
+      acceptCgu: true,
     });
 
     component.onSubmit();
@@ -191,6 +198,7 @@ describe('SignupComponent', () => {
       email: 'test@example.com',
       password: 'password123',
       confirmPassword: 'password123',
+      acceptCgu: true,
     });
 
     component.onSubmit();
@@ -207,6 +215,7 @@ describe('SignupComponent', () => {
       email: 'test@example.com',
       password: 'password123',
       confirmPassword: 'password123',
+      acceptCgu: true,
     });
 
     component.onSubmit();
@@ -220,6 +229,7 @@ describe('SignupComponent', () => {
       email: '',
       password: '',
       confirmPassword: '',
+      acceptCgu: false,
     });
 
     component.onSubmit();
@@ -236,6 +246,7 @@ describe('SignupComponent', () => {
       email: 'test@example.com',
       password: 'password123',
       confirmPassword: 'password123',
+      acceptCgu: true,
     });
 
     component.onSubmit();
@@ -315,6 +326,7 @@ describe('SignupComponent', () => {
       email: 'test@example.com',
       password: 'password123',
       confirmPassword: 'password123',
+      acceptCgu: true,
     });
     fixture.detectChanges();
 
