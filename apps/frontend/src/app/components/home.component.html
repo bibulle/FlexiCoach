@@ -1,0 +1,143 @@
+<div class="home-shell">
+
+  <!-- Greeting -->
+  <div class="home-greeting">
+    <span class="type-label home-date">{{ formattedDate }}@if (summary?.currentStreak) { · jour {{ summary!.currentStreak }} de ta série}</span>
+    <h1 class="type-display home-title">{{ greeting }}@if (displayName) {, {{ displayName }}}.</h1>
+    <p class="type-body home-subtitle">
+      @if (summary) {
+        @if (summary.adherenceRate >= 80) { Tu es en super forme. Bonne séance ! }
+        @else { {{ summary.adherenceRate }}% de régularité sur 30 jours. Continue ! }
+      } @else {
+        Prêt pour ta prochaine séance ?
+      }
+    </p>
+  </div>
+
+  <!-- Hero card: triple rings + breakdown -->
+  <div class="card home-hero-card">
+    <div class="hero-rings-wrap">
+      <svg class="rings-svg" viewBox="0 0 220 220" aria-hidden="true">
+        <!-- Background tracks -->
+        @for (row of ringRows; track row.label) {
+          <circle cx="110" cy="110" [attr.r]="row.r" fill="none"
+                  stroke="var(--surface-3)" [attr.stroke-width]="RING_STROKE"/>
+        }
+        <!-- Progress arcs -->
+        @for (row of ringRows; track row.label) {
+          <circle cx="110" cy="110" [attr.r]="row.r" fill="none"
+                  [attr.stroke]="row.color" [attr.stroke-width]="RING_STROKE"
+                  stroke-linecap="round"
+                  transform="rotate(-90 110 110)"
+                  [attr.stroke-dasharray]="ringDasharray(row.r, row.pct)"/>
+        }
+        <!-- Center -->
+        <text x="110" y="104" text-anchor="middle" class="rings-center-value">
+          {{ summary?.currentStreak ?? 0 }}
+        </text>
+        <text x="110" y="122" text-anchor="middle" class="rings-center-label">jours</text>
+      </svg>
+    </div>
+
+    <div class="hero-details">
+      @for (row of ringRows; track row.label) {
+        <div class="ring-row">
+          <span class="ring-dot" [style.background]="row.color"></span>
+          <div class="ring-info">
+            <div class="ring-info-header">
+              <span class="type-body-sm ring-label">{{ row.label }}</span>
+              <span class="type-mono ring-pct" [style.color]="row.color">{{ (row.pct * 100) | number:'1.0-0' }}%</span>
+            </div>
+            <div class="ring-track">
+              <div class="ring-fill" [style.width.%]="row.pct * 100" [style.background]="row.color"></div>
+            </div>
+            <span class="type-caption ring-sub">{{ row.current }} <span class="ring-sub-muted">· {{ row.sub }}</span></span>
+          </div>
+        </div>
+      }
+      <a routerLink="/" class="btn btn-primary btn-lg hero-cta">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <polygon points="5 3 19 12 5 21 5 3"/>
+        </svg>
+        Voir les routines
+      </a>
+    </div>
+  </div>
+
+  <!-- Stat tiles -->
+  <div class="home-stat-grid">
+    <div class="stat-tile">
+      <div class="stat-tile-icon" style="background: #fff7ed; color: #f97316;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M12 23C7.029 23 3 18.971 3 14c0-2.761 1.261-5.244 3.25-6.895L7 6.5l.706 2.121c1.088-1.346 2.604-2.364 4.294-2.871V2l5 5-5 5V8.535c-1.458.406-2.685 1.39-3.382 2.711L8 12l-.618.754C6.493 13.718 6 14.805 6 16c0 3.309 2.691 6 6 6 3.309 0 6-2.691 6-6h3c0 4.971-4.029 9-9 9z"/>
+        </svg>
+      </div>
+      <div class="type-h2 stat-tile-value">{{ summary?.currentStreak ?? 0 }}</div>
+      <div class="type-caption stat-tile-label">Série en cours</div>
+    </div>
+    <div class="stat-tile">
+      <div class="stat-tile-icon" style="background: #fefce8; color: #eab308;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/>
+        </svg>
+      </div>
+      <div class="type-h2 stat-tile-value">{{ summary?.longestStreak ?? 0 }}</div>
+      <div class="type-caption stat-tile-label">Meilleure série</div>
+    </div>
+    <div class="stat-tile">
+      <div class="stat-tile-icon" style="background: #f0fdf4; color: #22c55e;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+      </div>
+      <div class="type-h2 stat-tile-value">{{ summary?.totalSessions ?? 0 }}</div>
+      <div class="type-caption stat-tile-label">Sessions totales</div>
+    </div>
+    <div class="stat-tile">
+      <div class="stat-tile-icon" style="background: var(--primary-50); color: var(--primary-600);">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/>
+        </svg>
+      </div>
+      <div class="type-h2 stat-tile-value">{{ summary?.adherenceRate ?? 0 }}%</div>
+      <div class="type-caption stat-tile-label">Adhérence 30j</div>
+    </div>
+  </div>
+
+  <!-- Recent routines -->
+  <div class="home-section-header">
+    <h2 class="type-h2 home-section-title">Tes routines</h2>
+    <a routerLink="/" class="btn btn-ghost home-see-all">Voir tout</a>
+  </div>
+
+  @if (loading) {
+    <div class="home-routines-grid">
+      @for (i of [1,2,3,4]; track i) {
+        <div class="routine-mini-card routine-mini-card--shimmer"></div>
+      }
+    </div>
+  } @else {
+    <div class="home-routines-grid">
+      @for (routine of routines; track routine.id) {
+        <div class="routine-mini-card card" (click)="selectRoutine(routine)" role="button" tabindex="0"
+             (keydown.enter)="selectRoutine(routine)">
+          <div class="mini-card-header">
+            <span class="badge" [class]="getBadgeClass(routine.level)">{{ routine.level }}</span>
+            @if (routine.visibility === 'user') {
+              <span class="badge badge-mine">Ma routine</span>
+            }
+          </div>
+          <h3 class="type-h3 mini-card-name">{{ routine.name }}</h3>
+          <div class="mini-card-meta">
+            <span class="type-caption">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 16 14"/></svg>
+              {{ routine.duration }} min
+            </span>
+            <span class="type-caption">· {{ routine.steps.length }} étapes</span>
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+</div>

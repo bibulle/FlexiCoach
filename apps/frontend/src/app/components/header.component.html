@@ -10,6 +10,13 @@
       <nav class="main-nav">
         @if (authService.isAuthenticated()) {
           <a
+            routerLink="/home"
+            routerLinkActive="active"
+            class="nav-link"
+          >
+            Accueil
+          </a>
+          <a
             routerLink="/"
             routerLinkActive="active"
             [routerLinkActiveOptions]="{exact: true}"
