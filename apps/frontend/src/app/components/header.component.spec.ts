@@ -158,14 +158,11 @@ describe('HeaderComponent', () => {
     expect(crumbs[1]).toEqual({ label: 'Éditer', url: '/routines/123/edit' });
   });
 
-  it('should display breadcrumbs for /calendar', () => {
+  it('should not display breadcrumbs for /calendar (top-level nav)', () => {
     vi.spyOn(router, 'url', 'get').mockReturnValue('/calendar');
     fixture.detectChanges();
 
-    const crumbs = component.breadcrumbs();
-    expect(crumbs.length).toBe(2);
-    expect(crumbs[0]).toEqual({ label: 'Routines', url: '/' });
-    expect(crumbs[1]).toEqual({ label: 'Calendrier', url: '/calendar' });
+    expect(component.breadcrumbs().length).toBe(0);
   });
 
   it('should display breadcrumbs for /admin', () => {
@@ -193,19 +190,18 @@ describe('HeaderComponent', () => {
     fixture.detectChanges();
     expect(component.breadcrumbs().length).toBe(0);
 
-    // Navigate to /calendar
-    vi.spyOn(router, 'url', 'get').mockReturnValue('/calendar');
+    // Navigate to /routines/new
+    vi.spyOn(router, 'url', 'get').mockReturnValue('/routines/new');
 
-    // Trigger navigation event manually since we're not actually navigating
     component['buildBreadcrumbs']();
     fixture.detectChanges();
 
     expect(component.breadcrumbs().length).toBe(2);
-    expect(component.breadcrumbs()[1].label).toBe('Calendrier');
+    expect(component.breadcrumbs()[1].label).toBe('Nouvelle routine');
   });
 
   it('should render breadcrumbs in DOM when present', () => {
-    vi.spyOn(router, 'url', 'get').mockReturnValue('/calendar');
+    vi.spyOn(router, 'url', 'get').mockReturnValue('/routines/new');
     fixture.detectChanges();
 
     const breadcrumbsContainer = fixture.nativeElement.querySelector('.breadcrumbs');
@@ -216,7 +212,7 @@ describe('HeaderComponent', () => {
     expect(links[0].textContent.trim()).toBe('Routines');
 
     const current = breadcrumbsContainer.querySelector('.current');
-    expect(current.textContent.trim()).toBe('Calendrier');
+    expect(current.textContent.trim()).toBe('Nouvelle routine');
 
     const separator = breadcrumbsContainer.querySelector('.separator');
     expect(separator.textContent.trim()).toBe('›');

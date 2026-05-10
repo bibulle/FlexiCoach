@@ -5,9 +5,10 @@ import { SwUpdateService } from './services/sw-update.service';
 import { AuthService } from './services/auth.service';
 import { UpdateNotificationComponent } from './components/update-notification.component';
 import { HeaderComponent } from './components/header.component';
+import { BottomNavComponent } from './components/bottom-nav.component';
 
 @Component({
-  imports: [RouterModule, CommonModule, UpdateNotificationComponent, HeaderComponent],
+  imports: [RouterModule, CommonModule, UpdateNotificationComponent, HeaderComponent, BottomNavComponent],
   selector: 'app-root',
   templateUrl: './app.html',
   styleUrls: ['./app.sass'],

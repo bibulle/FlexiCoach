@@ -48,7 +48,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
     const crumbs: Breadcrumb[] = [];
 
     // Root path - no breadcrumbs
-    if (url === '/' || url === '/home' || url === '/login' || url === '/signup') {
+    if (url === '/' || url === '/home' || url === '/calendar' || url === '/login' || url === '/signup') {
       this.breadcrumbs.set([]);
       return;
     }
