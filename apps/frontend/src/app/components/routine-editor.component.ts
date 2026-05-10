@@ -7,6 +7,18 @@ import { Routine, Step } from '@flexicoach/shared';
 import { RoutineService } from '../services/routine.service';
 import { StepEditorModalComponent } from './step-editor-modal.component';
 
+const MODE_META: Record<string, { color: string; bg: string; label: string }> = {
+  mouvement:   { color: 'var(--mode-mvt)',  bg: 'rgba(59,130,246,0.10)',  label: 'Mouvement'   },
+  statique:    { color: 'var(--mode-resp)', bg: 'rgba(139,92,246,0.10)',  label: 'Statique'    },
+  respiration: { color: '#0ea5e9',          bg: 'rgba(14,165,233,0.10)',  label: 'Respiration' },
+};
+
+const LEVEL_LABELS: Record<string, string> = {
+  beginner:     'Débutant',
+  intermediate: 'Intermédiaire',
+  advanced:     'Avancé',
+};
+
 @Component({
   selector: 'app-routine-editor',
   standalone: true,
@@ -23,6 +35,7 @@ export class RoutineEditorComponent implements OnInit {
   routineId = '';
   showStepModal = false;
   currentStepIndex: number | null = null;
+  selectedStepIndex: number | null = null;
 
   constructor(
     private fb: FormBuilder,
@@ -293,5 +306,41 @@ export class RoutineEditorComponent implements OnInit {
     if (confirm('Êtes-vous sûr de vouloir annuler ? Les modifications non sauvegardées seront perdues.')) {
       this.router.navigate(['/']);
     }
+  }
+
+  selectStep(index: number): void {
+    this.selectedStepIndex = this.selectedStepIndex === index ? null : index;
+  }
+
+  getModeColor(mode: string): string {
+    return MODE_META[mode]?.color ?? 'var(--ink-3)';
+  }
+
+  getModeColorBg(mode: string): string {
+    return MODE_META[mode]?.bg ?? 'transparent';
+  }
+
+  getModeLabel(mode: string): string {
+    return MODE_META[mode]?.label ?? mode;
+  }
+
+  getLevelLabel(difficulty: string): string {
+    return LEVEL_LABELS[difficulty] ?? difficulty;
+  }
+
+  formatSeconds(s: number): string {
+    const m = Math.floor(s / 60);
+    const sec = s % 60;
+    return `${m}:${String(sec).padStart(2, '0')}`;
+  }
+
+  get uniqueModesCount(): number {
+    const modes = new Set(this.steps.controls.map(c => c.get('mode')?.value));
+    return modes.size;
+  }
+
+  get selectedStep() {
+    if (this.selectedStepIndex === null) return null;
+    return this.steps.at(this.selectedStepIndex)?.value ?? null;
   }
 }

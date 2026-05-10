@@ -4,7 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { of, throwError } from 'rxjs';
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { RoutineEditorComponent } from './routine-editor.component';
 import { RoutineService } from '../services/routine.service';
 import { Routine } from '@flexicoach/shared';
@@ -15,6 +15,10 @@ describe('RoutineEditorComponent', () => {
   let mockRoutineService: any;
   let mockActivatedRoute: any;
   let router: Router;
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
 
   beforeEach(async () => {
     mockRoutineService = {
@@ -286,5 +290,75 @@ describe('RoutineEditorComponent', () => {
       URL.createObjectURL = originalCreateObjectURL;
       URL.revokeObjectURL = originalRevokeObjectURL;
     }
+  });
+
+  describe('selectStep / getModeColor / formatSeconds', () => {
+    it('should select a step by index', () => {
+      fixture.detectChanges();
+      component.steps.push(component.createStepFormGroup({ name: 'A', seconds: 60, mode: 'mouvement', text: 'x', cues: [] }));
+      component.selectStep(0);
+      expect(component.selectedStepIndex).toBe(0);
+    });
+
+    it('should deselect step when same index clicked again', () => {
+      fixture.detectChanges();
+      component.steps.push(component.createStepFormGroup({ name: 'A', seconds: 60, mode: 'mouvement', text: 'x', cues: [] }));
+      component.selectStep(0);
+      component.selectStep(0);
+      expect(component.selectedStepIndex).toBeNull();
+    });
+
+    it('should return selectedStep matching selected index', () => {
+      fixture.detectChanges();
+      component.steps.push(component.createStepFormGroup({ name: 'A', seconds: 60, mode: 'mouvement', text: 'x', cues: [] }));
+      component.selectStep(0);
+      expect(component.selectedStep?.name).toBe('A');
+    });
+
+    it('should return null selectedStep when nothing selected', () => {
+      expect(component.selectedStep).toBeNull();
+    });
+
+    it('should return mode color for mouvement', () => {
+      expect(component.getModeColor('mouvement')).toBe('var(--mode-mvt)');
+    });
+
+    it('should return mode color for statique', () => {
+      expect(component.getModeColor('statique')).toBe('var(--mode-resp)');
+    });
+
+    it('should return mode color for respiration', () => {
+      expect(component.getModeColor('respiration')).toBe('#0ea5e9');
+    });
+
+    it('should return fallback color for unknown mode', () => {
+      expect(component.getModeColor('unknown')).toBe('var(--ink-3)');
+    });
+
+    it('should return correct mode label', () => {
+      expect(component.getModeLabel('mouvement')).toBe('Mouvement');
+      expect(component.getModeLabel('statique')).toBe('Statique');
+      expect(component.getModeLabel('respiration')).toBe('Respiration');
+    });
+
+    it('should format seconds correctly', () => {
+      expect(component.formatSeconds(60)).toBe('1:00');
+      expect(component.formatSeconds(90)).toBe('1:30');
+      expect(component.formatSeconds(0)).toBe('0:00');
+      expect(component.formatSeconds(125)).toBe('2:05');
+    });
+
+    it('should count unique modes', () => {
+      fixture.detectChanges();
+      component.steps.push(component.createStepFormGroup({ name: 'A', seconds: 60, mode: 'mouvement', text: 'x', cues: [] }));
+      component.steps.push(component.createStepFormGroup({ name: 'B', seconds: 90, mode: 'statique', text: 'y', cues: [] }));
+      expect(component.uniqueModesCount).toBe(2);
+    });
+
+    it('should return level label', () => {
+      expect(component.getLevelLabel('beginner')).toBe('Débutant');
+      expect(component.getLevelLabel('intermediate')).toBe('Intermédiaire');
+      expect(component.getLevelLabel('advanced')).toBe('Avancé');
+    });
   });
 });
