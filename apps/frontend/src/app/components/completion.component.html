@@ -1,35 +1,73 @@
-<div class="completion-wrap">
-    <div class="completion-card">
-        <div class="success-icon">🎉</div>
-        <h1>Bravo !</h1>
-        <p class="subtitle">Routine terminée avec succès</p>
+<div class="completion-shell">
 
-        <div class="stats">
-            <div class="stat-item">
-                <span class="stat-label">Routine</span>
-                <span class="stat-value">{{ routineName }}</span>
-            </div>
-            <div class="stat-item">
-                <span class="stat-label">Durée</span>
-                <span class="stat-value">{{ formatDuration(duration) }}</span>
-            </div>
-        </div>
-
-        <div class="feeling-section">
-            <h3>Comment vous sentez-vous ?</h3>
-            <div class="feelings">
-                @for (feeling of feelings; track feeling.value) {
-                <button class="feeling-btn" [class.selected]="selectedFeeling === feeling.value"
-                    (click)="selectFeeling(feeling.value)">
-                    <span class="feeling-emoji">{{ feeling.emoji }}</span>
-                    <span class="feeling-label">{{ feeling.label }}</span>
-                </button>
-                }
-            </div>
-        </div>
-
-        <button class="btn-primary large" (click)="finish()">
-            Terminer
-        </button>
+  <!-- Hero check -->
+  <div class="completion-hero">
+    <div class="completion-check">
+      <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <polyline points="20 6 9 17 4 12"/>
+      </svg>
+      <span class="completion-sparkle" aria-hidden="true">✨</span>
     </div>
+
+    <span class="type-label completion-label-done">● Séance terminée</span>
+
+    <h1 class="completion-title">Bravo !</h1>
+
+    <p class="type-body completion-desc">
+      Tu viens de boucler
+      @if (routineName) { <strong>{{ routineName }}</strong> }
+      @if (duration) { en {{ formatDuration(duration) }}. }
+      Continue comme ça !
+    </p>
+  </div>
+
+  <!-- Stat strip -->
+  <div class="completion-stats">
+    <div class="stat-block">
+      <span class="type-label stat-label">Durée</span>
+      <span class="stat-value stat-value--mono">{{ formatDuration(duration) }}</span>
+    </div>
+    @if (routineName) {
+      <div class="stat-block">
+        <span class="type-label stat-label">Routine</span>
+        <span class="stat-value stat-value--truncate">{{ routineName }}</span>
+      </div>
+    }
+  </div>
+
+  <!-- Feeling -->
+  <div class="completion-section">
+    <h3 class="type-h3 completion-section-title">Comment tu te sens ?</h3>
+    <div class="feelings-grid">
+      @for (feeling of feelings; track feeling.value) {
+        <button class="feeling-btn" [class.feeling-btn--selected]="selectedFeeling === feeling.value"
+                (click)="selectFeeling(feeling.value)">
+          <span class="feeling-emoji">{{ feeling.emoji }}</span>
+          <span class="feeling-label">{{ feeling.label }}</span>
+        </button>
+      }
+    </div>
+  </div>
+
+  <!-- Note -->
+  <div class="completion-section">
+    <label class="type-label completion-note-label" for="completion-note">Note rapide (optionnel)</label>
+    <textarea
+      id="completion-note"
+      class="input completion-textarea"
+      placeholder="Hanche droite tendue ce matin…"
+      [(ngModel)]="note">
+    </textarea>
+  </div>
+
+  <!-- Actions -->
+  <div class="completion-actions">
+    <button class="btn btn-primary btn-lg completion-cta" (click)="navigateToCalendar()">
+      Voir mon calendrier
+    </button>
+    <button class="btn btn-secondary btn-lg completion-cta" (click)="finish()">
+      Retour aux routines
+    </button>
+  </div>
+
 </div>
