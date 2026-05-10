@@ -1,11 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-completion',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './completion.component.html',
   styleUrls: ['./completion.component.scss'],
 })
@@ -13,6 +14,7 @@ export class CompletionComponent implements OnInit {
   routineName = '';
   duration = 0;
   selectedFeeling: number | null = null;
+  note = '';
 
   feelings = [
     { value: 1, emoji: '😫', label: 'Difficile' },
@@ -36,8 +38,11 @@ export class CompletionComponent implements OnInit {
   }
 
   finish() {
-    // TODO: Save feeling to session if needed
     this.router.navigate(['/']);
+  }
+
+  navigateToCalendar() {
+    this.router.navigate(['/calendar']);
   }
 
   formatDuration(seconds: number): string {
