@@ -29,6 +29,83 @@ export class RoutinePlayerComponent implements OnInit, OnDestroy {
 
   readonly REST_SECONDS = 10;
 
+  readonly MODE_COLORS: Record<string, string> = {
+    mouvement:   'var(--primary-500)',
+    statique:    'var(--mode-stat)',
+    respiration: 'var(--mode-resp)',
+  };
+
+  readonly MODE_LABELS: Record<string, string> = {
+    mouvement:   'Mouvement',
+    statique:    'Statique',
+    respiration: 'Respiration',
+  };
+
+  get upcomingStep(): Step | null {
+    if (!this.routine) return null;
+    const nextIdx = this.isResting ? this.currentStepIndex : this.currentStepIndex + 1;
+    return this.routine.steps[nextIdx] ?? null;
+  }
+
+  get modeLegend(): { mode: string; label: string; color: string; count: number }[] {
+    if (!this.routine) return [];
+    return Object.entries(this.MODE_LABELS)
+      .map(([mode, label]) => ({
+        mode, label,
+        color: this.MODE_COLORS[mode],
+        count: this.routine!.steps.filter(s => s.mode === mode).length,
+      }))
+      .filter(e => e.count > 0);
+  }
+
+  getModeColor(mode: string): string {
+    return this.MODE_COLORS[mode] ?? 'var(--primary-500)';
+  }
+
+  getModeLabel(mode: string): string {
+    return this.MODE_LABELS[mode] ?? mode;
+  }
+
+  getTimelineSegments(): { flex: number; color: string; status: 'done' | 'current' | 'todo'; progress: number }[] {
+    if (!this.routine) return [];
+    return this.routine.steps.map((step, i) => {
+      let status: 'done' | 'current' | 'todo';
+      if (this.isResting) {
+        status = i < this.currentStepIndex ? 'done' : 'todo';
+      } else {
+        status = i < this.currentStepIndex ? 'done' : i === this.currentStepIndex ? 'current' : 'todo';
+      }
+      const elapsed = status === 'current' ? step.seconds - this.timeLeft : 0;
+      const progress = status === 'current' && step.seconds > 0 ? elapsed / step.seconds : 0;
+      return { flex: step.seconds, color: this.getModeColor(step.mode), status, progress };
+    });
+  }
+
+  previousStep() {
+    if (this.interval) { clearInterval(this.interval); this.interval = null; }
+    this.isResting = false;
+    if (this.currentStepIndex > 0) this.currentStepIndex--;
+    this.startStep();
+    if (this.isPlaying) {
+      this.interval = setInterval(() => this.tick(), 1000);
+    }
+  }
+
+  skipToNext() {
+    if (!this.routine) return;
+    if (this.interval) { clearInterval(this.interval); this.interval = null; }
+    this.isResting = false;
+    this.currentStepIndex++;
+    if (this.currentStepIndex >= this.routine.steps.length) {
+      this.complete();
+    } else {
+      this.startStep();
+      if (this.isPlaying) {
+        this.interval = setInterval(() => this.tick(), 1000);
+      }
+    }
+  }
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
