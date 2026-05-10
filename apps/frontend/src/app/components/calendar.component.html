@@ -1,39 +1,162 @@
-<div class="calendar-container">
-  <div class="calendar-header">
-    <button class="nav-button" (click)="previousMonth()" aria-label="Mois précédent">
-      ‹
-    </button>
-    <h2 class="month-title">{{ monthYear }}</h2>
-    <button class="nav-button" (click)="nextMonth()" aria-label="Mois suivant">
-      ›
-    </button>
-  </div>
+<main class="cal-shell">
 
-  <div class="calendar-legend">
-    <div class="legend-item">
-      <span class="legend-dot complete"></span>
-      <span>Complète</span>
+  <!-- Hero header -->
+  <div class="cal-hero">
+    <div class="cal-hero-text">
+      <div class="type-label">Année {{ currentYear }}</div>
+      <h1 class="type-display cal-title">{{ totalSessions }} séances.</h1>
+      <p class="cal-subtitle">{{ totalHours }}h cumulées · série actuelle {{ currentStreak }} jours</p>
     </div>
-    <div class="legend-item">
-      <span class="legend-dot partial"></span>
-      <span>Partielle</span>
-    </div>
-    <div class="legend-item">
-      <span class="legend-dot missed"></span>
-      <span>Manquée</span>
+    <div class="year-tabs">
+      @for (y of availableYears; track y) {
+        <button
+          [class]="y === currentYear ? 'btn btn-primary year-btn' : 'btn btn-ghost year-btn'"
+          (click)="selectYear(y)"
+        >{{ y }}</button>
+      }
     </div>
   </div>
 
-  <div class="calendar-grid">
-    <div class="weekday-header" *ngFor="let day of weekDays">
-      {{ day }}
-    </div>
+  @if (loading) {
+    <!-- Skeleton -->
+    <div class="card cal-card cal-skeleton"></div>
+    <div class="card cal-card cal-skeleton cal-skeleton--tall"></div>
+  } @else {
 
-    <div class="calendar-day" *ngFor="let day of days" [class.other-month]="!day.isCurrentMonth"
-      [class.today]="isToday(day.date)" [class.complete]="day.adherence === 'complete'"
-      [class.partial]="day.adherence === 'partial'" [class.missed]="day.adherence === 'missed'"
-      [class.none]="day.adherence === 'none'">
-      <span class="day-number">{{ getDayNumber(day.date) }}</span>
-    </div>
-  </div>
-</div>
+    <!-- Trend card -->
+    <section class="card cal-card">
+      <div class="cal-card-header">
+        <div>
+          <div class="type-label">Tendance · sessions par mois</div>
+          <h2 class="type-h2 cal-card-title">Pic en {{ peakMonth }}</h2>
+        </div>
+      </div>
+
+      <!-- Desktop trend chart (hidden on mobile) -->
+      <div class="trend-desktop">
+        <svg
+          [attr.viewBox]="'0 0 ' + TREND_W + ' 150'"
+          width="100%"
+          height="150"
+          preserveAspectRatio="none"
+          class="trend-svg"
+        >
+          <defs>
+            <linearGradient id="trend-area-desktop" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="var(--primary-500)" stop-opacity="0.28" />
+              <stop offset="100%" stop-color="var(--primary-500)" stop-opacity="0" />
+            </linearGradient>
+          </defs>
+          @for (grid of [0.25, 0.5, 0.75]; track grid) {
+            <line
+              [attr.x1]="TREND_PAD_X"
+              [attr.x2]="TREND_W - TREND_PAD_X"
+              [attr.y1]="150 - 28 - grid * (150 - 48)"
+              [attr.y2]="150 - 28 - grid * (150 - 48)"
+              stroke="var(--line)" stroke-dasharray="3 4" stroke-opacity="0.7"
+            />
+          }
+          <path [attr.d]="trendDesktop.area" fill="url(#trend-area-desktop)" />
+          <path [attr.d]="trendDesktop.path" fill="none" stroke="var(--primary-500)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+          @for (pt of trendDesktop.points; track $index) {
+            @if ($index === peakIndex) {
+              <circle [attr.cx]="pt.x" [attr.cy]="pt.y" r="6" fill="var(--primary-500)" fill-opacity="0.18" />
+            }
+            <circle
+              [attr.cx]="pt.x"
+              [attr.cy]="pt.y"
+              [attr.r]="$index === peakIndex ? 4 : 3"
+              [attr.fill]="$index === peakIndex ? 'var(--primary-500)' : 'var(--surface)'"
+              [attr.stroke]="$index === peakIndex ? 'none' : 'var(--primary-500)'"
+              [attr.stroke-width]="$index === peakIndex ? 0 : 2"
+            />
+          }
+          @for (pt of trendDesktop.points; track $index) {
+            <text
+              [attr.x]="pt.x"
+              y="142"
+              text-anchor="middle"
+              font-size="10"
+              font-family="var(--font-sans)"
+              fill="var(--ink-4)"
+            >{{ MONTH_LABELS[$index] }}</text>
+          }
+        </svg>
+      </div>
+
+      <!-- Mobile trend chart -->
+      <div class="trend-mobile">
+        <svg
+          [attr.viewBox]="'0 0 ' + TREND_W + ' 100'"
+          width="100%"
+          height="100"
+          preserveAspectRatio="none"
+          class="trend-svg"
+        >
+          <defs>
+            <linearGradient id="trend-area-mobile" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="var(--primary-500)" stop-opacity="0.28" />
+              <stop offset="100%" stop-color="var(--primary-500)" stop-opacity="0" />
+            </linearGradient>
+          </defs>
+          <path [attr.d]="trendMobile.area" fill="url(#trend-area-mobile)" />
+          <path [attr.d]="trendMobile.path" fill="none" stroke="var(--primary-500)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </div>
+    </section>
+
+    <!-- Heatmap card -->
+    <section class="card cal-card">
+      <div class="cal-card-header">
+        <h2 class="type-h2 cal-card-title">Détail jour par jour</h2>
+      </div>
+
+      <div class="heatmap-scroll">
+        <div class="heatmap-inner">
+          <!-- Month labels -->
+          <div class="heatmap-months">
+            <div class="heatmap-day-col-pad"></div>
+            @for (m of MONTH_LABELS; track m) {
+              <div class="heatmap-month-label">{{ m }}</div>
+            }
+          </div>
+
+          <div class="heatmap-body">
+            <!-- Day of week labels -->
+            <div class="heatmap-day-labels">
+              @for (l of HEAT_LABELS; track l; let i = $index) {
+                <span class="heatmap-day-label" [style.grid-row]="(i * 2) + 1">{{ l }}</span>
+              }
+            </div>
+
+            <!-- Week columns -->
+            <div class="heatmap-weeks">
+              @for (week of heatWeeks; track $index) {
+                <div class="heatmap-week">
+                  @for (day of week; track day.dateStr) {
+                    <div
+                      class="heat-cell"
+                      [class.heat-cell--future]="day.future"
+                      [style.background]="day.future ? 'transparent' : getHeatColor(day.intensity)"
+                      [title]="day.dateStr"
+                    ></div>
+                  }
+                </div>
+              }
+            </div>
+          </div>
+
+          <!-- Legend -->
+          <div class="heatmap-legend">
+            <span class="type-caption">Moins</span>
+            @for (v of [0, 0.4, 0.7, 1]; track v) {
+              <div class="legend-cell" [style.background]="getHeatColor(v)"></div>
+            }
+            <span class="type-caption">Plus</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  }
+</main>
