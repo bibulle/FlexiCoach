@@ -1,4 +1,5 @@
 import { Route } from '@angular/router';
+import { HomeComponent } from './components/home.component';
 import { RoutineListComponent } from './components/routine-list.component';
 import { RoutinePlayerComponent } from './components/routine-player.component';
 import { RoutineEditorComponent } from './components/routine-editor.component';
@@ -11,6 +12,7 @@ import { AdminComponent } from './components/admin.component';
 import { authGuard } from './guards/auth.guard';
 
 export const appRoutes: Route[] = [
+  { path: 'home', component: HomeComponent, canActivate: [authGuard] },
   { path: 'login', component: LoginComponent },
   { path: 'signup', component: SignupComponent },
   { path: 'auth/callback', component: AuthCallbackComponent },
