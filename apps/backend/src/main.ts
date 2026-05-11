@@ -25,8 +25,12 @@ async function bootstrap() {
         ...helmet.contentSecurityPolicy.getDefaultDirectives(),
         // Allow Google profile pictures from OAuth
         'img-src': ["'self'", 'data:', 'https://lh3.googleusercontent.com'],
-        // Allow inline event handlers (needed for Angular event bindings)
-        'script-src-attr': null,
+        // Allow Google Fonts
+        'style-src': ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+        'font-src': ["'self'", 'https://fonts.gstatic.com'],
+        // Angular event bindings compile to addEventListener, not inline handlers.
+        // However Zone.js and some browser APIs require this to be explicitly set.
+        'script-src-attr': ["'unsafe-inline'"],
       },
     } : false,
   }));
