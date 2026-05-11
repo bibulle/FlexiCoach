@@ -70,6 +70,41 @@
   --card:    var(--surface)
   --border:  var(--line)
 
+/* === Dark theme === */
+.theme-dark
+  --bg:        #0f172a
+  --surface:   #1e293b
+  --surface-2: #0f172a
+  --surface-3: #334155
+  --ink:       #f1f5f9
+  --ink-2:     #e2e8f0
+  --ink-3:     #94a3b8
+  --ink-4:     #64748b
+  --ink-5:     #475569
+  --line:      #334155
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3), 0 1px 3px rgba(0, 0, 0, 0.4)
+  --shadow:    0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -2px rgba(0, 0, 0, 0.2)
+  --shadow-lg: 0 12px 24px -8px rgba(0, 0, 0, 0.5), 0 4px 8px -4px rgba(0, 0, 0, 0.3)
+
+  background: var(--bg)
+  color: var(--ink)
+
+/* === Light theme (explicit override, same as :root defaults) === */
+.theme-light
+  --bg:        #f8fafc
+  --surface:   #ffffff
+  --surface-2: #f1f5f9
+  --surface-3: #e2e8f0
+  --ink:       #0f172a
+  --ink-2:     #1e293b
+  --ink-3:     #475569
+  --ink-4:     #64748b
+  --ink-5:     #94a3b8
+  --line:      #e2e8f0
+
+  background: var(--bg)
+  color: var(--ink)
+
 *
   box-sizing: border-box
 

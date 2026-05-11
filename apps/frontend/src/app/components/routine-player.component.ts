@@ -379,17 +379,30 @@ export class RoutinePlayerComponent implements OnInit, OnDestroy {
     }
   }
 
+  private getVoiceSettings(): { speed: number; volume: number; bips: boolean } {
+    try {
+      const raw = localStorage.getItem('voiceSettings');
+      if (raw) {
+        const v = JSON.parse(raw);
+        return { speed: v.speed ?? 1.0, volume: v.volume ?? 0.7, bips: v.bips ?? true };
+      }
+    } catch { /* ignore */ }
+    return { speed: 1.0, volume: 0.7, bips: true };
+  }
+
   private speak(text: string) {
+    const settings = this.getVoiceSettings();
+
     if (!this.synth) {
-      this.beep(880, 0.12);
+      if (settings.bips) this.beep(880, 0.12);
       return;
     }
 
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = 'fr-FR';
-    utterance.rate = 1.02;
+    utterance.rate = settings.speed;
     utterance.pitch = 1.0;
-    utterance.volume = 1.0;
+    utterance.volume = settings.volume;
 
     const voices = this.synth.getVoices();
     const frenchVoice = voices.find((v) => v.lang.startsWith('fr'));
@@ -403,10 +416,14 @@ export class RoutinePlayerComponent implements OnInit, OnDestroy {
   private beep(freq: number, duration: number) {
     if (!this.audioContext) return;
 
+    const settings = this.getVoiceSettings();
+    if (!settings.bips) return;
+
     try {
       const oscillator = this.audioContext.createOscillator();
       const gain = this.audioContext.createGain();
-      const ctx = this.audioContext; // Store reference for closure
+      const ctx = this.audioContext;
+      const peakGain = 0.1 * settings.volume;
 
       oscillator.connect(gain);
       gain.connect(ctx.destination);
@@ -415,7 +432,7 @@ export class RoutinePlayerComponent implements OnInit, OnDestroy {
       oscillator.type = 'sine';
 
       gain.gain.setValueAtTime(0.001, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.1, ctx.currentTime + 0.02);
+      gain.gain.exponentialRampToValueAtTime(Math.max(peakGain, 0.001), ctx.currentTime + 0.02);
 
       oscillator.start();
 

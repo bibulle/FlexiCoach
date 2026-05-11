@@ -31,9 +31,9 @@ describe('BottomNavComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should render 3 nav items when authenticated', () => {
+  it('should render 4 nav items when authenticated', () => {
     const items = fixture.nativeElement.querySelectorAll('.bottom-nav-item');
-    expect(items.length).toBe(3);
+    expect(items.length).toBe(4);
   });
 
   it('should show Accueil link', () => {
@@ -52,6 +52,12 @@ describe('BottomNavComponent', () => {
     const items = fixture.nativeElement.querySelectorAll('.bottom-nav-item');
     const labels = Array.from(items).map((el: any) => el.textContent.trim());
     expect(labels.some(l => l.includes('Routines'))).toBe(true);
+  });
+
+  it('should show Paramètres link', () => {
+    const items = fixture.nativeElement.querySelectorAll('.bottom-nav-item');
+    const labels = Array.from(items).map((el: any) => el.textContent.trim());
+    expect(labels.some(l => l.includes('Param'))).toBe(true);
   });
 
   it('should not render nav when not authenticated', () => {

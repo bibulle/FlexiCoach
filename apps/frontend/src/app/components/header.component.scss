@@ -1,10 +1,10 @@
 .app-header {
-  background: white;
-  border-bottom: 1px solid #e0e0e0;
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
   position: sticky;
   top: 0;
   z-index: 100;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow-sm);
 }
 
 .header-content {
@@ -61,7 +61,7 @@
 
 .nav-link {
   text-decoration: none;
-  color: #666;
+  color: var(--ink-3);
   font-weight: 500;
   font-size: 15px;
   padding: 8px 12px;
@@ -69,13 +69,13 @@
   transition: all 0.2s;
 
   &:hover {
-    color: #4a90e2;
-    background: #f5f9ff;
+    color: var(--primary-500);
+    background: var(--surface-2);
   }
 
   &.active {
-    color: #4a90e2;
-    background: #e8f4ff;
+    color: var(--primary-500);
+    background: var(--primary-50);
   }
 }
 
@@ -92,29 +92,29 @@
   max-width: 1200px;
   margin: 0 auto;
   font-size: 14px;
-  color: #666;
-  border-top: 1px solid #f0f0f0;
-  background: #fafafa;
+  color: var(--ink-3);
+  border-top: 1px solid var(--line);
+  background: var(--surface-2);
 }
 
 .breadcrumb-link {
-  color: #4a90e2;
+  color: var(--primary-500);
   text-decoration: none;
   transition: color 0.2s;
 
   &:hover {
-    color: #357abd;
+    color: var(--primary-600);
     text-decoration: underline;
   }
 }
 
 .separator {
-  color: #999;
+  color: var(--ink-4);
   font-size: 12px;
 }
 
 .current {
-  color: #333;
+  color: var(--ink-2);
   font-weight: 500;
 }
 

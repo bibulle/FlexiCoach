@@ -1,73 +1,221 @@
-<div class="stats-section">
-    @if (loading) {
-    <p>Chargement des statistiques...</p>
-    } @else if (error) {
-    <p class="error">{{ error }}</p>
-    } @else if (summary) {
-    <div class="stats-grid">
-        <!-- Streak Card -->
-        <div class="stat-card">
-            <div class="stat-icon fire">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 23C7.029 23 3 18.971 3 14c0-2.761 1.261-5.244 3.25-6.895L7 6.5l.706 2.121c1.088-1.346 2.604-2.364 4.294-2.871V2l5 5-5 5V8.535c-1.458.406-2.685 1.39-3.382 2.711L8 12l-.618.754C6.493 13.718 6 14.805 6 16c0 3.309 2.691 6 6 6 3.309 0 6-2.691 6-6h3c0 4.971-4.029 9-9 9z"/>
-                </svg>
+<div class="settings-shell">
+  <main class="settings-body">
+
+    <!-- === LEFT: Stats === -->
+    <div class="settings-stats">
+      <span class="type-label">Aperçu</span>
+      <h1 class="settings-title">Tes 30 derniers jours.</h1>
+
+      @if (loading) {
+        <div class="settings-skeleton settings-skeleton--bigs"></div>
+        <div class="settings-skeleton settings-skeleton--card"></div>
+        <div class="settings-skeleton settings-skeleton--card"></div>
+      } @else if (error) {
+        <div class="settings-error">{{ error }}</div>
+      } @else if (summary) {
+
+        <!-- Big stats -->
+        <div class="settings-bigs">
+          <div class="card settings-stat settings-stat--hl">
+            <div class="type-label settings-stat-label">Série actuelle</div>
+            <div class="settings-stat-row">
+              <span class="settings-stat-value settings-stat-value--display">{{ summary.currentStreak }}</span>
+              <span class="settings-stat-unit">jours</span>
             </div>
-            <div class="stat-content">
-                <div class="stat-value">{{ summary.currentStreak }}</div>
-                <div class="stat-label">Série actuelle</div>
-                <div class="stat-detail">Record: {{ summary.longestStreak }} jours</div>
+          </div>
+          <div class="card settings-stat">
+            <div class="type-label settings-stat-label">Temps cumulé</div>
+            <div class="settings-stat-row">
+              <span class="settings-stat-value type-mono">{{ formattedMinutes }}</span>
             </div>
+          </div>
+          <div class="card settings-stat">
+            <div class="type-label settings-stat-label">Séances</div>
+            <div class="settings-stat-row">
+              <span class="settings-stat-value">{{ summary.totalSessions }}</span>
+              <span class="settings-stat-unit">/30</span>
+            </div>
+          </div>
+          <div class="card settings-stat">
+            <div class="type-label settings-stat-label">Régularité</div>
+            <div class="settings-stat-row">
+              <span class="settings-stat-value">{{ summary.adherenceRate }}</span>
+              <span class="settings-stat-unit">%</span>
+            </div>
+          </div>
         </div>
 
-        <!-- Time Card -->
-        <div class="stat-card">
-            <div class="stat-icon time">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <polyline points="12 6 12 12 16 14"></polyline>
-                </svg>
-            </div>
-            <div class="stat-content">
-                <div class="stat-value">{{ formattedMinutes }}</div>
-                <div class="stat-label">Temps total</div>
-                <div class="stat-detail">{{ summary.totalSessions }} séances</div>
-            </div>
+        <!-- Activity by day -->
+        <div class="card settings-card">
+          <div class="settings-card-header">
+            <span class="type-label">Activité par jour de la semaine</span>
+            <span class="type-mono settings-avg">moy. 4 séances</span>
+          </div>
+          <div class="settings-bars">
+            @for (day of dayActivity; track day.label) {
+              <div class="settings-bar-row">
+                <span class="settings-bar-label">{{ day.label }}</span>
+                <div class="settings-bar-track">
+                  <div class="settings-bar-fill" [class.settings-bar-fill--hi]="day.highlight"
+                       [style.width.%]="(day.count / maxDayCount) * 100"></div>
+                </div>
+                <span class="type-mono settings-bar-count">{{ day.count }}</span>
+              </div>
+            }
+          </div>
         </div>
 
-        <!-- Adherence Card -->
-        <div class="stat-card">
-            <div class="stat-icon chart">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline>
-                    <polyline points="16 7 22 7 22 13"></polyline>
-                </svg>
+        <!-- Top routines -->
+        <div class="card settings-card">
+          <span class="type-label" style="display:block; margin-bottom:14px">Top routines</span>
+          @for (r of topRoutines; track r.name; let last = $last) {
+            <div class="settings-routine-row" [class.settings-routine-row--last]="last">
+              <div class="settings-routine-info">
+                <div class="settings-routine-name">{{ r.name }}</div>
+                <div class="settings-routine-bar">
+                  <div class="settings-routine-fill" [style.width.%]="r.pct * 100"></div>
+                </div>
+              </div>
+              <span class="type-mono settings-routine-count">{{ r.count }}×</span>
             </div>
-            <div class="stat-content">
-                <div class="stat-value">{{ summary.adherenceRate }}%</div>
-                <div class="stat-label">Régularité</div>
-                <div class="stat-detail">Sur les 30 derniers jours</div>
-            </div>
+          }
         </div>
-
-        <!-- Favorite Routine Card -->
-        @if (summary.favoriteRoutine) {
-        <div class="stat-card">
-            <div class="stat-icon favorite">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="12" cy="8" r="7"></circle>
-                    <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline>
-                </svg>
-            </div>
-            <div class="stat-content">
-                <div class="stat-value favorite-routine">{{ summary.favoriteRoutine }}</div>
-                <div class="stat-label">Routine favorite</div>
-                <div class="stat-detail">Votre préférée</div>
-            </div>
-        </div>
-        }
+      }
     </div>
-    }
+
+    <!-- === RIGHT: Settings === -->
+    <aside class="settings-panel">
+
+      <!-- Rappels -->
+      <div class="card settings-card">
+        <div class="settings-card-header">
+          <h3 class="type-h3 settings-card-title">Rappels</h3>
+          <button class="btn btn-ghost settings-add-btn" type="button" (click)="showAddReminder = !showAddReminder">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            Ajouter
+          </button>
+        </div>
+
+        @for (reminder of reminders; track $index; let i = $index; let last = $last) {
+          <div class="settings-reminder"
+               [class.settings-reminder--off]="!reminder.enabled"
+               [class.settings-reminder--last]="last && !showAddReminder">
+            <div class="settings-reminder-info">
+              <div class="type-mono settings-reminder-time">{{ reminder.time }}</div>
+              <div class="settings-reminder-days">
+                @for (label of dayLabels; track $index; let di = $index) {
+                  <span class="settings-day-dot" [class.settings-day-dot--on]="reminder.days.includes(di)">{{ label }}</span>
+                }
+              </div>
+            </div>
+            <button type="button" class="btn btn-ghost btn-icon settings-delete-btn"
+                    (click)="deleteReminder(i)" aria-label="Supprimer ce rappel">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+            </button>
+            <div class="settings-toggle" [class.settings-toggle--on]="reminder.enabled"
+                 (click)="toggleReminder(i)" role="switch" [attr.aria-checked]="reminder.enabled">
+              <div class="settings-toggle-thumb"></div>
+            </div>
+          </div>
+        }
+
+        @if (reminders.length === 0) {
+          <p class="settings-empty-reminders">Aucun rappel. Appuyez sur + Ajouter.</p>
+        }
+
+        <!-- Add reminder form -->
+        @if (showAddReminder) {
+          <div class="settings-add-form">
+            <input type="time" [(ngModel)]="newReminderTime" class="settings-time-input input" />
+            <div class="settings-day-picker">
+              @for (label of dayLabels; track $index; let di = $index) {
+                <button type="button" class="settings-day-dot"
+                        [class.settings-day-dot--on]="isNewDaySelected(di)"
+                        (click)="toggleNewDay(di)">{{ label }}</button>
+              }
+            </div>
+            <div class="settings-add-form-actions">
+              <button type="button" class="btn btn-primary" (click)="addReminder()">Ajouter</button>
+              <button type="button" class="btn btn-ghost" (click)="cancelAddReminder()">Annuler</button>
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- Coach vocal -->
+      <div class="card settings-card">
+        <h3 class="type-h3 settings-card-title">Coach vocal</h3>
+        <div class="settings-slider-row">
+          <div class="settings-slider-header">
+            <span class="settings-row-label">Vitesse</span>
+            <span class="type-mono settings-slider-val">{{ speedDisplay }}</span>
+          </div>
+          <input type="range" min="0.5" max="2" step="0.1"
+                 [(ngModel)]="voiceSpeed" (ngModelChange)="saveVoiceSettings()"
+                 class="settings-range-input"
+                 [style.--track-fill]="speedFill" />
+        </div>
+        <div class="settings-slider-row">
+          <div class="settings-slider-header">
+            <span class="settings-row-label">Volume</span>
+            <span class="type-mono settings-slider-val">{{ volumeDisplay }}</span>
+          </div>
+          <input type="range" min="0" max="1" step="0.05"
+                 [(ngModel)]="voiceVolume" (ngModelChange)="saveVoiceSettings()"
+                 class="settings-range-input"
+                 [style.--track-fill]="volumeFill" />
+        </div>
+        <div class="settings-row settings-row--last">
+          <span class="settings-row-label">Bips</span>
+          <div class="settings-toggle" [class.settings-toggle--on]="bipsEnabled"
+               (click)="toggleBips()" role="switch" [attr.aria-checked]="bipsEnabled">
+            <div class="settings-toggle-thumb"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Apparence -->
+      <div class="card settings-card">
+        <h3 class="type-h3 settings-card-title">Apparence</h3>
+        <div class="settings-theme-grid">
+          <button type="button" class="settings-theme-btn"
+                  [class.settings-theme-btn--active]="selectedTheme() === 'light'"
+                  (click)="setTheme('light')">
+            <div class="settings-theme-preview settings-theme-preview--light">
+              <span class="settings-theme-dot settings-theme-dot--dark"></span>
+            </div>
+            <span class="settings-theme-label">Clair</span>
+          </button>
+          <button type="button" class="settings-theme-btn"
+                  [class.settings-theme-btn--active]="selectedTheme() === 'dark'"
+                  (click)="setTheme('dark')">
+            <div class="settings-theme-preview settings-theme-preview--dark">
+              <span class="settings-theme-dot settings-theme-dot--light"></span>
+            </div>
+            <span class="settings-theme-label">Sombre</span>
+          </button>
+          <button type="button" class="settings-theme-btn"
+                  [class.settings-theme-btn--active]="selectedTheme() === 'auto'"
+                  (click)="setTheme('auto')">
+            <div class="settings-theme-preview settings-theme-preview--auto">
+              <span class="settings-theme-dot settings-theme-dot--primary"></span>
+            </div>
+            <span class="settings-theme-label">Auto</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Sign out -->
+      <button type="button" class="btn btn-secondary settings-logout" (click)="logout()">
+        Se déconnecter
+      </button>
+    </aside>
+
+  </main>
 </div>

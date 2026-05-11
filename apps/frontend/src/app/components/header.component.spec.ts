@@ -165,6 +165,13 @@ describe('HeaderComponent', () => {
     expect(component.breadcrumbs().length).toBe(0);
   });
 
+  it('should not display breadcrumbs for /settings (top-level nav)', () => {
+    vi.spyOn(router, 'url', 'get').mockReturnValue('/settings');
+    fixture.detectChanges();
+
+    expect(component.breadcrumbs().length).toBe(0);
+  });
+
   it('should display breadcrumbs for /admin', () => {
     vi.spyOn(router, 'url', 'get').mockReturnValue('/admin');
     fixture.detectChanges();

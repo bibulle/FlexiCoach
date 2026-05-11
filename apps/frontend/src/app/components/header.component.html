@@ -31,6 +31,13 @@
           >
             Calendrier
           </a>
+          <a
+            routerLink="/settings"
+            routerLinkActive="active"
+            class="nav-link"
+          >
+            Paramètres
+          </a>
           @if (authService.isAdminMode()) {
             <a
               routerLink="/admin"
