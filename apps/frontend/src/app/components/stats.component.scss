@@ -371,6 +371,17 @@
 
 .settings-notif-btn { font-size: 12px; padding: 4px 12px; }
 
+.settings-notif-test-btn {
+  margin-left: auto;
+  font-size: 11px;
+  padding: 2px 8px;
+  color: #16a34a;
+  border: 1px solid #16a34a;
+  border-radius: 4px;
+  opacity: 0.7;
+  &:hover { opacity: 1; }
+}
+
 .settings-notif-active {
   display: flex;
   align-items: center;

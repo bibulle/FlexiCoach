@@ -58,13 +58,31 @@ export class ReminderNotificationService {
     }
   }
 
+  testNotification(): void {
+    if (this.permission() !== 'granted') return;
+    try {
+      new Notification('FlexiCoach 💪', {
+        body: 'Test — Les notifications fonctionnent !',
+        icon: '/favicon.svg',
+        badge: '/favicon.svg',
+        tag: 'reminder-test',
+      });
+    } catch (e) {
+      console.error('[Notifications] Échec du test :', e);
+    }
+  }
+
   private showNotification(time: string): void {
-    new Notification('FlexiCoach 💪', {
-      body: `${time} — C'est l'heure de ta séance !`,
-      icon: '/favicon.svg',
-      badge: '/favicon.svg',
-      tag: `reminder-${time}`,
-    });
+    try {
+      new Notification('FlexiCoach 💪', {
+        body: `${time} — C'est l'heure de ta séance !`,
+        icon: '/favicon.svg',
+        badge: '/favicon.svg',
+        tag: `reminder-${time}`,
+      });
+    } catch (e) {
+      console.error('[Notifications] Échec :', e);
+    }
   }
 
   private loadReminders(): Reminder[] {

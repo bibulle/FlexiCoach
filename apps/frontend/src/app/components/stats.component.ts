@@ -281,6 +281,10 @@ export class StatsComponent implements OnInit {
     await this.notifService.requestPermission();
   }
 
+  testNotification(): void {
+    this.notifService.testNotification();
+  }
+
   // ── Auth ──────────────────────────────────────────────────────────────────
 
   logout(): void {
