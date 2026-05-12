@@ -181,15 +181,7 @@
 
 /* === Top routines === */
 .settings-routine-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 0;
-  border-bottom: 1px solid var(--line);
-
-  &--last {
-    border-bottom: none;
-  }
+  &--last { border-bottom: none; }
 }
 
 .settings-routine-info {
@@ -230,16 +222,21 @@
   gap: 0;
 }
 
-/* === Reminders === */
-.settings-reminder {
+/* === Shared row base (reminders, routines, settings) === */
+.settings-reminder,
+.settings-routine-row,
+.settings-row {
   display: flex;
   align-items: center;
   gap: 12px;
   padding: 10px 0;
   border-bottom: 1px solid var(--line);
-
-  &--off  { opacity: 0.55; }
   &--last { border-bottom: none; }
+}
+
+/* === Reminders === */
+.settings-reminder {
+  &--off { opacity: 0.55; }
 }
 
 .settings-reminder-info {
@@ -306,16 +303,6 @@
 }
 
 /* === Settings rows === */
-.settings-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 0;
-  border-bottom: 1px solid var(--line);
-
-  &--last { border-bottom: none; }
-}
-
 .settings-row-label {
   flex: 1;
   font-size: 14px;
@@ -554,13 +541,6 @@
   &:hover {
     background: rgba(220, 38, 38, 0.06);
   }
-}
-
-.settings-version {
-  text-align: center;
-  font-size: 11px;
-  color: var(--ink-5);
-  margin-bottom: 14px;
 }
 
 /* === Desktop (≥768px) === */
