@@ -6,12 +6,14 @@ import { Router } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
 import { of, throwError } from 'rxjs';
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { ReminderNotificationService } from '../services/reminder-notification.service';
 
 describe('StatsComponent', () => {
   let component: StatsComponent;
   let fixture: ComponentFixture<StatsComponent>;
   let mockStatsService: any;
   let mockAuthService: any;
+  let mockNotifService: any;
 
   const mockSummary: StatsSummary = {
     currentStreak: 5,
@@ -23,11 +25,21 @@ describe('StatsComponent', () => {
   };
 
   beforeEach(async () => {
+    // Reset speechSynthesis.getVoices between tests to avoid cross-test contamination
+    (window.speechSynthesis as any).getVoices = () => [];
+
     mockStatsService = { getSummary: vi.fn() };
     mockAuthService = {
       currentUser$: of(null),
       isAuthenticated: vi.fn(() => false),
       logout: vi.fn(),
+    };
+    mockNotifService = {
+      isSupported: true,
+      permission: vi.fn().mockReturnValue('default' as NotificationPermission),
+      requestPermission: vi.fn().mockResolvedValue('granted'),
+      start: vi.fn(),
+      stop: vi.fn(),
     };
 
     await TestBed.configureTestingModule({
@@ -35,6 +47,7 @@ describe('StatsComponent', () => {
       providers: [
         { provide: StatsService, useValue: mockStatsService },
         { provide: AuthService, useValue: mockAuthService },
+        { provide: ReminderNotificationService, useValue: mockNotifService },
       ],
     }).compileComponents();
 
@@ -318,6 +331,41 @@ describe('StatsComponent', () => {
     const std     = { name: 'Thomas',          lang: 'fr-FR', localService: true  } as SpeechSynthesisVoice;
     expect(component.voiceLabel(network)).toBe('Google français ✦');
     expect(component.voiceLabel(std)).toBe('Thomas');
+  });
+
+  // ── Notifications ────────────────────────────────────────────────────────
+
+  it('should call requestPermission when enableNotifications is called', async () => {
+    await component.enableNotifications();
+    expect(mockNotifService.requestPermission).toHaveBeenCalled();
+  });
+
+  it('should show activate button when permission is default', () => {
+    mockStatsService.getSummary.mockReturnValue(of(mockSummary));
+    mockNotifService.permission.mockReturnValue('default');
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.settings-notif-btn')).toBeTruthy();
+  });
+
+  it('should not show activate button when permission is granted', () => {
+    mockStatsService.getSummary.mockReturnValue(of(mockSummary));
+    mockNotifService.permission.mockReturnValue('granted');
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.settings-notif-btn')).toBeNull();
+  });
+
+  it('should show active indicator when permission is granted', () => {
+    mockStatsService.getSummary.mockReturnValue(of(mockSummary));
+    mockNotifService.permission.mockReturnValue('granted');
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.settings-notif-active')).toBeTruthy();
+  });
+
+  it('should show denied message when permission is denied', () => {
+    mockStatsService.getSummary.mockReturnValue(of(mockSummary));
+    mockNotifService.permission.mockReturnValue('denied');
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.settings-notif-denied')).toBeTruthy();
   });
 
   // ── Logout ───────────────────────────────────────────────────────────────
