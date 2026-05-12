@@ -46,6 +46,7 @@ export class RoutineEditorComponent implements OnInit {
     this.routineForm = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(50)]],
       description: ['', Validators.maxLength(500)],
+      tag: [''],
       category: ['', Validators.maxLength(50)],
       difficulty: ['beginner', Validators.required],
       icon: ['', Validators.maxLength(50)],
@@ -75,6 +76,7 @@ export class RoutineEditorComponent implements OnInit {
         this.routineForm.patchValue({
           name: routine.name,
           description: routine.description || '',
+          tag: routine.tag || '',
           category: routine.level,
           difficulty: routine.level,
           icon: '',
@@ -279,6 +281,7 @@ export class RoutineEditorComponent implements OnInit {
         this.routineForm.patchValue({
           name: routine.name || '',
           description: routine.description || '',
+          tag: routine.tag || '',
           category: routine.category || '',
           difficulty: routine.difficulty || 'beginner',
           icon: routine.icon || '',

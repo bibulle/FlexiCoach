@@ -63,6 +63,9 @@ export class Routine {
 
   @Prop()
   ownerId?: string;
+
+  @Prop()
+  tag?: string;
 }
 
 export const RoutineSchema = SchemaFactory.createForClass(Routine);

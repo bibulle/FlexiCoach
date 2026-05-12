@@ -2,6 +2,7 @@
     "id": "bureau-5min",
     "slug": "bureau-5min",
     "name": "Pause bureau",
+    "tag": "bureau",
     "duration": 5,
     "level": "Tous niveaux",
     "description": "Étirements rapides pour la nuque, épaules et dos.",
