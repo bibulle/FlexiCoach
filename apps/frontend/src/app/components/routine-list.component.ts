@@ -27,6 +27,13 @@ export class RoutineListComponent implements OnInit {
     return this.routines.filter(r => r.visibility === 'user').length;
   }
 
+  private readonly FILTER_TAGS: Record<string, string[]> = {
+    'Quotidien': ['quotidien'],
+    'Bureau':    ['bureau'],
+    'Sport':     ['sport'],
+  };
+
+  // Fallback keyword matching for routines without a tag
   private readonly FILTER_KEYWORDS: Record<string, string[]> = {
     'Quotidien': ['quotidien', 'matin', 'soir', 'douce', 'réveil', 'lever', 'détente', 'relaxation'],
     'Bureau':    ['bureau', 'cervical', 'assis', 'ordinateur', 'poste', 'travail', 'express', 'siège'],
@@ -36,10 +43,13 @@ export class RoutineListComponent implements OnInit {
   filteredRoutines = computed(() => {
     const f = this.activeFilter();
     if (f === 'Mes routines') return this.routines.filter(r => r.visibility === 'user');
-    const keywords = this.FILTER_KEYWORDS[f];
-    if (!keywords) return this.routines;
+    const tags = this.FILTER_TAGS[f];
+    if (!tags) return this.routines;
+    const keywords = this.FILTER_KEYWORDS[f] ?? [];
     const text = (r: Routine) => `${r.name} ${r.description ?? ''}`.toLowerCase();
-    return this.routines.filter(r => keywords.some(kw => text(r).includes(kw)));
+    return this.routines.filter(r =>
+      r.tag ? tags.includes(r.tag) : keywords.some(kw => text(r).includes(kw))
+    );
   });
 
   constructor(

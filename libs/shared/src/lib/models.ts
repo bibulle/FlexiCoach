@@ -9,6 +9,8 @@ export interface Step {
   }>;
 }
 
+export type RoutineTag = 'quotidien' | 'bureau' | 'sport' | 'mobilite' | 'respiration';
+
 export interface Routine {
   id: string;
   slug: string;
@@ -22,6 +24,7 @@ export interface Routine {
   version?: number;
   visibility?: 'builtIn' | 'user';
   ownerId?: string;
+  tag?: RoutineTag | string;
 }
 
 export interface UserSettings {
