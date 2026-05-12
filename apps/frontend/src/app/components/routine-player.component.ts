@@ -379,15 +379,15 @@ export class RoutinePlayerComponent implements OnInit, OnDestroy {
     }
   }
 
-  private getVoiceSettings(): { speed: number; volume: number; bips: boolean } {
+  private getVoiceSettings(): { speed: number; volume: number; bips: boolean; voiceName: string } {
     try {
       const raw = localStorage.getItem('voiceSettings');
       if (raw) {
         const v = JSON.parse(raw);
-        return { speed: v.speed ?? 1.0, volume: v.volume ?? 0.7, bips: v.bips ?? true };
+        return { speed: v.speed ?? 1.0, volume: v.volume ?? 0.7, bips: v.bips ?? true, voiceName: v.voiceName ?? '' };
       }
     } catch { /* ignore */ }
-    return { speed: 1.0, volume: 0.7, bips: true };
+    return { speed: 1.0, volume: 0.7, bips: true, voiceName: '' };
   }
 
   private speak(text: string) {
@@ -405,9 +405,12 @@ export class RoutinePlayerComponent implements OnInit, OnDestroy {
     utterance.volume = settings.volume;
 
     const voices = this.synth.getVoices();
-    const frenchVoice = voices.find((v) => v.lang.startsWith('fr'));
-    if (frenchVoice) {
-      utterance.voice = frenchVoice;
+    const voiceName = settings.voiceName;
+    const selectedVoice = voiceName
+      ? voices.find(v => v.name === voiceName)
+      : voices.find(v => v.lang.startsWith('fr'));
+    if (selectedVoice) {
+      utterance.voice = selectedVoice;
     }
 
     this.synth.speak(utterance);

@@ -53,6 +53,8 @@ export class StatsComponent implements OnInit {
   voiceSpeed = 1.0;
   voiceVolume = 0.7;
   bipsEnabled = true;
+  selectedVoiceName = '';
+  availableVoices: SpeechSynthesisVoice[] = [];
 
   // Placeholder stats (future API endpoint)
   readonly dayActivity = [
@@ -74,6 +76,36 @@ export class StatsComponent implements OnInit {
   ngOnInit(): void {
     this.loadFromStorage();
     this.loadSummary();
+    this.loadVoices();
+  }
+
+  private voiceQuality(v: SpeechSynthesisVoice): number {
+    if (v.name.includes('(Premium)') || v.name.includes('(Enhanced)')) return 2;
+    if (!v.localService) return 1; // réseau (ex: Google) — bon mais dépendant de la connexion
+    return 0;
+  }
+
+  voiceLabel(v: SpeechSynthesisVoice): string {
+    const quality = this.voiceQuality(v);
+    const baseName = v.name.replace(/\s*\((Enhanced|Premium|Compact)\)/, '');
+    if (quality === 2) return `${baseName} ✦✦`;
+    if (quality === 1) return `${baseName} ✦`;
+    return baseName;
+  }
+
+  private loadVoices(): void {
+    const synth = window.speechSynthesis;
+    if (!synth) return;
+    const populate = () => {
+      this.availableVoices = synth.getVoices()
+        .filter(v => v.lang.startsWith('fr') && !v.name.match(/\(French \([^)]+\)\)/))
+        .sort((a, b) => this.voiceQuality(b) - this.voiceQuality(a));
+      if (this.availableVoices.length > 0 && !this.selectedVoiceName) {
+        this.selectedVoiceName = this.availableVoices[0].name;
+      }
+    };
+    populate();
+    synth.addEventListener('voiceschanged', populate);
   }
 
   private loadFromStorage(): void {
@@ -100,6 +132,7 @@ export class StatsComponent implements OnInit {
         this.voiceSpeed = v.speed ?? 1.0;
         this.voiceVolume = v.volume ?? 0.7;
         this.bipsEnabled = v.bips ?? true;
+        this.selectedVoiceName = v.voiceName ?? '';
       }
     } catch { /* use defaults */ }
   }
@@ -202,12 +235,26 @@ export class StatsComponent implements OnInit {
       speed: this.voiceSpeed,
       volume: this.voiceVolume,
       bips: this.bipsEnabled,
+      voiceName: this.selectedVoiceName,
     }));
   }
 
   toggleBips(): void {
     this.bipsEnabled = !this.bipsEnabled;
     this.saveVoiceSettings();
+  }
+
+  testVoice(): void {
+    const synth = window.speechSynthesis;
+    if (!synth) return;
+    synth.cancel();
+    const utterance = new SpeechSynthesisUtterance('Bonjour, je suis votre coach vocal.');
+    utterance.lang = 'fr-FR';
+    utterance.rate = this.voiceSpeed;
+    utterance.volume = this.voiceVolume;
+    const voice = this.availableVoices.find(v => v.name === this.selectedVoiceName);
+    if (voice) utterance.voice = voice;
+    synth.speak(utterance);
   }
 
   get speedDisplay(): string {

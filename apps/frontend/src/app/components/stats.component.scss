@@ -330,6 +330,40 @@
   color: var(--ink-3);
 }
 
+/* === Voice select === */
+.settings-voice-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.settings-voice-select {
+  font-size: 13px;
+  color: var(--ink-2);
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 4px 8px;
+  max-width: 180px;
+  cursor: pointer;
+
+  &:focus { outline: 2px solid var(--primary-500); outline-offset: 1px; }
+}
+
+.settings-voice-test {
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  color: var(--primary-500);
+
+  &:hover { background: var(--surface-3); }
+}
+
 /* === Reminder empty state === */
 .settings-empty-reminders {
   font-size: 13px;

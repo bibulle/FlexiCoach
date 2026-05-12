@@ -234,15 +234,90 @@ describe('StatsComponent', () => {
     expect(localStorage.getItem('voiceSettings')).toContain('"bips":false');
   });
 
-  it('should save voice settings to localStorage', () => {
+  it('should save voice settings to localStorage including voiceName', () => {
     component.voiceSpeed = 1.2;
     component.voiceVolume = 0.5;
     component.bipsEnabled = false;
+    component.selectedVoiceName = 'Thomas';
     component.saveVoiceSettings();
     const saved = JSON.parse(localStorage.getItem('voiceSettings')!);
     expect(saved.speed).toBeCloseTo(1.2);
     expect(saved.volume).toBeCloseTo(0.5);
     expect(saved.bips).toBe(false);
+    expect(saved.voiceName).toBe('Thomas');
+  });
+
+  it('should restore voiceName from localStorage on init', () => {
+    localStorage.setItem('voiceSettings', JSON.stringify({ speed: 1.0, volume: 0.7, bips: true, voiceName: 'Marie' }));
+    mockStatsService.getSummary.mockReturnValue(of(mockSummary));
+    component.ngOnInit();
+    expect(component.selectedVoiceName).toBe('Marie');
+  });
+
+  it('should call speechSynthesis.speak when testVoice is called', () => {
+    const mockSpeak = vi.fn();
+    (window.speechSynthesis as any).speak = mockSpeak;
+    component.availableVoices = [{ name: 'Amélie', lang: 'fr-FR' }] as SpeechSynthesisVoice[];
+    component.selectedVoiceName = 'Amélie';
+    component.testVoice();
+    expect(mockSpeak).toHaveBeenCalledOnce();
+  });
+
+  it('should populate availableVoices from speechSynthesis (French only)', () => {
+    const mockVoices = [
+      { name: 'Thomas', lang: 'fr-FR' },
+      { name: 'Marie', lang: 'fr-FR' },
+      { name: 'Alice', lang: 'en-US' },
+    ] as SpeechSynthesisVoice[];
+    (window.speechSynthesis as any).getVoices = vi.fn().mockReturnValue(mockVoices);
+    mockStatsService.getSummary.mockReturnValue(of(mockSummary));
+    component.ngOnInit();
+    expect(component.availableVoices.length).toBe(2);
+    expect(component.availableVoices.every(v => v.lang.startsWith('fr'))).toBe(true);
+  });
+
+  it('should exclude voices with (French (...)) in name', () => {
+    const mockVoices = [
+      { name: 'Thomas',                    lang: 'fr-FR', localService: true  },
+      { name: 'Eddy (French (France))',    lang: 'fr-FR', localService: true  },
+      { name: 'Daniel (French (France))',  lang: 'fr-FR', localService: true  },
+      { name: 'Google français',           lang: 'fr-FR', localService: false },
+    ] as SpeechSynthesisVoice[];
+    (window.speechSynthesis as any).getVoices = vi.fn().mockReturnValue(mockVoices);
+    mockStatsService.getSummary.mockReturnValue(of(mockSummary));
+    component.ngOnInit();
+    expect(component.availableVoices.map(v => v.name)).toEqual(['Google français', 'Thomas']);
+  });
+
+  it('should sort voices: network first, local standard last', () => {
+    const mockVoices = [
+      { name: 'Thomas',          lang: 'fr-FR', localService: true  },
+      { name: 'Google français', lang: 'fr-FR', localService: false },
+      { name: 'Amélie',          lang: 'fr-FR', localService: true  },
+    ] as SpeechSynthesisVoice[];
+    (window.speechSynthesis as any).getVoices = vi.fn().mockReturnValue(mockVoices);
+    mockStatsService.getSummary.mockReturnValue(of(mockSummary));
+    component.ngOnInit();
+    expect(component.availableVoices[0].name).toBe('Google français');
+  });
+
+  it('should auto-select first (best) voice when none saved', () => {
+    const mockVoices = [
+      { name: 'Thomas',          lang: 'fr-FR', localService: true  },
+      { name: 'Google français', lang: 'fr-FR', localService: false },
+    ] as SpeechSynthesisVoice[];
+    (window.speechSynthesis as any).getVoices = vi.fn().mockReturnValue(mockVoices);
+    mockStatsService.getSummary.mockReturnValue(of(mockSummary));
+    component.selectedVoiceName = '';
+    component.ngOnInit();
+    expect(component.selectedVoiceName).toBe('Google français');
+  });
+
+  it('voiceLabel should show ✦ for network voice, nothing for local standard', () => {
+    const network = { name: 'Google français', lang: 'fr-FR', localService: false } as SpeechSynthesisVoice;
+    const std     = { name: 'Thomas',          lang: 'fr-FR', localService: true  } as SpeechSynthesisVoice;
+    expect(component.voiceLabel(network)).toBe('Google français ✦');
+    expect(component.voiceLabel(std)).toBe('Thomas');
   });
 
   // ── Logout ───────────────────────────────────────────────────────────────
