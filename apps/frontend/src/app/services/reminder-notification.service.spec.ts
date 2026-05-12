@@ -34,7 +34,7 @@ describe('ReminderNotificationService', () => {
   });
 
   it('should report permission from Notification API', () => {
-    expect(service.permission).toBe('granted');
+    expect(service.permission()).toBe('granted');
   });
 
   it('should report isSupported true when Notification exists', () => {
@@ -63,6 +63,7 @@ describe('ReminderNotificationService', () => {
 
   it('should not show notification when permission is not granted', () => {
     (window.Notification as any).permission = 'default';
+    service.permission.set('default');
     service.checkReminders();
     expect(window.Notification).not.toHaveBeenCalled();
   });

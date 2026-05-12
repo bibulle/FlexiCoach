@@ -30,7 +30,7 @@ export class AppComponent implements OnInit {
     }
 
     // Start reminder notifications if already granted
-    if (this.reminderNotifications.permission === 'granted') {
+    if (this.reminderNotifications.permission() === 'granted') {
       this.reminderNotifications.start();
     }
   }

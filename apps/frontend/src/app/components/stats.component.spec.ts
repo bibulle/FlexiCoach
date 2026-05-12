@@ -36,7 +36,7 @@ describe('StatsComponent', () => {
     };
     mockNotifService = {
       isSupported: true,
-      permission: 'default' as NotificationPermission,
+      permission: vi.fn().mockReturnValue('default' as NotificationPermission),
       requestPermission: vi.fn().mockResolvedValue('granted'),
       start: vi.fn(),
       stop: vi.fn(),
@@ -342,21 +342,28 @@ describe('StatsComponent', () => {
 
   it('should show activate button when permission is default', () => {
     mockStatsService.getSummary.mockReturnValue(of(mockSummary));
-    mockNotifService.permission = 'default';
+    mockNotifService.permission.mockReturnValue('default');
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('.settings-notif-btn')).toBeTruthy();
   });
 
   it('should not show activate button when permission is granted', () => {
     mockStatsService.getSummary.mockReturnValue(of(mockSummary));
-    mockNotifService.permission = 'granted';
+    mockNotifService.permission.mockReturnValue('granted');
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('.settings-notif-btn')).toBeNull();
   });
 
+  it('should show active indicator when permission is granted', () => {
+    mockStatsService.getSummary.mockReturnValue(of(mockSummary));
+    mockNotifService.permission.mockReturnValue('granted');
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.settings-notif-active')).toBeTruthy();
+  });
+
   it('should show denied message when permission is denied', () => {
     mockStatsService.getSummary.mockReturnValue(of(mockSummary));
-    mockNotifService.permission = 'denied';
+    mockNotifService.permission.mockReturnValue('denied');
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('.settings-notif-denied')).toBeTruthy();
   });

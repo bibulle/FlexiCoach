@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, signal } from '@angular/core';
 
 export interface Reminder {
   time: string;
@@ -10,17 +10,17 @@ export interface Reminder {
 export class ReminderNotificationService {
   private intervalId: ReturnType<typeof setInterval> | null = null;
 
-  get permission(): NotificationPermission {
-    return 'Notification' in window ? Notification.permission : 'denied';
-  }
+  readonly isSupported = 'Notification' in window;
 
-  get isSupported(): boolean {
-    return 'Notification' in window;
-  }
+  // Signal so Angular templates react to permission changes
+  readonly permission = signal<NotificationPermission>(
+    this.isSupported ? Notification.permission : 'denied'
+  );
 
   async requestPermission(): Promise<NotificationPermission> {
     if (!this.isSupported) return 'denied';
     const result = await Notification.requestPermission();
+    this.permission.set(result);
     if (result === 'granted') this.start();
     return result;
   }
@@ -39,7 +39,7 @@ export class ReminderNotificationService {
   }
 
   checkReminders(): void {
-    if (this.permission !== 'granted') return;
+    if (this.permission() !== 'granted') return;
     const reminders = this.loadReminders();
     const now = new Date();
     const hhmm = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
