@@ -351,6 +351,29 @@
   &:hover { background: var(--surface-3); }
 }
 
+/* === Notification permission banner === */
+.settings-notif-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  margin-bottom: 10px;
+  background: color-mix(in srgb, var(--primary-500) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--primary-500) 30%, transparent);
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--ink-2);
+}
+
+.settings-notif-btn { font-size: 12px; padding: 4px 12px; }
+
+.settings-notif-denied {
+  font-size: 12px;
+  color: var(--ink-4);
+  margin-bottom: 8px;
+}
+
 /* === Reminder empty state === */
 .settings-empty-reminders {
   font-size: 13px;

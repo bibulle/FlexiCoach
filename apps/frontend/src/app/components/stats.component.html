@@ -99,6 +99,16 @@
           </button>
         </div>
 
+        @if (notifService.isSupported && notifService.permission === 'default') {
+          <div class="settings-notif-banner">
+            <span>Reçois des notifications à l'heure de tes rappels.</span>
+            <button type="button" class="btn btn-primary settings-notif-btn" (click)="enableNotifications()">Activer</button>
+          </div>
+        }
+        @if (notifService.isSupported && notifService.permission === 'denied') {
+          <p class="settings-notif-denied">Notifications bloquées par le navigateur.</p>
+        }
+
         @for (reminder of reminders; track $index; let i = $index; let last = $last) {
           <div class="settings-reminder"
                [class.settings-reminder--off]="!reminder.enabled"

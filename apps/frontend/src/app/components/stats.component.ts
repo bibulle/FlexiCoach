@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 import { StatsService, StatsSummary } from '../services/stats.service';
+import { ReminderNotificationService } from '../services/reminder-notification.service';
 import { APP_VERSION } from '../version';
 
 export interface Reminder {
@@ -29,6 +30,7 @@ export class StatsComponent implements OnInit {
   private statsService = inject(StatsService);
   private router = inject(Router);
   authService = inject(AuthService);
+  notifService = inject(ReminderNotificationService);
 
   summary: StatsSummary | null = null;
   loading = true;
@@ -271,6 +273,12 @@ export class StatsComponent implements OnInit {
 
   get volumeFill(): string {
     return `${this.voiceVolume * 100}%`;
+  }
+
+  // ── Notifications ─────────────────────────────────────────────────────────
+
+  async enableNotifications(): Promise<void> {
+    await this.notifService.requestPermission();
   }
 
   // ── Auth ──────────────────────────────────────────────────────────────────

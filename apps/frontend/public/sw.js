@@ -44,6 +44,18 @@ self.addEventListener('activate', (event) => {
   return self.clients.claim();
 });
 
+// Ouvre l'app au clic sur une notification de rappel
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clients) => {
+      const existing = clients.find((c) => c.url.includes(self.location.origin));
+      if (existing) return existing.focus();
+      return self.clients.openWindow('/');
+    })
+  );
+});
+
 // Stratégie de cache: Network First, fallback to cache
 self.addEventListener('fetch', (event) => {
   event.respondWith(
