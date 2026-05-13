@@ -29,8 +29,26 @@ describe('HomeComponent', () => {
   };
 
   const mockRoutines: Routine[] = [
-    { id: 'r1', slug: 'r1', name: 'Routine 1', description: '', duration: 10, level: 'Débutant', totalSeconds: 600, steps: [] },
-    { id: 'r2', slug: 'r2', name: 'Routine 2', description: '', duration: 15, level: 'Intermédiaire', totalSeconds: 900, steps: [] },
+    {
+      id: 'r1',
+      slug: 'r1',
+      name: 'Routine 1',
+      description: '',
+      duration: 10,
+      level: 'Débutant',
+      totalSeconds: 600,
+      steps: [],
+    },
+    {
+      id: 'r2',
+      slug: 'r2',
+      name: 'Routine 2',
+      description: '',
+      duration: 15,
+      level: 'Intermédiaire',
+      totalSeconds: 900,
+      steps: [],
+    },
   ];
 
   beforeEach(async () => {
@@ -104,18 +122,24 @@ describe('HomeComponent', () => {
 
   it('should return correct badge class', () => {
     expect(component.getBadgeClass('Débutant')).toBe('badge-debutant');
-    expect(component.getBadgeClass('Intermédiaire')).toBe('badge-intermediaire');
+    expect(component.getBadgeClass('Intermédiaire')).toBe(
+      'badge-intermediaire',
+    );
     expect(component.getBadgeClass('Avancé')).toBe('badge-avance');
   });
 
   it('should handle stats loading error gracefully', () => {
-    mockStatsService.getSummary.mockReturnValue(throwError(() => new Error('err')));
+    mockStatsService.getSummary.mockReturnValue(
+      throwError(() => new Error('err')),
+    );
     fixture.detectChanges();
     expect(component.summary).toBeNull();
   });
 
   it('should handle routines loading error gracefully', () => {
-    mockRoutineService.getAll.mockReturnValue(throwError(() => new Error('err')));
+    mockRoutineService.getAll.mockReturnValue(
+      throwError(() => new Error('err')),
+    );
     fixture.detectChanges();
     expect(component.routines).toEqual([]);
     expect(component.loading).toBe(false);

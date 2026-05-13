@@ -8,7 +8,7 @@ import { UpdateRoutineDto } from './dto/update-routine.dto';
 @Injectable()
 export class RoutinesService {
   constructor(
-    @InjectModel(Routine.name) private routineModel: Model<RoutineDocument>
+    @InjectModel(Routine.name) private routineModel: Model<RoutineDocument>,
   ) {}
 
   async findAll(): Promise<Routine[]> {
@@ -35,7 +35,10 @@ export class RoutinesService {
     return this.routineModel.findOne({ slug }).exec();
   }
 
-  async create(createRoutineDto: CreateRoutineDto, userId: string): Promise<Routine> {
+  async create(
+    createRoutineDto: CreateRoutineDto,
+    userId: string,
+  ): Promise<Routine> {
     // Generate unique ID and slug
     const id = `routine-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
     const baseSlug = createRoutineDto.name
@@ -56,7 +59,7 @@ export class RoutinesService {
     // Calculate total seconds
     const totalSeconds = createRoutineDto.steps.reduce(
       (acc, step) => acc + step.seconds,
-      0
+      0,
     );
 
     // Calculate duration in minutes
@@ -81,22 +84,26 @@ export class RoutinesService {
     return created.save();
   }
 
-  async update(id: string, updateRoutineDto: UpdateRoutineDto): Promise<Routine | null> {
-    const updateData: Partial<Routine> = {
-      ...updateRoutineDto,
-    };
+  async update(
+    id: string,
+    updateRoutineDto: UpdateRoutineDto,
+  ): Promise<Routine | null> {
+    const { difficulty, ...rest } =
+      updateRoutineDto as typeof updateRoutineDto & {
+        difficulty?: string;
+      };
+    const updateData: Partial<Routine> = { ...rest };
 
     // Map difficulty to level (DTO uses difficulty, schema uses level)
-    if ('difficulty' in updateRoutineDto && updateRoutineDto.difficulty) {
-      updateData['level'] = updateRoutineDto.difficulty;
-      delete updateData['difficulty'];
+    if (difficulty) {
+      updateData.level = difficulty;
     }
 
     // Recalculate totalSeconds and duration if steps are updated
     if (updateRoutineDto.steps) {
       const totalSeconds = updateRoutineDto.steps.reduce(
         (acc, step) => acc + step.seconds,
-        0
+        0,
       );
       updateData.totalSeconds = totalSeconds;
       updateData.duration = Math.ceil(totalSeconds / 60);

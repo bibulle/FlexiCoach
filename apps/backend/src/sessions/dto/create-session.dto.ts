@@ -1,11 +1,20 @@
-import { IsString, IsDateString, IsNumber, IsBoolean, IsOptional, Min, Max, IsObject } from 'class-validator';
+import {
+  IsString,
+  IsDateString,
+  IsNumber,
+  IsBoolean,
+  IsOptional,
+  Min,
+  Max,
+  IsObject,
+} from 'class-validator';
 
 export class CreateSessionDto {
   @IsString()
-  routineId: string;
+  routineId!: string;
 
   @IsDateString({}, { message: 'startAt doit être une date valide' })
-  startAt: Date;
+  startAt!: Date;
 
   @IsOptional()
   @IsDateString({}, { message: 'endAt doit être une date valide' })
@@ -13,7 +22,7 @@ export class CreateSessionDto {
 
   @IsNumber()
   @Min(0)
-  durationSec: number;
+  durationSec!: number;
 
   @IsOptional()
   @IsBoolean()

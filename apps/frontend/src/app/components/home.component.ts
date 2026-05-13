@@ -33,12 +33,21 @@ export class HomeComponent implements OnInit {
   private loadData() {
     this.loading = true;
     this.statsService.getSummary().subscribe({
-      next: (s) => { this.summary = s; },
-      error: () => { this.summary = null; },
+      next: (s) => {
+        this.summary = s;
+      },
+      error: () => {
+        this.summary = null;
+      },
     });
     this.routineService.getAll().subscribe({
-      next: (r) => { this.routines = r.slice(0, 4); this.loading = false; },
-      error: () => { this.loading = false; },
+      next: (r) => {
+        this.routines = r.slice(0, 4);
+        this.loading = false;
+      },
+      error: () => {
+        this.loading = false;
+      },
     });
   }
 
@@ -55,7 +64,11 @@ export class HomeComponent implements OnInit {
   }
 
   get formattedDate(): string {
-    return this.today.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+    return this.today.toLocaleDateString('fr-FR', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+    });
   }
 
   // SVG ring helpers
@@ -64,7 +77,7 @@ export class HomeComponent implements OnInit {
   readonly RINGS_CX = 110;
   readonly RINGS_CY = 110;
   readonly R_OUTER = 96;
-  readonly R_MID = 74;   // 96 - 14 - 8
+  readonly R_MID = 74; // 96 - 14 - 8
   readonly R_INNER = 52; // 74 - 14 - 8
 
   ringDasharray(r: number, pct: number): string {
@@ -72,7 +85,9 @@ export class HomeComponent implements OnInit {
     return `${c * Math.min(1, Math.max(0, pct))} ${c}`;
   }
 
-  get adherencePct(): number { return (this.summary?.adherenceRate ?? 0) / 100; }
+  get adherencePct(): number {
+    return (this.summary?.adherenceRate ?? 0) / 100;
+  }
   get streakPct(): number {
     const s = this.summary;
     if (!s) return 0;
@@ -84,15 +99,40 @@ export class HomeComponent implements OnInit {
     return Math.min(1, (s.totalSessions % 7) / 7 || 1);
   }
 
-  get ringRows(): { label: string; color: string; r: number; pct: number; current: string; sub: string }[] {
+  get ringRows(): {
+    label: string;
+    color: string;
+    r: number;
+    pct: number;
+    current: string;
+    sub: string;
+  }[] {
     const s = this.summary;
     return [
-      { label: 'Adhérence',  color: 'var(--primary-500)', r: this.R_OUTER, pct: this.adherencePct,
-        current: `${s?.adherenceRate ?? 0} %`, sub: '30 derniers jours' },
-      { label: 'Série',      color: 'var(--mode-stat)',   r: this.R_MID,   pct: this.streakPct,
-        current: `${s?.currentStreak ?? 0} jours`, sub: `Record ${s?.longestStreak ?? 0} j` },
-      { label: 'Sessions',   color: 'var(--warn)',         r: this.R_INNER, pct: this.sessionsPct,
-        current: `${s?.totalSessions ?? 0}`, sub: 'au total' },
+      {
+        label: 'Adhérence',
+        color: 'var(--primary-500)',
+        r: this.R_OUTER,
+        pct: this.adherencePct,
+        current: `${s?.adherenceRate ?? 0} %`,
+        sub: '30 derniers jours',
+      },
+      {
+        label: 'Série',
+        color: 'var(--mode-stat)',
+        r: this.R_MID,
+        pct: this.streakPct,
+        current: `${s?.currentStreak ?? 0} jours`,
+        sub: `Record ${s?.longestStreak ?? 0} j`,
+      },
+      {
+        label: 'Sessions',
+        color: 'var(--warn)',
+        r: this.R_INNER,
+        pct: this.sessionsPct,
+        current: `${s?.totalSessions ?? 0}`,
+        sub: 'au total',
+      },
     ];
   }
 
@@ -102,10 +142,14 @@ export class HomeComponent implements OnInit {
 
   getBadgeClass(level: string): string {
     switch (level) {
-      case 'Débutant':      return 'badge-debutant';
-      case 'Intermédiaire': return 'badge-intermediaire';
-      case 'Avancé':        return 'badge-avance';
-      default:              return 'badge-intermediaire';
+      case 'Débutant':
+        return 'badge-debutant';
+      case 'Intermédiaire':
+        return 'badge-intermediaire';
+      case 'Avancé':
+        return 'badge-avance';
+      default:
+        return 'badge-intermediaire';
     }
   }
 }

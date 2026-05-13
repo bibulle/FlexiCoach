@@ -17,7 +17,9 @@ test.describe('Navigation and Header', () => {
   });
 
   test.describe('Header and Logo', () => {
-    test('should display header on all authenticated pages', async ({ page }) => {
+    test('should display header on all authenticated pages', async ({
+      page,
+    }) => {
       // Check on home page
       await expect(page.locator('.app-header')).toBeVisible();
       await expect(page.locator('.logo-text')).toContainText('FlexiCoach');
@@ -104,7 +106,9 @@ test.describe('Navigation and Header', () => {
       await expect(breadcrumbs).toBeVisible();
 
       // Should have "Routines" link
-      const routinesLink = breadcrumbs.locator('.breadcrumb-link:has-text("Routines")');
+      const routinesLink = breadcrumbs.locator(
+        '.breadcrumb-link:has-text("Routines")',
+      );
       await expect(routinesLink).toBeVisible();
 
       // Should have current page indicator

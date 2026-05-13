@@ -2,7 +2,7 @@ import { IsBoolean, IsNumber, IsOptional, Min, Max } from 'class-validator';
 
 export class CompleteSessionDto {
   @IsBoolean()
-  completed: boolean;
+  completed!: boolean;
 
   @IsOptional()
   @IsNumber()

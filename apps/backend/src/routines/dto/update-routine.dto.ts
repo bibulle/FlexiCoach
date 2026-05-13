@@ -15,29 +15,29 @@ import {
 class CueDto {
   @IsNumber()
   @Min(0)
-  at: number;
+  at!: number;
 
   @IsString()
   @MinLength(1)
-  say: string;
+  say!: string;
 }
 
 class StepDto {
   @IsString()
   @MinLength(1)
   @MaxLength(100)
-  name: string;
+  name!: string;
 
   @IsNumber()
   @Min(5)
-  seconds: number;
+  seconds!: number;
 
   @IsEnum(['mouvement', 'statique', 'respiration'])
-  mode: 'mouvement' | 'statique' | 'respiration';
+  mode!: 'mouvement' | 'statique' | 'respiration';
 
   @IsString()
   @MinLength(1)
-  text: string;
+  text!: string;
 
   @IsOptional()
   @IsArray()

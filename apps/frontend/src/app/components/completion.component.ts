@@ -24,7 +24,10 @@ export class CompletionComponent implements OnInit {
     { value: 5, emoji: '😊', label: 'Excellent' },
   ];
 
-  constructor(private router: Router, private route: ActivatedRoute) {}
+  constructor(
+    private router: Router,
+    private route: ActivatedRoute,
+  ) {}
 
   ngOnInit() {
     this.route.queryParams.subscribe((params) => {

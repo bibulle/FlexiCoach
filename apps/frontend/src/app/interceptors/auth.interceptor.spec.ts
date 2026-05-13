@@ -1,5 +1,9 @@
 import { TestBed } from '@angular/core/testing';
-import { HttpClient, provideHttpClient, withInterceptors } from '@angular/common/http';
+import {
+  HttpClient,
+  provideHttpClient,
+  withInterceptors,
+} from '@angular/common/http';
 import {
   HttpTestingController,
   provideHttpClientTesting,
@@ -129,7 +133,10 @@ describe('authInterceptor', () => {
     });
 
     const req = httpMock.expectOne('/api/test');
-    req.flush({ message: 'Unauthorized' }, { status: 401, statusText: 'Unauthorized' });
+    req.flush(
+      { message: 'Unauthorized' },
+      { status: 401, statusText: 'Unauthorized' },
+    );
 
     expect(mockAuthService.logout).toHaveBeenCalled();
     expect(mockRouter.navigate).toHaveBeenCalledWith(['/login']);
@@ -145,7 +152,10 @@ describe('authInterceptor', () => {
     });
 
     const req = httpMock.expectOne('/api/test');
-    req.flush({ message: 'Server Error' }, { status: 500, statusText: 'Internal Server Error' });
+    req.flush(
+      { message: 'Server Error' },
+      { status: 500, statusText: 'Internal Server Error' },
+    );
 
     expect(mockAuthService.logout).not.toHaveBeenCalled();
     expect(mockRouter.navigate).not.toHaveBeenCalled();
@@ -161,7 +171,10 @@ describe('authInterceptor', () => {
     });
 
     const req = httpMock.expectOne('/api/test');
-    req.flush({ message: 'Forbidden' }, { status: 403, statusText: 'Forbidden' });
+    req.flush(
+      { message: 'Forbidden' },
+      { status: 403, statusText: 'Forbidden' },
+    );
 
     expect(mockAuthService.logout).not.toHaveBeenCalled();
     expect(mockRouter.navigate).not.toHaveBeenCalled();
@@ -177,7 +190,10 @@ describe('authInterceptor', () => {
     });
 
     const req = httpMock.expectOne('/api/test');
-    req.flush({ message: 'Unauthorized' }, { status: 401, statusText: 'Unauthorized' });
+    req.flush(
+      { message: 'Unauthorized' },
+      { status: 401, statusText: 'Unauthorized' },
+    );
 
     expect(errorReceived).toBeTruthy();
     expect(errorReceived.status).toBe(401);
@@ -191,7 +207,10 @@ describe('authInterceptor', () => {
     });
 
     const req = httpMock.expectOne('/other/endpoint');
-    req.flush({ message: 'Unauthorized' }, { status: 401, statusText: 'Unauthorized' });
+    req.flush(
+      { message: 'Unauthorized' },
+      { status: 401, statusText: 'Unauthorized' },
+    );
 
     // Non-/api requests go through next(req) without error handling
     expect(mockAuthService.logout).not.toHaveBeenCalled();

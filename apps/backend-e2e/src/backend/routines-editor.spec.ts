@@ -13,7 +13,10 @@ describe('Routines Editor API (Issue #8)', () => {
 
   beforeAll(async () => {
     // Register and login to get access token
-    const registerRes = await axios.post(`${API_URL}/api/auth/register`, testUser);
+    const registerRes = await axios.post(
+      `${API_URL}/api/auth/register`,
+      testUser,
+    );
     accessToken = registerRes.data.access_token;
   });
 
@@ -65,7 +68,9 @@ describe('Routines Editor API (Issue #8)', () => {
       try {
         await axios.post(`${API_URL}/api/routines`, {
           name: 'Unauthorized Routine',
-          steps: [{ name: 'Step', seconds: 30, mode: 'mouvement', text: 'Test' }],
+          steps: [
+            { name: 'Step', seconds: 30, mode: 'mouvement', text: 'Test' },
+          ],
         });
         fail('Should have thrown an error');
       } catch (error: any) {
@@ -79,13 +84,15 @@ describe('Routines Editor API (Issue #8)', () => {
           `${API_URL}/api/routines`,
           {
             name: 'Ab', // Too short (min 3)
-            steps: [{ name: 'Step', seconds: 30, mode: 'mouvement', text: 'Test' }],
+            steps: [
+              { name: 'Step', seconds: 30, mode: 'mouvement', text: 'Test' },
+            ],
           },
           {
             headers: {
               Authorization: `Bearer ${accessToken}`,
             },
-          }
+          },
         );
         fail('Should have thrown an error');
       } catch (error: any) {
@@ -99,13 +106,20 @@ describe('Routines Editor API (Issue #8)', () => {
           `${API_URL}/api/routines`,
           {
             name: 'Invalid Duration',
-            steps: [{ name: 'Step', seconds: 3, mode: 'mouvement', text: 'Too short' }], // min 5s
+            steps: [
+              {
+                name: 'Step',
+                seconds: 3,
+                mode: 'mouvement',
+                text: 'Too short',
+              },
+            ], // min 5s
           },
           {
             headers: {
               Authorization: `Bearer ${accessToken}`,
             },
-          }
+          },
         );
         fail('Should have thrown an error');
       } catch (error: any) {
@@ -125,7 +139,7 @@ describe('Routines Editor API (Issue #8)', () => {
             headers: {
               Authorization: `Bearer ${accessToken}`,
             },
-          }
+          },
         );
         fail('Should have thrown an error');
       } catch (error: any) {
@@ -165,11 +179,15 @@ describe('Routines Editor API (Issue #8)', () => {
         },
       };
 
-      const res = await axios.post(`${API_URL}/api/routines/import`, importData, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
+      const res = await axios.post(
+        `${API_URL}/api/routines/import`,
+        importData,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
         },
-      });
+      );
 
       expect(res.status).toBe(201);
       expect(res.data.name).toBe('Imported Routine');
@@ -187,14 +205,16 @@ describe('Routines Editor API (Issue #8)', () => {
             version: '2.0',
             routine: {
               name: 'Future Version',
-              steps: [{ name: 'Step', seconds: 30, mode: 'mouvement', text: 'Test' }],
+              steps: [
+                { name: 'Step', seconds: 30, mode: 'mouvement', text: 'Test' },
+              ],
             },
           },
           {
             headers: {
               Authorization: `Bearer ${accessToken}`,
             },
-          }
+          },
         );
         fail('Should have thrown an error');
       } catch (error: any) {
@@ -218,7 +238,7 @@ describe('Routines Editor API (Issue #8)', () => {
             headers: {
               Authorization: `Bearer ${accessToken}`,
             },
-          }
+          },
         );
         fail('Should have thrown an error');
       } catch (error: any) {
@@ -261,7 +281,7 @@ describe('Routines Editor API (Issue #8)', () => {
           headers: {
             Authorization: `Bearer ${accessToken}`,
           },
-        }
+        },
       );
 
       expect(res.status).toBe(200);
@@ -278,7 +298,10 @@ describe('Routines Editor API (Issue #8)', () => {
         password: 'password123',
         displayName: 'Other User',
       };
-      const otherRegisterRes = await axios.post(`${API_URL}/api/auth/register`, otherUser);
+      const otherRegisterRes = await axios.post(
+        `${API_URL}/api/auth/register`,
+        otherUser,
+      );
       const otherToken = otherRegisterRes.data.access_token;
 
       try {
@@ -289,7 +312,7 @@ describe('Routines Editor API (Issue #8)', () => {
             headers: {
               Authorization: `Bearer ${otherToken}`,
             },
-          }
+          },
         );
         fail('Should have thrown an error');
       } catch (error: any) {
@@ -306,7 +329,7 @@ describe('Routines Editor API (Issue #8)', () => {
             headers: {
               Authorization: `Bearer ${accessToken}`,
             },
-          }
+          },
         );
         fail('Should have thrown an error');
       } catch (error: any) {
@@ -323,7 +346,10 @@ describe('Routines Editor API (Issue #8)', () => {
         password: 'password123',
         displayName: 'Delete Test User',
       };
-      const otherRegisterRes = await axios.post(`${API_URL}/api/auth/register`, otherUser);
+      const otherRegisterRes = await axios.post(
+        `${API_URL}/api/auth/register`,
+        otherUser,
+      );
       const otherToken = otherRegisterRes.data.access_token;
 
       try {
@@ -339,11 +365,14 @@ describe('Routines Editor API (Issue #8)', () => {
     });
 
     it('should delete own routine', async () => {
-      const res = await axios.delete(`${API_URL}/api/routines/${createdRoutineId}`, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
+      const res = await axios.delete(
+        `${API_URL}/api/routines/${createdRoutineId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
         },
-      });
+      );
 
       expect(res.status).toBe(204);
     });
@@ -369,13 +398,15 @@ describe('Routines Editor API (Issue #8)', () => {
         `${API_URL}/api/routines`,
         {
           name: 'My Visible Routine',
-          steps: [{ name: 'Step', seconds: 30, mode: 'mouvement', text: 'Test' }],
+          steps: [
+            { name: 'Step', seconds: 30, mode: 'mouvement', text: 'Test' },
+          ],
         },
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
           },
-        }
+        },
       );
 
       // Create another user and their routine
@@ -384,20 +415,25 @@ describe('Routines Editor API (Issue #8)', () => {
         password: 'password123',
         displayName: 'Visibility Test User',
       };
-      const otherRegisterRes = await axios.post(`${API_URL}/api/auth/register`, otherUser);
+      const otherRegisterRes = await axios.post(
+        `${API_URL}/api/auth/register`,
+        otherUser,
+      );
       const otherToken = otherRegisterRes.data.access_token;
 
       await axios.post(
         `${API_URL}/api/routines`,
         {
           name: 'Other Users Routine',
-          steps: [{ name: 'Step', seconds: 30, mode: 'mouvement', text: 'Private' }],
+          steps: [
+            { name: 'Step', seconds: 30, mode: 'mouvement', text: 'Private' },
+          ],
         },
         {
           headers: {
             Authorization: `Bearer ${otherToken}`,
           },
-        }
+        },
       );
 
       // Get routines for original user
@@ -411,11 +447,15 @@ describe('Routines Editor API (Issue #8)', () => {
       expect(Array.isArray(res.data)).toBe(true);
 
       // Should see own routine
-      const hasOwnRoutine = res.data.some((r: any) => r.id === myRoutine.data.id);
+      const hasOwnRoutine = res.data.some(
+        (r: any) => r.id === myRoutine.data.id,
+      );
       expect(hasOwnRoutine).toBe(true);
 
       // Should NOT see other user's routine
-      const hasOtherRoutine = res.data.some((r: any) => r.name === 'Other Users Routine');
+      const hasOtherRoutine = res.data.some(
+        (r: any) => r.name === 'Other Users Routine',
+      );
       expect(hasOtherRoutine).toBe(false);
     });
   });

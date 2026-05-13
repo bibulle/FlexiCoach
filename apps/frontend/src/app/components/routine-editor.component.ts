@@ -1,28 +1,56 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormArray } from '@angular/forms';
-import { CdkDragDrop, moveItemInArray, DragDropModule } from '@angular/cdk/drag-drop';
+import {
+  FormBuilder,
+  FormGroup,
+  Validators,
+  ReactiveFormsModule,
+  FormArray,
+} from '@angular/forms';
+import {
+  CdkDragDrop,
+  moveItemInArray,
+  DragDropModule,
+} from '@angular/cdk/drag-drop';
 import { Routine, Step } from '@flexicoach/shared';
 import { RoutineService } from '../services/routine.service';
 import { StepEditorModalComponent } from './step-editor-modal.component';
 
-const MODE_META: Record<string, { color: string; bg: string; label: string }> = {
-  mouvement:   { color: 'var(--mode-mvt)',  bg: 'rgba(59,130,246,0.10)',  label: 'Mouvement'   },
-  statique:    { color: 'var(--mode-resp)', bg: 'rgba(139,92,246,0.10)',  label: 'Statique'    },
-  respiration: { color: '#0ea5e9',          bg: 'rgba(14,165,233,0.10)',  label: 'Respiration' },
-};
+const MODE_META: Record<string, { color: string; bg: string; label: string }> =
+  {
+    mouvement: {
+      color: 'var(--mode-mvt)',
+      bg: 'rgba(59,130,246,0.10)',
+      label: 'Mouvement',
+    },
+    statique: {
+      color: 'var(--mode-resp)',
+      bg: 'rgba(139,92,246,0.10)',
+      label: 'Statique',
+    },
+    respiration: {
+      color: '#0ea5e9',
+      bg: 'rgba(14,165,233,0.10)',
+      label: 'Respiration',
+    },
+  };
 
 const LEVEL_LABELS: Record<string, string> = {
-  beginner:     'Débutant',
+  beginner: 'Débutant',
   intermediate: 'Intermédiaire',
-  advanced:     'Avancé',
+  advanced: 'Avancé',
 };
 
 @Component({
   selector: 'app-routine-editor',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, DragDropModule, StepEditorModalComponent],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    DragDropModule,
+    StepEditorModalComponent,
+  ],
   templateUrl: './routine-editor.component.html',
   styleUrls: ['./routine-editor.component.scss'],
 })
@@ -41,10 +69,17 @@ export class RoutineEditorComponent implements OnInit {
     private fb: FormBuilder,
     private routineService: RoutineService,
     private router: Router,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
   ) {
     this.routineForm = this.fb.group({
-      name: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(50)]],
+      name: [
+        '',
+        [
+          Validators.required,
+          Validators.minLength(3),
+          Validators.maxLength(50),
+        ],
+      ],
       description: ['', Validators.maxLength(500)],
       tag: [''],
       category: ['', Validators.maxLength(50)],
@@ -100,7 +135,10 @@ export class RoutineEditorComponent implements OnInit {
 
   createStepFormGroup(step?: Step): FormGroup {
     return this.fb.group({
-      name: [step?.name || '', [Validators.required, Validators.maxLength(100)]],
+      name: [
+        step?.name || '',
+        [Validators.required, Validators.maxLength(100)],
+      ],
       seconds: [step?.seconds || 30, [Validators.required, Validators.min(5)]],
       mode: [step?.mode || 'mouvement', Validators.required],
       text: [step?.text || '', [Validators.required, Validators.minLength(1)]],
@@ -189,7 +227,7 @@ export class RoutineEditorComponent implements OnInit {
 
   exportRoutine() {
     if (this.routineForm.invalid || this.steps.length === 0) {
-      this.error = 'Veuillez compléter la routine avant de l\'exporter';
+      this.error = "Veuillez compléter la routine avant de l'exporter";
       return;
     }
 
@@ -228,7 +266,8 @@ export class RoutineEditorComponent implements OnInit {
 
     // Validate file extension
     if (!file.name.endsWith('.routine.json') && !file.name.endsWith('.json')) {
-      this.error = 'Format de fichier invalide. Utilisez un fichier .routine.json';
+      this.error =
+        'Format de fichier invalide. Utilisez un fichier .routine.json';
       return;
     }
 
@@ -261,7 +300,7 @@ export class RoutineEditorComponent implements OnInit {
         // Helper function to strip MongoDB _id fields
         const stripMongoIds = (obj: any): any => {
           if (Array.isArray(obj)) {
-            return obj.map(item => stripMongoIds(item));
+            return obj.map((item) => stripMongoIds(item));
           } else if (obj && typeof obj === 'object') {
             const cleaned: any = {};
             for (const key in obj) {
@@ -306,7 +345,11 @@ export class RoutineEditorComponent implements OnInit {
   }
 
   cancel() {
-    if (confirm('Êtes-vous sûr de vouloir annuler ? Les modifications non sauvegardées seront perdues.')) {
+    if (
+      confirm(
+        'Êtes-vous sûr de vouloir annuler ? Les modifications non sauvegardées seront perdues.',
+      )
+    ) {
       this.router.navigate(['/']);
     }
   }
@@ -338,7 +381,7 @@ export class RoutineEditorComponent implements OnInit {
   }
 
   get uniqueModesCount(): number {
-    const modes = new Set(this.steps.controls.map(c => c.get('mode')?.value));
+    const modes = new Set(this.steps.controls.map((c) => c.get('mode')?.value));
     return modes.size;
   }
 

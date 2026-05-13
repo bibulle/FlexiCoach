@@ -126,8 +126,8 @@ describe('CalendarComponent', () => {
     const allDays = component.heatWeeks.flat();
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    const futureDays = allDays.filter(d => d.date > today);
-    expect(futureDays.every(d => d.future)).toBe(true);
+    const futureDays = allDays.filter((d) => d.date > today);
+    expect(futureDays.every((d) => d.future)).toBe(true);
   });
 
   it('should handle stats API error gracefully (totalSessions = 0)', () => {

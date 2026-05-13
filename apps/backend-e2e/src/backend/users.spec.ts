@@ -45,7 +45,7 @@ describe('Users API', () => {
 
     it('should return null for non-existent user', async () => {
       const res = await axios.get(
-        `${API_URL}/api/users/507f1f77bcf86cd799439011`
+        `${API_URL}/api/users/507f1f77bcf86cd799439011`,
       );
 
       expect(res.status).toBe(200);

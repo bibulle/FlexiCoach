@@ -14,7 +14,10 @@ describe('ReminderNotificationService', () => {
       writable: true,
       value: Object.assign(
         vi.fn().mockImplementation(() => ({})),
-        { permission: 'granted', requestPermission: vi.fn().mockResolvedValue('granted') }
+        {
+          permission: 'granted',
+          requestPermission: vi.fn().mockResolvedValue('granted'),
+        },
       ),
     });
 
@@ -69,7 +72,9 @@ describe('ReminderNotificationService', () => {
   });
 
   it('should not show notification when no reminder matches current time', () => {
-    const reminders = [{ time: '23:59', days: [0, 1, 2, 3, 4, 5, 6], enabled: true }];
+    const reminders = [
+      { time: '23:59', days: [0, 1, 2, 3, 4, 5, 6], enabled: true },
+    ];
     localStorage.setItem('reminders', JSON.stringify(reminders));
     service.checkReminders();
     expect(window.Notification).not.toHaveBeenCalled();

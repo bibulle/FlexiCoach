@@ -48,7 +48,11 @@ describe('HttpLoggerMiddleware', () => {
 
   describe('use', () => {
     it('should call next()', () => {
-      middleware.use(mockRequest as Request, mockResponse as Response, mockNext);
+      middleware.use(
+        mockRequest as Request,
+        mockResponse as Response,
+        mockNext,
+      );
 
       expect(mockNext).toHaveBeenCalled();
     });
@@ -56,7 +60,11 @@ describe('HttpLoggerMiddleware', () => {
     it('should log with info level for 2xx responses', () => {
       mockResponse.statusCode = 200;
 
-      middleware.use(mockRequest as Request, mockResponse as Response, mockNext);
+      middleware.use(
+        mockRequest as Request,
+        mockResponse as Response,
+        mockNext,
+      );
 
       // Simulate response finish
       responseFinishCallback();
@@ -69,14 +77,18 @@ describe('HttpLoggerMiddleware', () => {
           statusCode: 200,
           ip: '127.0.0.1',
           userAgent: 'test-agent',
-        })
+        }),
       );
     });
 
     it('should log with info level for 3xx responses', () => {
       mockResponse.statusCode = 301;
 
-      middleware.use(mockRequest as Request, mockResponse as Response, mockNext);
+      middleware.use(
+        mockRequest as Request,
+        mockResponse as Response,
+        mockNext,
+      );
 
       // Simulate response finish
       responseFinishCallback();
@@ -85,14 +97,18 @@ describe('HttpLoggerMiddleware', () => {
         'HTTP Request',
         expect.objectContaining({
           statusCode: 301,
-        })
+        }),
       );
     });
 
     it('should log with warn level for 4xx responses', () => {
       mockResponse.statusCode = 404;
 
-      middleware.use(mockRequest as Request, mockResponse as Response, mockNext);
+      middleware.use(
+        mockRequest as Request,
+        mockResponse as Response,
+        mockNext,
+      );
 
       // Simulate response finish
       responseFinishCallback();
@@ -101,14 +117,18 @@ describe('HttpLoggerMiddleware', () => {
         'HTTP Request',
         expect.objectContaining({
           statusCode: 404,
-        })
+        }),
       );
     });
 
     it('should log with error level for 5xx responses', () => {
       mockResponse.statusCode = 500;
 
-      middleware.use(mockRequest as Request, mockResponse as Response, mockNext);
+      middleware.use(
+        mockRequest as Request,
+        mockResponse as Response,
+        mockNext,
+      );
 
       // Simulate response finish
       responseFinishCallback();
@@ -117,12 +137,16 @@ describe('HttpLoggerMiddleware', () => {
         'HTTP Request',
         expect.objectContaining({
           statusCode: 500,
-        })
+        }),
       );
     });
 
     it('should include duration in log', () => {
-      middleware.use(mockRequest as Request, mockResponse as Response, mockNext);
+      middleware.use(
+        mockRequest as Request,
+        mockResponse as Response,
+        mockNext,
+      );
 
       // Simulate response finish
       responseFinishCallback();
@@ -131,14 +155,18 @@ describe('HttpLoggerMiddleware', () => {
         'HTTP Request',
         expect.objectContaining({
           duration: expect.stringMatching(/^\d+ms$/),
-        })
+        }),
       );
     });
 
     it('should handle missing user-agent', () => {
       (mockRequest.get as jest.Mock).mockReturnValue(undefined);
 
-      middleware.use(mockRequest as Request, mockResponse as Response, mockNext);
+      middleware.use(
+        mockRequest as Request,
+        mockResponse as Response,
+        mockNext,
+      );
 
       // Simulate response finish
       responseFinishCallback();
@@ -147,7 +175,7 @@ describe('HttpLoggerMiddleware', () => {
         'HTTP Request',
         expect.objectContaining({
           userAgent: '',
-        })
+        }),
       );
     });
 
@@ -160,7 +188,11 @@ describe('HttpLoggerMiddleware', () => {
       };
       mockResponse.statusCode = 201;
 
-      middleware.use(mockRequest as Request, mockResponse as Response, mockNext);
+      middleware.use(
+        mockRequest as Request,
+        mockResponse as Response,
+        mockNext,
+      );
 
       // Simulate response finish
       responseFinishCallback();
@@ -174,14 +206,21 @@ describe('HttpLoggerMiddleware', () => {
           ip: '192.168.1.1',
           userAgent: 'test-agent',
           duration: expect.any(String),
-        })
+        }),
       );
     });
 
     it('should register finish listener on response', () => {
-      middleware.use(mockRequest as Request, mockResponse as Response, mockNext);
+      middleware.use(
+        mockRequest as Request,
+        mockResponse as Response,
+        mockNext,
+      );
 
-      expect(mockResponse.on).toHaveBeenCalledWith('finish', expect.any(Function));
+      expect(mockResponse.on).toHaveBeenCalledWith(
+        'finish',
+        expect.any(Function),
+      );
     });
   });
 });

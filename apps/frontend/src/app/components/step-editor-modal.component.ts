@@ -1,6 +1,19 @@
-import { Component, OnInit, OnDestroy, Input, Output, EventEmitter } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  Input,
+  Output,
+  EventEmitter,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormArray } from '@angular/forms';
+import {
+  FormBuilder,
+  FormGroup,
+  Validators,
+  ReactiveFormsModule,
+  FormArray,
+} from '@angular/forms';
 import { Step } from '@flexicoach/shared';
 
 @Component({
@@ -78,10 +91,14 @@ export class StepEditorModalComponent implements OnInit, OnDestroy {
 
       // Validate cues are within step duration
       const cues = this.cues.value;
-      const invalidCues = cues.filter((cue: { at: number }) => cue.at > maxSeconds);
+      const invalidCues = cues.filter(
+        (cue: { at: number }) => cue.at > maxSeconds,
+      );
 
       if (invalidCues.length > 0) {
-        alert(`Les cues ne peuvent pas dépasser la durée de l'étape (${maxSeconds}s)`);
+        alert(
+          `Les cues ne peuvent pas dépasser la durée de l'étape (${maxSeconds}s)`,
+        );
         return;
       }
 

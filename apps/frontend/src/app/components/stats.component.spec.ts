@@ -73,7 +73,9 @@ describe('StatsComponent', () => {
   });
 
   it('should handle error when loading fails', () => {
-    mockStatsService.getSummary.mockReturnValue(throwError(() => new Error('fail')));
+    mockStatsService.getSummary.mockReturnValue(
+      throwError(() => new Error('fail')),
+    );
     fixture.detectChanges();
     expect(component.loading).toBe(false);
     expect(component.error).toBe('Impossible de charger les statistiques');
@@ -89,19 +91,25 @@ describe('StatsComponent', () => {
   });
 
   it('should format minutes — only minutes', () => {
-    mockStatsService.getSummary.mockReturnValue(of({ ...mockSummary, totalMinutes: 45 }));
+    mockStatsService.getSummary.mockReturnValue(
+      of({ ...mockSummary, totalMinutes: 45 }),
+    );
     fixture.detectChanges();
     expect(component.formattedMinutes).toBe('45min');
   });
 
   it('should format minutes — hours and minutes', () => {
-    mockStatsService.getSummary.mockReturnValue(of({ ...mockSummary, totalMinutes: 125 }));
+    mockStatsService.getSummary.mockReturnValue(
+      of({ ...mockSummary, totalMinutes: 125 }),
+    );
     fixture.detectChanges();
     expect(component.formattedMinutes).toBe('2h 5');
   });
 
   it('should format minutes — exact hours', () => {
-    mockStatsService.getSummary.mockReturnValue(of({ ...mockSummary, totalMinutes: 120 }));
+    mockStatsService.getSummary.mockReturnValue(
+      of({ ...mockSummary, totalMinutes: 120 }),
+    );
     fixture.detectChanges();
     expect(component.formattedMinutes).toBe('2h');
   });
@@ -116,19 +124,25 @@ describe('StatsComponent', () => {
   it('should highlight the streak card', () => {
     mockStatsService.getSummary.mockReturnValue(of(mockSummary));
     fixture.detectChanges();
-    expect(fixture.nativeElement.querySelector('.settings-stat--hl')).toBeTruthy();
+    expect(
+      fixture.nativeElement.querySelector('.settings-stat--hl'),
+    ).toBeTruthy();
   });
 
   it('should display 7 day-activity bar rows', () => {
     mockStatsService.getSummary.mockReturnValue(of(mockSummary));
     fixture.detectChanges();
-    expect(fixture.nativeElement.querySelectorAll('.settings-bar-row').length).toBe(7);
+    expect(
+      fixture.nativeElement.querySelectorAll('.settings-bar-row').length,
+    ).toBe(7);
   });
 
   it('should display 3 top-routine rows', () => {
     mockStatsService.getSummary.mockReturnValue(of(mockSummary));
     fixture.detectChanges();
-    expect(fixture.nativeElement.querySelectorAll('.settings-routine-row').length).toBe(3);
+    expect(
+      fixture.nativeElement.querySelectorAll('.settings-routine-row').length,
+    ).toBe(3);
   });
 
   it('should compute maxDayCount from dayActivity', () => {
@@ -261,7 +275,15 @@ describe('StatsComponent', () => {
   });
 
   it('should restore voiceName from localStorage on init', () => {
-    localStorage.setItem('voiceSettings', JSON.stringify({ speed: 1.0, volume: 0.7, bips: true, voiceName: 'Marie' }));
+    localStorage.setItem(
+      'voiceSettings',
+      JSON.stringify({
+        speed: 1.0,
+        volume: 0.7,
+        bips: true,
+        voiceName: 'Marie',
+      }),
+    );
     mockStatsService.getSummary.mockReturnValue(of(mockSummary));
     component.ngOnInit();
     expect(component.selectedVoiceName).toBe('Marie');
@@ -270,7 +292,9 @@ describe('StatsComponent', () => {
   it('should call speechSynthesis.speak when testVoice is called', () => {
     const mockSpeak = vi.fn();
     (window.speechSynthesis as any).speak = mockSpeak;
-    component.availableVoices = [{ name: 'Amélie', lang: 'fr-FR' }] as SpeechSynthesisVoice[];
+    component.availableVoices = [
+      { name: 'Amélie', lang: 'fr-FR' },
+    ] as SpeechSynthesisVoice[];
     component.selectedVoiceName = 'Amélie';
     component.testVoice();
     expect(mockSpeak).toHaveBeenCalledOnce();
@@ -282,33 +306,44 @@ describe('StatsComponent', () => {
       { name: 'Marie', lang: 'fr-FR' },
       { name: 'Alice', lang: 'en-US' },
     ] as SpeechSynthesisVoice[];
-    (window.speechSynthesis as any).getVoices = vi.fn().mockReturnValue(mockVoices);
+    (window.speechSynthesis as any).getVoices = vi
+      .fn()
+      .mockReturnValue(mockVoices);
     mockStatsService.getSummary.mockReturnValue(of(mockSummary));
     component.ngOnInit();
     expect(component.availableVoices.length).toBe(2);
-    expect(component.availableVoices.every(v => v.lang.startsWith('fr'))).toBe(true);
+    expect(
+      component.availableVoices.every((v) => v.lang.startsWith('fr')),
+    ).toBe(true);
   });
 
   it('should exclude voices with (French (...)) in name', () => {
     const mockVoices = [
-      { name: 'Thomas',                    lang: 'fr-FR', localService: true  },
-      { name: 'Eddy (French (France))',    lang: 'fr-FR', localService: true  },
-      { name: 'Daniel (French (France))',  lang: 'fr-FR', localService: true  },
-      { name: 'Google français',           lang: 'fr-FR', localService: false },
+      { name: 'Thomas', lang: 'fr-FR', localService: true },
+      { name: 'Eddy (French (France))', lang: 'fr-FR', localService: true },
+      { name: 'Daniel (French (France))', lang: 'fr-FR', localService: true },
+      { name: 'Google français', lang: 'fr-FR', localService: false },
     ] as SpeechSynthesisVoice[];
-    (window.speechSynthesis as any).getVoices = vi.fn().mockReturnValue(mockVoices);
+    (window.speechSynthesis as any).getVoices = vi
+      .fn()
+      .mockReturnValue(mockVoices);
     mockStatsService.getSummary.mockReturnValue(of(mockSummary));
     component.ngOnInit();
-    expect(component.availableVoices.map(v => v.name)).toEqual(['Google français', 'Thomas']);
+    expect(component.availableVoices.map((v) => v.name)).toEqual([
+      'Google français',
+      'Thomas',
+    ]);
   });
 
   it('should sort voices: network first, local standard last', () => {
     const mockVoices = [
-      { name: 'Thomas',          lang: 'fr-FR', localService: true  },
+      { name: 'Thomas', lang: 'fr-FR', localService: true },
       { name: 'Google français', lang: 'fr-FR', localService: false },
-      { name: 'Amélie',          lang: 'fr-FR', localService: true  },
+      { name: 'Amélie', lang: 'fr-FR', localService: true },
     ] as SpeechSynthesisVoice[];
-    (window.speechSynthesis as any).getVoices = vi.fn().mockReturnValue(mockVoices);
+    (window.speechSynthesis as any).getVoices = vi
+      .fn()
+      .mockReturnValue(mockVoices);
     mockStatsService.getSummary.mockReturnValue(of(mockSummary));
     component.ngOnInit();
     expect(component.availableVoices[0].name).toBe('Google français');
@@ -316,10 +351,12 @@ describe('StatsComponent', () => {
 
   it('should auto-select first (best) voice when none saved', () => {
     const mockVoices = [
-      { name: 'Thomas',          lang: 'fr-FR', localService: true  },
+      { name: 'Thomas', lang: 'fr-FR', localService: true },
       { name: 'Google français', lang: 'fr-FR', localService: false },
     ] as SpeechSynthesisVoice[];
-    (window.speechSynthesis as any).getVoices = vi.fn().mockReturnValue(mockVoices);
+    (window.speechSynthesis as any).getVoices = vi
+      .fn()
+      .mockReturnValue(mockVoices);
     mockStatsService.getSummary.mockReturnValue(of(mockSummary));
     component.selectedVoiceName = '';
     component.ngOnInit();
@@ -327,8 +364,16 @@ describe('StatsComponent', () => {
   });
 
   it('voiceLabel should show ✦ for network voice, nothing for local standard', () => {
-    const network = { name: 'Google français', lang: 'fr-FR', localService: false } as SpeechSynthesisVoice;
-    const std     = { name: 'Thomas',          lang: 'fr-FR', localService: true  } as SpeechSynthesisVoice;
+    const network = {
+      name: 'Google français',
+      lang: 'fr-FR',
+      localService: false,
+    } as SpeechSynthesisVoice;
+    const std = {
+      name: 'Thomas',
+      lang: 'fr-FR',
+      localService: true,
+    } as SpeechSynthesisVoice;
     expect(component.voiceLabel(network)).toBe('Google français ✦');
     expect(component.voiceLabel(std)).toBe('Thomas');
   });
@@ -344,28 +389,36 @@ describe('StatsComponent', () => {
     mockStatsService.getSummary.mockReturnValue(of(mockSummary));
     mockNotifService.permission.mockReturnValue('default');
     fixture.detectChanges();
-    expect(fixture.nativeElement.querySelector('.settings-notif-btn')).toBeTruthy();
+    expect(
+      fixture.nativeElement.querySelector('.settings-notif-btn'),
+    ).toBeTruthy();
   });
 
   it('should not show activate button when permission is granted', () => {
     mockStatsService.getSummary.mockReturnValue(of(mockSummary));
     mockNotifService.permission.mockReturnValue('granted');
     fixture.detectChanges();
-    expect(fixture.nativeElement.querySelector('.settings-notif-btn')).toBeNull();
+    expect(
+      fixture.nativeElement.querySelector('.settings-notif-btn'),
+    ).toBeNull();
   });
 
   it('should show active indicator when permission is granted', () => {
     mockStatsService.getSummary.mockReturnValue(of(mockSummary));
     mockNotifService.permission.mockReturnValue('granted');
     fixture.detectChanges();
-    expect(fixture.nativeElement.querySelector('.settings-notif-active')).toBeTruthy();
+    expect(
+      fixture.nativeElement.querySelector('.settings-notif-active'),
+    ).toBeTruthy();
   });
 
   it('should show denied message when permission is denied', () => {
     mockStatsService.getSummary.mockReturnValue(of(mockSummary));
     mockNotifService.permission.mockReturnValue('denied');
     fixture.detectChanges();
-    expect(fixture.nativeElement.querySelector('.settings-notif-denied')).toBeTruthy();
+    expect(
+      fixture.nativeElement.querySelector('.settings-notif-denied'),
+    ).toBeTruthy();
   });
 
   // ── Logout ───────────────────────────────────────────────────────────────

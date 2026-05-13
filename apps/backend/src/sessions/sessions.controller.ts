@@ -23,8 +23,14 @@ export class SessionsController {
   constructor(private readonly sessionsService: SessionsService) {}
 
   @Post()
-  create(@CurrentUser() user: User, @Body() createSessionDto: CreateSessionDto) {
-    return this.sessionsService.create({ ...createSessionDto, userId: user._id.toString() });
+  create(
+    @CurrentUser() user: User,
+    @Body() createSessionDto: CreateSessionDto,
+  ) {
+    return this.sessionsService.create({
+      ...createSessionDto,
+      userId: user._id.toString(),
+    });
   }
 
   @Get()
@@ -43,11 +49,12 @@ export class SessionsController {
   }
 
   @Get('calendar')
-  getCalendar(
-    @CurrentUser() user: User,
-    @Query() query: CalendarQueryDto
-  ) {
-    return this.sessionsService.getCalendar(user._id.toString(), query.from, query.to);
+  getCalendar(@CurrentUser() user: User, @Query() query: CalendarQueryDto) {
+    return this.sessionsService.getCalendar(
+      user._id.toString(),
+      query.from,
+      query.to,
+    );
   }
 
   @Get(':id')
@@ -63,8 +70,12 @@ export class SessionsController {
   @Patch(':id/complete')
   complete(
     @Param('id') id: string,
-    @Body() completeSessionDto: CompleteSessionDto
+    @Body() completeSessionDto: CompleteSessionDto,
   ) {
-    return this.sessionsService.complete(id, completeSessionDto.completed, completeSessionDto.feeling);
+    return this.sessionsService.complete(
+      id,
+      completeSessionDto.completed,
+      completeSessionDto.feeling,
+    );
   }
 }

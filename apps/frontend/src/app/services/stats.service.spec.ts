@@ -69,7 +69,9 @@ describe('StatsService', () => {
 
       const responsePromise = firstValueFrom(service.getSummary(userId));
 
-      const req = httpMock.expectOne('/api/sessions/stats/summary?userId=user123');
+      const req = httpMock.expectOne(
+        '/api/sessions/stats/summary?userId=user123',
+      );
       expect(req.request.method).toBe('GET');
       expect(req.request.params.get('userId')).toBe(userId);
       req.flush(mockSummary);

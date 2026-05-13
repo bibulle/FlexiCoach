@@ -1,20 +1,53 @@
 <div class="editor-shell">
-
   <!-- Sticky toolbar -->
   <div class="editor-toolbar">
-    <button type="button" class="btn btn-ghost btn-icon" (click)="cancel()" aria-label="Retour">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M19 12H5M12 5l-7 7 7 7"/>
+    <button
+      type="button"
+      class="btn btn-ghost btn-icon"
+      (click)="cancel()"
+      aria-label="Retour"
+    >
+      <svg
+        width="20"
+        height="20"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <path d="M19 12H5M12 5l-7 7 7 7" />
       </svg>
     </button>
     <div class="toolbar-title">
-      <span class="type-caption">{{ isEditMode ? 'Édition' : 'Création' }} · brouillon</span>
-      <span class="toolbar-name">{{ routineForm.get('name')?.value || 'Sans titre' }}</span>
+      <span class="type-caption"
+        >{{ isEditMode ? 'Édition' : 'Création' }} · brouillon</span
+      >
+      <span class="toolbar-name">{{
+        routineForm.get('name')?.value || 'Sans titre'
+      }}</span>
     </div>
-    <button type="button" class="btn btn-ghost" (click)="cancel()">Annuler</button>
-    <button type="button" class="btn btn-primary" (click)="onSubmit()" [disabled]="loading || routineForm.invalid || steps.length === 0">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
-        <polyline points="20 6 9 17 4 12"/>
+    <button type="button" class="btn btn-ghost" (click)="cancel()">
+      Annuler
+    </button>
+    <button
+      type="button"
+      class="btn btn-primary"
+      (click)="onSubmit()"
+      [disabled]="loading || routineForm.invalid || steps.length === 0"
+    >
+      <svg
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2.4"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <polyline points="20 6 9 17 4 12" />
       </svg>
       {{ loading ? 'Sauvegarde…' : 'Enregistrer' }}
     </button>
@@ -28,10 +61,8 @@
   }
 
   <form [formGroup]="routineForm" (ngSubmit)="onSubmit()" class="editor-body">
-
     <!-- Left column -->
     <div class="editor-left">
-
       <!-- Meta card -->
       <div class="card editor-meta-card">
         <span class="type-label">Informations</span>
@@ -41,8 +72,12 @@
           placeholder="Nom de la routine"
           autocomplete="off"
         />
-        @if (routineForm.get('name')?.invalid && routineForm.get('name')?.touched) {
-          <span class="editor-field-error">Le nom doit contenir entre 3 et 50 caractères</span>
+        @if (
+          routineForm.get('name')?.invalid && routineForm.get('name')?.touched
+        ) {
+          <span class="editor-field-error"
+            >Le nom doit contenir entre 3 et 50 caractères</span
+          >
         }
         <textarea
           formControlName="description"
@@ -73,7 +108,11 @@
           </div>
           <div class="editor-pill">
             <span class="pill-label">Catégorie</span>
-            <input formControlName="category" class="pill-input" placeholder="ex: squash" />
+            <input
+              formControlName="category"
+              class="pill-input"
+              placeholder="ex: squash"
+            />
           </div>
         </div>
       </div>
@@ -82,7 +121,9 @@
       <div class="editor-stats">
         <div class="card editor-stat">
           <div class="type-label">Durée totale</div>
-          <div class="editor-stat-value type-mono">{{ formatSeconds(getTotalDuration()) }}</div>
+          <div class="editor-stat-value type-mono">
+            {{ formatSeconds(getTotalDuration()) }}
+          </div>
         </div>
         <div class="card editor-stat">
           <div class="type-label">Étapes</div>
@@ -97,9 +138,23 @@
       <!-- Steps list -->
       <div class="editor-steps-header">
         <span class="type-label">Étapes</span>
-        <button type="button" class="btn btn-ghost editor-add-btn" (click)="openStepModal(null)">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+        <button
+          type="button"
+          class="btn btn-ghost editor-add-btn"
+          (click)="openStepModal(null)"
+        >
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <line x1="12" y1="5" x2="12" y2="19" />
+            <line x1="5" y1="12" x2="19" y2="12" />
           </svg>
           Ajouter
         </button>
@@ -110,33 +165,84 @@
           <p>Aucune étape. Commencez par en ajouter une.</p>
         </div>
       } @else {
-        <div cdkDropList class="editor-steps-list" (cdkDropListDropped)="onDrop($event)">
+        <div
+          cdkDropList
+          class="editor-steps-list"
+          (cdkDropListDropped)="onDrop($event)"
+        >
           @for (step of steps.controls; track $index) {
             <div
               class="card editor-step"
               cdkDrag
               [class.editor-step--selected]="selectedStepIndex === $index"
-              [style.border-color]="selectedStepIndex === $index ? getModeColor(step.get('mode')?.value) : ''"
-              [style.background]="selectedStepIndex === $index ? getModeColorBg(step.get('mode')?.value) : ''"
+              [style.border-color]="
+                selectedStepIndex === $index
+                  ? getModeColor(step.get('mode')?.value)
+                  : ''
+              "
+              [style.background]="
+                selectedStepIndex === $index
+                  ? getModeColorBg(step.get('mode')?.value)
+                  : ''
+              "
               (click)="selectStep($index)"
             >
               <span class="step-grip" cdkDragHandle aria-label="Déplacer">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <circle cx="9" cy="5" r="1"/><circle cx="15" cy="5" r="1"/>
-                  <circle cx="9" cy="12" r="1"/><circle cx="15" cy="12" r="1"/>
-                  <circle cx="9" cy="19" r="1"/><circle cx="15" cy="19" r="1"/>
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <circle cx="9" cy="5" r="1" />
+                  <circle cx="15" cy="5" r="1" />
+                  <circle cx="9" cy="12" r="1" />
+                  <circle cx="15" cy="12" r="1" />
+                  <circle cx="9" cy="19" r="1" />
+                  <circle cx="15" cy="19" r="1" />
                 </svg>
               </span>
-              <span class="step-num type-mono">{{ ($index + 1).toString().padStart(2, '0') }}</span>
-              <span class="step-color-bar" [style.background]="getModeColor(step.get('mode')?.value)"></span>
+              <span class="step-num type-mono">{{
+                ($index + 1).toString().padStart(2, '0')
+              }}</span>
+              <span
+                class="step-color-bar"
+                [style.background]="getModeColor(step.get('mode')?.value)"
+              ></span>
               <div class="step-info">
-                <div class="step-name">{{ step.get('name')?.value || '—' }}</div>
-                <div class="type-caption">{{ getModeLabel(step.get('mode')?.value) }}</div>
+                <div class="step-name">
+                  {{ step.get('name')?.value || '—' }}
+                </div>
+                <div class="type-caption">
+                  {{ getModeLabel(step.get('mode')?.value) }}
+                </div>
               </div>
-              <span class="step-duration type-mono">{{ formatSeconds(step.get('seconds')?.value) }}</span>
-              <button type="button" class="btn btn-ghost btn-icon" (click)="$event.stopPropagation(); openStepModal($index)" aria-label="Éditer">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/>
+              <span class="step-duration type-mono">{{
+                formatSeconds(step.get('seconds')?.value)
+              }}</span>
+              <button
+                type="button"
+                class="btn btn-ghost btn-icon"
+                (click)="$event.stopPropagation(); openStepModal($index)"
+                aria-label="Éditer"
+              >
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <circle cx="12" cy="12" r="1" />
+                  <circle cx="19" cy="12" r="1" />
+                  <circle cx="5" cy="12" r="1" />
                 </svg>
               </button>
             </div>
@@ -146,20 +252,29 @@
 
       <!-- Import / Export -->
       <div class="editor-import-export">
-        <button type="button" class="btn btn-ghost" (click)="exportRoutine()">Exporter</button>
+        <button type="button" class="btn btn-ghost" (click)="exportRoutine()">
+          Exporter
+        </button>
         <label class="btn btn-ghost">
           Importer
-          <input type="file" accept=".json,.routine.json" (change)="onImportFile($event)" style="display:none" />
+          <input
+            type="file"
+            accept=".json,.routine.json"
+            (change)="onImportFile($event)"
+            style="display: none"
+          />
         </label>
       </div>
-
     </div>
 
     <!-- Right panel: selected step detail (desktop only) -->
     <aside class="editor-panel">
       @if (selectedStepIndex !== null && selectedStep) {
         <div class="card editor-panel-card">
-          <span class="type-label editor-panel-mode-label" [style.color]="getModeColor(selectedStep.mode)">
+          <span
+            class="type-label editor-panel-mode-label"
+            [style.color]="getModeColor(selectedStep.mode)"
+          >
             ● Étape sélectionnée
           </span>
           <h3 class="type-h2 editor-panel-title">{{ selectedStep.name }}</h3>
@@ -167,11 +282,15 @@
           <div class="editor-panel-row">
             <div class="editor-panel-field">
               <div class="type-label">Durée</div>
-              <div class="type-mono editor-panel-value">{{ formatSeconds(selectedStep.seconds) }}</div>
+              <div class="type-mono editor-panel-value">
+                {{ formatSeconds(selectedStep.seconds) }}
+              </div>
             </div>
             <div class="editor-panel-field">
               <div class="type-label">Mode</div>
-              <div class="editor-panel-value">{{ getModeLabel(selectedStep.mode) }}</div>
+              <div class="editor-panel-value">
+                {{ getModeLabel(selectedStep.mode) }}
+              </div>
             </div>
           </div>
 
@@ -195,33 +314,54 @@
           }
 
           <div class="editor-panel-actions">
-            <button type="button" class="btn btn-primary" style="flex:1; justify-content:center" (click)="openStepModal(selectedStepIndex)">
+            <button
+              type="button"
+              class="btn btn-primary"
+              style="flex: 1; justify-content: center"
+              (click)="openStepModal(selectedStepIndex)"
+            >
               Modifier
             </button>
-            <button type="button" class="btn btn-ghost editor-delete-btn" (click)="deleteStep(selectedStepIndex!)">
+            <button
+              type="button"
+              class="btn btn-ghost editor-delete-btn"
+              (click)="deleteStep(selectedStepIndex!)"
+            >
               Supprimer
             </button>
           </div>
         </div>
       } @else {
         <div class="card editor-panel-empty">
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--ink-4)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
+          <svg
+            width="32"
+            height="32"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="var(--ink-4)"
+            stroke-width="1.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M9 11l3 3L22 4" />
+            <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" />
           </svg>
-          <p class="type-body-sm">Sélectionnez une étape pour voir ses détails</p>
+          <p class="type-body-sm">
+            Sélectionnez une étape pour voir ses détails
+          </p>
         </div>
       }
     </aside>
-
   </form>
 
   <!-- Step modal -->
   @if (showStepModal) {
     <app-step-editor-modal
-      [step]="currentStepIndex !== null ? steps.at(currentStepIndex).value : null"
+      [step]="
+        currentStepIndex !== null ? steps.at(currentStepIndex).value : null
+      "
       (save)="saveStep($event)"
       (cancel)="closeStepModal()"
     ></app-step-editor-modal>
   }
-
 </div>

@@ -1,10 +1,4 @@
-import {
-  Controller,
-  Get,
-  Body,
-  Patch,
-  UseGuards,
-} from '@nestjs/common';
+import { Controller, Get, Body, Patch, UseGuards } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { User } from '../schemas/user.schema';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
@@ -28,7 +22,7 @@ export class UsersController {
   @Patch('me/settings')
   updateSettings(
     @CurrentUser() user: User,
-    @Body() settings: Partial<User['settings']>
+    @Body() settings: Partial<User['settings']>,
   ) {
     return this.usersService.updateSettings(user._id.toString(), settings);
   }
@@ -36,8 +30,11 @@ export class UsersController {
   @Patch('me/password')
   async updatePassword(
     @CurrentUser() user: User,
-    @Body() body: { newPassword: string }
+    @Body() body: { newPassword: string },
   ) {
-    return this.usersService.updatePassword(user._id.toString(), body.newPassword);
+    return this.usersService.updatePassword(
+      user._id.toString(),
+      body.newPassword,
+    );
   }
 }

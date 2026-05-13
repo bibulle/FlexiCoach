@@ -188,7 +188,9 @@ describe('SessionService', () => {
         ...updateData,
       } as Session;
 
-      const responsePromise = firstValueFrom(service.update(sessionId, updateData));
+      const responsePromise = firstValueFrom(
+        service.update(sessionId, updateData),
+      );
 
       const req = httpMock.expectOne('/api/sessions/123');
       expect(req.request.method).toBe('PATCH');
@@ -237,7 +239,9 @@ describe('SessionService', () => {
         endAt: new Date(),
       } as Session;
 
-      const responsePromise = firstValueFrom(service.complete(sessionId, true, 5));
+      const responsePromise = firstValueFrom(
+        service.complete(sessionId, true, 5),
+      );
 
       const req = httpMock.expectOne('/api/sessions/123/complete');
       expect(req.request.method).toBe('PATCH');

@@ -9,19 +9,19 @@ export class Session {
   userId?: Types.ObjectId;
 
   @Prop({ required: true })
-  routineId: string;
+  routineId!: string;
 
   @Prop({ required: true, type: Date })
-  startAt: Date;
+  startAt!: Date;
 
   @Prop({ type: Date })
   endAt?: Date;
 
   @Prop({ required: true })
-  durationSec: number;
+  durationSec!: number;
 
   @Prop({ required: true, default: false })
-  completed: boolean;
+  completed!: boolean;
 
   @Prop({ min: 0, max: 100 })
   progress?: number;

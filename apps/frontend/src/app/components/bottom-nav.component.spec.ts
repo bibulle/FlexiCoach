@@ -39,25 +39,25 @@ describe('BottomNavComponent', () => {
   it('should show Accueil link', () => {
     const items = fixture.nativeElement.querySelectorAll('.bottom-nav-item');
     const labels = Array.from(items).map((el: any) => el.textContent.trim());
-    expect(labels.some(l => l.includes('Accueil'))).toBe(true);
+    expect(labels.some((l) => l.includes('Accueil'))).toBe(true);
   });
 
   it('should show Calendrier link', () => {
     const items = fixture.nativeElement.querySelectorAll('.bottom-nav-item');
     const labels = Array.from(items).map((el: any) => el.textContent.trim());
-    expect(labels.some(l => l.includes('Calendrier'))).toBe(true);
+    expect(labels.some((l) => l.includes('Calendrier'))).toBe(true);
   });
 
   it('should show Routines link', () => {
     const items = fixture.nativeElement.querySelectorAll('.bottom-nav-item');
     const labels = Array.from(items).map((el: any) => el.textContent.trim());
-    expect(labels.some(l => l.includes('Routines'))).toBe(true);
+    expect(labels.some((l) => l.includes('Routines'))).toBe(true);
   });
 
   it('should show Paramètres link', () => {
     const items = fixture.nativeElement.querySelectorAll('.bottom-nav-item');
     const labels = Array.from(items).map((el: any) => el.textContent.trim());
-    expect(labels.some(l => l.includes('Param'))).toBe(true);
+    expect(labels.some((l) => l.includes('Param'))).toBe(true);
   });
 
   it('should not render nav when not authenticated', () => {

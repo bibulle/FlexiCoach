@@ -1,11 +1,4 @@
-import {
-  Controller,
-  Get,
-  Patch,
-  Body,
-  Param,
-  UseGuards,
-} from '@nestjs/common';
+import { Controller, Get, Patch, Body, Param, UseGuards } from '@nestjs/common';
 import { AdminService } from './admin.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { AdminGuard } from '../auth/admin.guard';
@@ -23,7 +16,7 @@ export class AdminController {
   @Patch('users/:userId/password')
   resetUserPassword(
     @Param('userId') userId: string,
-    @Body() body: { newPassword: string }
+    @Body() body: { newPassword: string },
   ) {
     return this.adminService.resetUserPassword(userId, body.newPassword);
   }

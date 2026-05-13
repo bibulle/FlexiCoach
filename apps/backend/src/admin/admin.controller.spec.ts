@@ -64,7 +64,7 @@ describe('AdminController', () => {
       expect(result).toEqual(updatedUser);
       expect(service.resetUserPassword).toHaveBeenCalledWith(
         userId,
-        newPassword
+        newPassword,
       );
     });
   });

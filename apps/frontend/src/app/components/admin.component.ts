@@ -55,7 +55,10 @@ interface User {
             <div class="modal" (click)="$event.stopPropagation()">
               <h2>Réinitialiser le mot de passe</h2>
               <p class="modal-user">
-                Utilisateur : <strong>{{ selectedUser.displayName || selectedUser.email }}</strong>
+                Utilisateur :
+                <strong>{{
+                  selectedUser.displayName || selectedUser.email
+                }}</strong>
               </p>
 
               <div class="form-group">
@@ -106,16 +109,14 @@ export class AdminComponent implements OnInit {
 
   constructor(
     private authService: AuthService,
-    private router: Router
+    private router: Router,
   ) {}
 
   ngOnInit(): void {
-    // Check if user is admin
     if (!this.authService.isAdmin()) {
       this.router.navigate(['/']);
       return;
     }
-
     this.loadUsers();
   }
 
@@ -130,7 +131,8 @@ export class AdminComponent implements OnInit {
       },
       error: (error) => {
         this.loading = false;
-        this.errorMessage = error.error?.message || 'Erreur lors du chargement des utilisateurs';
+        this.errorMessage =
+          error.error?.message || 'Erreur lors du chargement des utilisateurs';
       },
     });
   }
@@ -154,23 +156,27 @@ export class AdminComponent implements OnInit {
     this.errorMessage = '';
     this.successMessage = '';
 
-    this.authService.resetUserPassword(this.selectedUser._id, this.newPassword).subscribe({
-      next: () => {
-        this.resetting = false;
-        this.successMessage = `Mot de passe réinitialisé pour ${this.selectedUser?.displayName || this.selectedUser?.email}`;
-        this.selectedUser = null;
-        this.newPassword = '';
+    this.authService
+      .resetUserPassword(this.selectedUser._id, this.newPassword)
+      .subscribe({
+        next: () => {
+          this.resetting = false;
+          this.successMessage = `Mot de passe réinitialisé pour ${this.selectedUser?.displayName || this.selectedUser?.email}`;
+          this.selectedUser = null;
+          this.newPassword = '';
 
-        // Clear success message after 5 seconds
-        setTimeout(() => {
-          this.successMessage = '';
-        }, 5000);
-      },
-      error: (error) => {
-        this.resetting = false;
-        this.errorMessage = error.error?.message || 'Erreur lors de la réinitialisation du mot de passe';
-        this.selectedUser = null;
-      },
-    });
+          // Clear success message after 5 seconds
+          setTimeout(() => {
+            this.successMessage = '';
+          }, 5000);
+        },
+        error: (error) => {
+          this.resetting = false;
+          this.errorMessage =
+            error.error?.message ||
+            'Erreur lors de la réinitialisation du mot de passe';
+          this.selectedUser = null;
+        },
+      });
   }
 }

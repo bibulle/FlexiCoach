@@ -19,21 +19,34 @@ async function bootstrap() {
   app.useLogger(app.get(WINSTON_MODULE_NEST_PROVIDER));
 
   // Security: HTTP headers hardening
-  app.use(helmet({
-    contentSecurityPolicy: process.env.NODE_ENV === 'production' ? {
-      directives: {
-        ...helmet.contentSecurityPolicy.getDefaultDirectives(),
-        // Allow Google profile pictures from OAuth
-        'img-src': ["'self'", 'data:', 'https://lh3.googleusercontent.com'],
-        // Allow Google Fonts
-        'style-src': ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
-        'font-src': ["'self'", 'https://fonts.gstatic.com'],
-        // Angular event bindings compile to addEventListener, not inline handlers.
-        // However Zone.js and some browser APIs require this to be explicitly set.
-        'script-src-attr': ["'unsafe-inline'"],
-      },
-    } : false,
-  }));
+  app.use(
+    helmet({
+      contentSecurityPolicy:
+        process.env.NODE_ENV === 'production'
+          ? {
+              directives: {
+                ...helmet.contentSecurityPolicy.getDefaultDirectives(),
+                // Allow Google profile pictures from OAuth
+                'img-src': [
+                  "'self'",
+                  'data:',
+                  'https://lh3.googleusercontent.com',
+                ],
+                // Allow Google Fonts
+                'style-src': [
+                  "'self'",
+                  "'unsafe-inline'",
+                  'https://fonts.googleapis.com',
+                ],
+                'font-src': ["'self'", 'https://fonts.gstatic.com'],
+                // Angular event bindings compile to addEventListener, not inline handlers.
+                // However Zone.js and some browser APIs require this to be explicitly set.
+                'script-src-attr': ["'unsafe-inline'"],
+              },
+            }
+          : false,
+    }),
+  );
 
   // Security: CORS configuration
   const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:4200';
@@ -53,11 +66,13 @@ async function bootstrap() {
       whitelist: true,
       forbidNonWhitelisted: true,
       transform: true,
-    })
+    }),
   );
 
   // Enable global exception filter
-  app.useGlobalFilters(new AllExceptionsFilter(app.get(WINSTON_MODULE_NEST_PROVIDER)));
+  app.useGlobalFilters(
+    new AllExceptionsFilter(app.get(WINSTON_MODULE_NEST_PROVIDER)),
+  );
 
   // Serve static files in production
   if (process.env.NODE_ENV === 'production') {
@@ -68,19 +83,25 @@ async function bootstrap() {
     app.use(express.static(publicPath));
 
     // SPA fallback - serve index.html for all non-API routes that don't match static files
-    app.use((req, res, next) => {
-      if (!req.path.startsWith('/api') && !req.path.match(/\.\w+$/)) {
-        res.sendFile(join(publicPath, 'index.html'));
-      } else {
-        next();
-      }
-    });
+    app.use(
+      (
+        req: import('express').Request,
+        res: import('express').Response,
+        next: import('express').NextFunction,
+      ) => {
+        if (!req.path.startsWith('/api') && !req.path.match(/\.\w+$/)) {
+          res.sendFile(join(publicPath, 'index.html'));
+        } else {
+          next();
+        }
+      },
+    );
   }
 
   const port = process.env.PORT || 3000;
   await app.listen(port);
   Logger.log(
-    `🚀 Application is running on: http://localhost:${port}/${globalPrefix}`
+    `🚀 Application is running on: http://localhost:${port}/${globalPrefix}`,
   );
 }
 

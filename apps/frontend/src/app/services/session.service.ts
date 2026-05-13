@@ -46,7 +46,7 @@ export class SessionService {
   complete(
     id: string,
     completed: boolean,
-    feeling?: number
+    feeling?: number,
   ): Observable<Session> {
     return this.http.patch<Session>(`${this.apiUrl}/${id}/complete`, {
       completed,

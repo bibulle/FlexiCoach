@@ -30,7 +30,7 @@ export class RoutinesController {
   @HttpCode(HttpStatus.CREATED)
   async create(
     @Body() createRoutineDto: CreateRoutineDto,
-    @CurrentUser() user: User
+    @CurrentUser() user: User,
   ) {
     return this.routinesService.create(createRoutineDto, user._id);
   }
@@ -40,10 +40,12 @@ export class RoutinesController {
   @HttpCode(HttpStatus.CREATED)
   async import(
     @Body() importRoutineDto: ImportRoutineDto,
-    @CurrentUser() user: User
+    @CurrentUser() user: User,
   ) {
     if (importRoutineDto.version !== '1.0') {
-      throw new BadRequestException('Unsupported version. Only version 1.0 is supported.');
+      throw new BadRequestException(
+        'Unsupported version. Only version 1.0 is supported.',
+      );
     }
     return this.routinesService.create(importRoutineDto.routine, user._id);
   }
@@ -63,7 +65,10 @@ export class RoutinesController {
     }
 
     // Allow access to built-in routines or user's own routines
-    if (routine.visibility === 'user' && routine.ownerId !== user._id.toString().toString()) {
+    if (
+      routine.visibility === 'user' &&
+      routine.ownerId !== user._id.toString().toString()
+    ) {
       throw new ForbiddenException('Access denied to this routine');
     }
 
@@ -79,7 +84,10 @@ export class RoutinesController {
     }
 
     // Allow access to built-in routines or user's own routines
-    if (routine.visibility === 'user' && routine.ownerId !== user._id.toString()) {
+    if (
+      routine.visibility === 'user' &&
+      routine.ownerId !== user._id.toString()
+    ) {
       throw new ForbiddenException('Access denied to this routine');
     }
 
@@ -91,7 +99,7 @@ export class RoutinesController {
   async update(
     @Param('id') id: string,
     @Body() updateRoutineDto: UpdateRoutineDto,
-    @CurrentUser() user: User
+    @CurrentUser() user: User,
   ) {
     const routine = await this.routinesService.findOne(id);
     if (!routine) {

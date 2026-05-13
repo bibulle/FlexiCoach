@@ -1,4 +1,10 @@
-import { Component, signal, computed, inject, HostListener } from '@angular/core';
+import {
+  Component,
+  signal,
+  computed,
+  inject,
+  HostListener,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
@@ -8,7 +14,7 @@ import { AuthService } from '../services/auth.service';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './user-menu.component.html',
-  styleUrls: ['./user-menu.component.scss']
+  styleUrls: ['./user-menu.component.scss'],
 })
 export class UserMenuComponent {
   authService = inject(AuthService);
@@ -18,7 +24,7 @@ export class UserMenuComponent {
   currentUser = computed(() => {
     // Subscribe to currentUser$ observable to get the latest value
     let user: any = null;
-    this.authService.currentUser$.subscribe(u => user = u).unsubscribe();
+    this.authService.currentUser$.subscribe((u) => (user = u)).unsubscribe();
     return user;
   });
 
@@ -33,7 +39,7 @@ export class UserMenuComponent {
   }
 
   toggleMenu(): void {
-    this.isMenuOpen.update(value => !value);
+    this.isMenuOpen.update((value) => !value);
   }
 
   getInitials(): string {

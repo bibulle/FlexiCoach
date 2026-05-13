@@ -19,7 +19,7 @@ export class AuthCodeStore {
 
   generateCode(
     token: string,
-    user: { _id: string; email: string; displayName?: string; avatar?: string }
+    user: { _id: string; email: string; displayName?: string; avatar?: string },
   ): string {
     this.cleanup();
     const code = randomBytes(32).toString('hex');
@@ -31,7 +31,9 @@ export class AuthCodeStore {
     return code;
   }
 
-  exchangeCode(code: string): { token: string; user: StoredCode['user'] } | null {
+  exchangeCode(
+    code: string,
+  ): { token: string; user: StoredCode['user'] } | null {
     this.cleanup();
     const stored = this.codes.get(code);
     if (!stored) {

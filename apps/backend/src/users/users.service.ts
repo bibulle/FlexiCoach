@@ -35,7 +35,7 @@ export class UsersService {
 
   async updateSettings(
     id: string,
-    settings: Partial<User['settings']>
+    settings: Partial<User['settings']>,
   ): Promise<User | null> {
     return this.userModel
       .findByIdAndUpdate(id, { $set: { settings } }, { new: true })

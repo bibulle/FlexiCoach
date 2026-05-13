@@ -65,7 +65,11 @@ describe('AuthController', () => {
 
       const authResponse = {
         access_token: 'token',
-        user: { _id: '123', email: registerDto.email, displayName: registerDto.displayName },
+        user: {
+          _id: '123',
+          email: registerDto.email,
+          displayName: registerDto.displayName,
+        },
       };
 
       authService.register.mockResolvedValue(authResponse);
@@ -102,7 +106,8 @@ describe('AuthController', () => {
     it('should return true for admin email', async () => {
       const user = { _id: '123', email: 'admin@example.com' } as any;
       configService.get.mockImplementation((key: string) => {
-        if (key === 'ADMIN_EMAILS') return 'admin@example.com,other@example.com';
+        if (key === 'ADMIN_EMAILS')
+          return 'admin@example.com,other@example.com';
         return '';
       });
 
@@ -175,7 +180,7 @@ describe('AuthController', () => {
       authCodeStore.exchangeCode.mockReturnValue(null);
 
       await expect(controller.exchangeCode(exchangeCodeDto)).rejects.toThrow(
-        UnauthorizedException
+        UnauthorizedException,
       );
     });
 
@@ -184,7 +189,7 @@ describe('AuthController', () => {
       authCodeStore.exchangeCode.mockReturnValue(null);
 
       await expect(controller.exchangeCode(exchangeCodeDto)).rejects.toThrow(
-        'Invalid or expired authorization code'
+        'Invalid or expired authorization code',
       );
     });
   });
@@ -204,7 +209,7 @@ describe('AuthController', () => {
       authService.generateToken.mockReturnValue('jwt-token');
       authCodeStore.generateCode.mockReturnValue('temp-code-abc123');
 
-      await controller.googleAuthRedirect(req, res);
+      await controller.googleAuthRedirect(req as any, res);
 
       expect(authService.generateToken).toHaveBeenCalledWith({
         sub: 'user123',
@@ -217,7 +222,7 @@ describe('AuthController', () => {
         avatar: 'https://avatar.url',
       });
       expect(res.redirect).toHaveBeenCalledWith(
-        'http://localhost:4200/auth/callback?code=temp-code-abc123'
+        'http://localhost:4200/auth/callback?code=temp-code-abc123',
       );
     });
 
@@ -225,10 +230,10 @@ describe('AuthController', () => {
       const req = { user: null };
       const res = { redirect: jest.fn() } as any;
 
-      await controller.googleAuthRedirect(req, res);
+      await controller.googleAuthRedirect(req as any, res);
 
       expect(res.redirect).toHaveBeenCalledWith(
-        expect.stringContaining('/login?error=')
+        expect.stringContaining('/login?error='),
       );
     });
   });

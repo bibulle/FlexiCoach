@@ -10,7 +10,10 @@ export class AdminService {
     return this.usersService.findAll();
   }
 
-  async resetUserPassword(userId: string, newPassword: string): Promise<User | null> {
+  async resetUserPassword(
+    userId: string,
+    newPassword: string,
+  ): Promise<User | null> {
     return this.usersService.updatePassword(userId, newPassword);
   }
 }

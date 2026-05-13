@@ -1,18 +1,25 @@
 <main class="cal-shell">
-
   <!-- Hero header -->
   <div class="cal-hero">
     <div class="cal-hero-text">
       <div class="type-label">Année {{ currentYear }}</div>
       <h1 class="type-display cal-title">{{ totalSessions }} séances.</h1>
-      <p class="cal-subtitle">{{ totalHours }}h cumulées · série actuelle {{ currentStreak }} jours</p>
+      <p class="cal-subtitle">
+        {{ totalHours }}h cumulées · série actuelle {{ currentStreak }} jours
+      </p>
     </div>
     <div class="year-tabs">
       @for (y of availableYears; track y) {
         <button
-          [class]="y === currentYear ? 'btn btn-primary year-btn' : 'btn btn-ghost year-btn'"
+          [class]="
+            y === currentYear
+              ? 'btn btn-primary year-btn'
+              : 'btn btn-ghost year-btn'
+          "
           (click)="selectYear(y)"
-        >{{ y }}</button>
+        >
+          {{ y }}
+        </button>
       }
     </div>
   </div>
@@ -22,7 +29,6 @@
     <div class="card cal-card cal-skeleton"></div>
     <div class="card cal-card cal-skeleton cal-skeleton--tall"></div>
   } @else {
-
     <!-- Trend card -->
     <section class="card cal-card">
       <div class="cal-card-header">
@@ -43,8 +49,16 @@
         >
           <defs>
             <linearGradient id="trend-area-desktop" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stop-color="var(--primary-500)" stop-opacity="0.28" />
-              <stop offset="100%" stop-color="var(--primary-500)" stop-opacity="0" />
+              <stop
+                offset="0%"
+                stop-color="var(--primary-500)"
+                stop-opacity="0.28"
+              />
+              <stop
+                offset="100%"
+                stop-color="var(--primary-500)"
+                stop-opacity="0"
+              />
             </linearGradient>
           </defs>
           @for (grid of [0.25, 0.5, 0.75]; track grid) {
@@ -53,21 +67,40 @@
               [attr.x2]="TREND_W - TREND_PAD_X"
               [attr.y1]="150 - 28 - grid * (150 - 48)"
               [attr.y2]="150 - 28 - grid * (150 - 48)"
-              stroke="var(--line)" stroke-dasharray="3 4" stroke-opacity="0.7"
+              stroke="var(--line)"
+              stroke-dasharray="3 4"
+              stroke-opacity="0.7"
             />
           }
           <path [attr.d]="trendDesktop.area" fill="url(#trend-area-desktop)" />
-          <path [attr.d]="trendDesktop.path" fill="none" stroke="var(--primary-500)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+          <path
+            [attr.d]="trendDesktop.path"
+            fill="none"
+            stroke="var(--primary-500)"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
           @for (pt of trendDesktop.points; track $index) {
             @if ($index === peakIndex) {
-              <circle [attr.cx]="pt.x" [attr.cy]="pt.y" r="6" fill="var(--primary-500)" fill-opacity="0.18" />
+              <circle
+                [attr.cx]="pt.x"
+                [attr.cy]="pt.y"
+                r="6"
+                fill="var(--primary-500)"
+                fill-opacity="0.18"
+              />
             }
             <circle
               [attr.cx]="pt.x"
               [attr.cy]="pt.y"
               [attr.r]="$index === peakIndex ? 4 : 3"
-              [attr.fill]="$index === peakIndex ? 'var(--primary-500)' : 'var(--surface)'"
-              [attr.stroke]="$index === peakIndex ? 'none' : 'var(--primary-500)'"
+              [attr.fill]="
+                $index === peakIndex ? 'var(--primary-500)' : 'var(--surface)'
+              "
+              [attr.stroke]="
+                $index === peakIndex ? 'none' : 'var(--primary-500)'
+              "
               [attr.stroke-width]="$index === peakIndex ? 0 : 2"
             />
           }
@@ -79,7 +112,9 @@
               font-size="10"
               font-family="var(--font-sans)"
               fill="var(--ink-4)"
-            >{{ MONTH_LABELS[$index] }}</text>
+            >
+              {{ MONTH_LABELS[$index] }}
+            </text>
           }
         </svg>
       </div>
@@ -95,12 +130,27 @@
         >
           <defs>
             <linearGradient id="trend-area-mobile" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stop-color="var(--primary-500)" stop-opacity="0.28" />
-              <stop offset="100%" stop-color="var(--primary-500)" stop-opacity="0" />
+              <stop
+                offset="0%"
+                stop-color="var(--primary-500)"
+                stop-opacity="0.28"
+              />
+              <stop
+                offset="100%"
+                stop-color="var(--primary-500)"
+                stop-opacity="0"
+              />
             </linearGradient>
           </defs>
           <path [attr.d]="trendMobile.area" fill="url(#trend-area-mobile)" />
-          <path [attr.d]="trendMobile.path" fill="none" stroke="var(--primary-500)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+          <path
+            [attr.d]="trendMobile.path"
+            fill="none"
+            stroke="var(--primary-500)"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
         </svg>
       </div>
     </section>
@@ -125,7 +175,9 @@
             <!-- Day of week labels -->
             <div class="heatmap-day-labels">
               @for (l of HEAT_LABELS; track l; let i = $index) {
-                <span class="heatmap-day-label" [style.grid-row]="(i * 2) + 1">{{ l }}</span>
+                <span class="heatmap-day-label" [style.grid-row]="i * 2 + 1">{{
+                  l
+                }}</span>
               }
             </div>
 
@@ -137,7 +189,9 @@
                     <div
                       class="heat-cell"
                       [class.heat-cell--future]="day.future"
-                      [style.background]="day.future ? 'transparent' : getHeatColor(day.intensity)"
+                      [style.background]="
+                        day.future ? 'transparent' : getHeatColor(day.intensity)
+                      "
                       [title]="day.dateStr"
                     ></div>
                   }
@@ -150,13 +204,15 @@
           <div class="heatmap-legend">
             <span class="type-caption">Moins</span>
             @for (v of [0, 0.4, 0.7, 1]; track v) {
-              <div class="legend-cell" [style.background]="getHeatColor(v)"></div>
+              <div
+                class="legend-cell"
+                [style.background]="getHeatColor(v)"
+              ></div>
             }
             <span class="type-caption">Plus</span>
           </div>
         </div>
       </div>
     </section>
-
   }
 </main>

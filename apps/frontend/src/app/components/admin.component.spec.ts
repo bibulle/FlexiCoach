@@ -4,6 +4,7 @@ import { AuthService } from '../services/auth.service';
 import { Router } from '@angular/router';
 import { of, throwError } from 'rxjs';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { safeDetectChanges } from '../../test-utils';
 
 describe('AdminComponent', () => {
   let component: AdminComponent;
@@ -47,7 +48,7 @@ describe('AdminComponent', () => {
   it('should redirect to / if user is not admin', () => {
     mockAuthService.isAdmin.mockReturnValue(false);
 
-    fixture.detectChanges();
+    safeDetectChanges(fixture);
 
     expect(mockRouter.navigate).toHaveBeenCalledWith(['/']);
   });
@@ -56,7 +57,7 @@ describe('AdminComponent', () => {
     mockAuthService.isAdmin.mockReturnValue(true);
     mockAuthService.getAllUsers.mockReturnValue(of(mockUsers));
 
-    fixture.detectChanges();
+    safeDetectChanges(fixture);
 
     expect(mockAuthService.getAllUsers).toHaveBeenCalled();
     expect(component.users).toEqual(mockUsers);
@@ -80,10 +81,10 @@ describe('AdminComponent', () => {
       error: { message: 'Failed to load users' },
     };
     mockAuthService.getAllUsers.mockReturnValue(
-      throwError(() => errorResponse)
+      throwError(() => errorResponse),
     );
 
-    fixture.detectChanges();
+    safeDetectChanges(fixture);
 
     expect(component.loading).toBe(false);
     expect(component.errorMessage).toBe('Failed to load users');
@@ -93,10 +94,10 @@ describe('AdminComponent', () => {
     mockAuthService.isAdmin.mockReturnValue(true);
     mockAuthService.getAllUsers.mockReturnValue(throwError(() => ({})));
 
-    fixture.detectChanges();
+    safeDetectChanges(fixture);
 
     expect(component.errorMessage).toBe(
-      'Erreur lors du chargement des utilisateurs'
+      'Erreur lors du chargement des utilisateurs',
     );
   });
 
@@ -104,7 +105,7 @@ describe('AdminComponent', () => {
     mockAuthService.isAdmin.mockReturnValue(true);
     mockAuthService.getAllUsers.mockReturnValue(of(mockUsers));
 
-    fixture.detectChanges();
+    safeDetectChanges(fixture);
 
     const compiled = fixture.nativeElement as HTMLElement;
     const userCards = compiled.querySelectorAll('.user-card');
@@ -115,7 +116,7 @@ describe('AdminComponent', () => {
     mockAuthService.isAdmin.mockReturnValue(true);
     mockAuthService.getAllUsers.mockReturnValue(of(mockUsers));
 
-    fixture.detectChanges();
+    safeDetectChanges(fixture);
 
     const compiled = fixture.nativeElement as HTMLElement;
     const userCards = compiled.querySelectorAll('.user-card');
@@ -131,7 +132,7 @@ describe('AdminComponent', () => {
     mockAuthService.isAdmin.mockReturnValue(true);
     mockAuthService.getAllUsers.mockReturnValue(of(mockUsers));
 
-    fixture.detectChanges();
+    safeDetectChanges(fixture);
 
     component.selectUser(mockUsers[0]);
 
@@ -145,10 +146,10 @@ describe('AdminComponent', () => {
     mockAuthService.isAdmin.mockReturnValue(true);
     mockAuthService.getAllUsers.mockReturnValue(of(mockUsers));
 
-    fixture.detectChanges();
+    safeDetectChanges(fixture);
 
     component.selectUser(mockUsers[0]);
-    fixture.detectChanges();
+    safeDetectChanges(fixture);
 
     const compiled = fixture.nativeElement as HTMLElement;
     const modal = compiled.querySelector('.modal');
@@ -159,7 +160,7 @@ describe('AdminComponent', () => {
     mockAuthService.isAdmin.mockReturnValue(true);
     mockAuthService.getAllUsers.mockReturnValue(of(mockUsers));
 
-    fixture.detectChanges();
+    safeDetectChanges(fixture);
 
     component.selectUser(mockUsers[0]);
     component.cancelReset();
@@ -172,10 +173,10 @@ describe('AdminComponent', () => {
     mockAuthService.isAdmin.mockReturnValue(true);
     mockAuthService.getAllUsers.mockReturnValue(of(mockUsers));
 
-    fixture.detectChanges();
+    safeDetectChanges(fixture);
 
     component.selectUser(mockUsers[0]);
-    fixture.detectChanges();
+    safeDetectChanges(fixture);
 
     const compiled = fixture.nativeElement as HTMLElement;
     const overlay = compiled.querySelector('.modal-overlay') as HTMLElement;
@@ -188,10 +189,10 @@ describe('AdminComponent', () => {
     mockAuthService.isAdmin.mockReturnValue(true);
     mockAuthService.getAllUsers.mockReturnValue(of(mockUsers));
 
-    fixture.detectChanges();
+    safeDetectChanges(fixture);
 
     component.selectUser(mockUsers[0]);
-    fixture.detectChanges();
+    safeDetectChanges(fixture);
 
     expect(component.selectedUser).toEqual(mockUsers[0]);
   });
@@ -200,15 +201,15 @@ describe('AdminComponent', () => {
     mockAuthService.isAdmin.mockReturnValue(true);
     mockAuthService.getAllUsers.mockReturnValue(of(mockUsers));
 
-    fixture.detectChanges();
+    safeDetectChanges(fixture);
 
     component.selectUser(mockUsers[0]);
     component.newPassword = '';
-    fixture.detectChanges();
+    safeDetectChanges(fixture);
 
     const compiled = fixture.nativeElement as HTMLElement;
     const confirmButton = compiled.querySelector(
-      '.confirm-btn'
+      '.confirm-btn',
     ) as HTMLButtonElement;
     expect(confirmButton.disabled).toBe(true);
   });
@@ -217,15 +218,15 @@ describe('AdminComponent', () => {
     mockAuthService.isAdmin.mockReturnValue(true);
     mockAuthService.getAllUsers.mockReturnValue(of(mockUsers));
 
-    fixture.detectChanges();
+    safeDetectChanges(fixture);
 
     component.selectUser(mockUsers[0]);
     component.newPassword = 'newpassword123';
-    fixture.detectChanges();
+    safeDetectChanges(fixture);
 
     const compiled = fixture.nativeElement as HTMLElement;
     const confirmButton = compiled.querySelector(
-      '.confirm-btn'
+      '.confirm-btn',
     ) as HTMLButtonElement;
     expect(confirmButton.disabled).toBe(false);
   });
@@ -235,7 +236,7 @@ describe('AdminComponent', () => {
     mockAuthService.getAllUsers.mockReturnValue(of(mockUsers));
     mockAuthService.resetUserPassword.mockReturnValue(of({}));
 
-    fixture.detectChanges();
+    safeDetectChanges(fixture);
 
     component.selectUser(mockUsers[0]);
     component.newPassword = 'newpassword123';
@@ -243,7 +244,7 @@ describe('AdminComponent', () => {
 
     expect(mockAuthService.resetUserPassword).toHaveBeenCalledWith(
       '1',
-      'newpassword123'
+      'newpassword123',
     );
   });
 
@@ -252,14 +253,16 @@ describe('AdminComponent', () => {
     mockAuthService.getAllUsers.mockReturnValue(of(mockUsers));
     mockAuthService.resetUserPassword.mockReturnValue(of({}));
 
-    fixture.detectChanges();
+    safeDetectChanges(fixture);
 
     component.selectUser(mockUsers[0]);
     component.newPassword = 'newpassword123';
     component.confirmReset();
 
     expect(component.resetting).toBe(false);
-    expect(component.successMessage).toBe('Mot de passe réinitialisé pour User One');
+    expect(component.successMessage).toBe(
+      'Mot de passe réinitialisé pour User One',
+    );
     expect(component.selectedUser).toBeNull();
     expect(component.newPassword).toBe('');
 
@@ -273,10 +276,10 @@ describe('AdminComponent', () => {
       error: { message: 'Reset failed' },
     };
     mockAuthService.resetUserPassword.mockReturnValue(
-      throwError(() => errorResponse)
+      throwError(() => errorResponse),
     );
 
-    fixture.detectChanges();
+    safeDetectChanges(fixture);
 
     component.selectUser(mockUsers[0]);
     component.newPassword = 'newpassword123';
@@ -292,14 +295,14 @@ describe('AdminComponent', () => {
     mockAuthService.getAllUsers.mockReturnValue(of(mockUsers));
     mockAuthService.resetUserPassword.mockReturnValue(throwError(() => ({})));
 
-    fixture.detectChanges();
+    safeDetectChanges(fixture);
 
     component.selectUser(mockUsers[0]);
     component.newPassword = 'newpassword123';
     component.confirmReset();
 
     expect(component.errorMessage).toBe(
-      'Erreur lors de la réinitialisation du mot de passe'
+      'Erreur lors de la réinitialisation du mot de passe',
     );
   });
 
@@ -308,7 +311,7 @@ describe('AdminComponent', () => {
     mockAuthService.getAllUsers.mockReturnValue(of(mockUsers));
     mockAuthService.resetUserPassword.mockReturnValue(of({}));
 
-    fixture.detectChanges();
+    safeDetectChanges(fixture);
 
     component.selectUser(mockUsers[0]);
     component.newPassword = 'newpassword123';
@@ -321,7 +324,7 @@ describe('AdminComponent', () => {
     mockAuthService.isAdmin.mockReturnValue(true);
     mockAuthService.getAllUsers.mockReturnValue(of(mockUsers));
 
-    fixture.detectChanges();
+    safeDetectChanges(fixture);
 
     component.selectedUser = null;
     component.newPassword = 'newpassword123';
@@ -334,7 +337,7 @@ describe('AdminComponent', () => {
     mockAuthService.isAdmin.mockReturnValue(true);
     mockAuthService.getAllUsers.mockReturnValue(of(mockUsers));
 
-    fixture.detectChanges();
+    safeDetectChanges(fixture);
 
     component.selectUser(mockUsers[0]);
     component.newPassword = '';
@@ -347,11 +350,11 @@ describe('AdminComponent', () => {
     mockAuthService.isAdmin.mockReturnValue(true);
     mockAuthService.getAllUsers.mockReturnValue(of(mockUsers));
 
-    fixture.detectChanges();
+    safeDetectChanges(fixture);
 
     component.loading = true;
     component.users = [];
-    fixture.detectChanges();
+    safeDetectChanges(fixture);
 
     const compiled = fixture.nativeElement as HTMLElement;
     const loadingElement = compiled.querySelector('.loading');
@@ -363,10 +366,10 @@ describe('AdminComponent', () => {
     mockAuthService.isAdmin.mockReturnValue(true);
     mockAuthService.getAllUsers.mockReturnValue(of(mockUsers));
 
-    fixture.detectChanges();
+    safeDetectChanges(fixture);
 
     component.errorMessage = 'Test error';
-    fixture.detectChanges();
+    safeDetectChanges(fixture);
 
     const compiled = fixture.nativeElement as HTMLElement;
     const errorElement = compiled.querySelector('.error-message');
@@ -377,10 +380,10 @@ describe('AdminComponent', () => {
     mockAuthService.isAdmin.mockReturnValue(true);
     mockAuthService.getAllUsers.mockReturnValue(of(mockUsers));
 
-    fixture.detectChanges();
+    safeDetectChanges(fixture);
 
     component.successMessage = 'Test success';
-    fixture.detectChanges();
+    safeDetectChanges(fixture);
 
     const compiled = fixture.nativeElement as HTMLElement;
     const successElement = compiled.querySelector('.success-message');
@@ -391,12 +394,12 @@ describe('AdminComponent', () => {
     mockAuthService.isAdmin.mockReturnValue(true);
     mockAuthService.getAllUsers.mockReturnValue(of(mockUsers));
 
-    fixture.detectChanges();
+    safeDetectChanges(fixture);
 
     component.selectUser(mockUsers[0]);
     component.newPassword = 'newpassword123';
     component.resetting = true;
-    fixture.detectChanges();
+    safeDetectChanges(fixture);
 
     const compiled = fixture.nativeElement as HTMLElement;
     const confirmButton = compiled.querySelector('.confirm-btn');
@@ -407,12 +410,12 @@ describe('AdminComponent', () => {
     mockAuthService.isAdmin.mockReturnValue(true);
     mockAuthService.getAllUsers.mockReturnValue(of(mockUsers));
 
-    fixture.detectChanges();
+    safeDetectChanges(fixture);
 
     component.selectUser(mockUsers[0]);
     component.newPassword = 'newpassword123';
     component.resetting = false;
-    fixture.detectChanges();
+    safeDetectChanges(fixture);
 
     const compiled = fixture.nativeElement as HTMLElement;
     const confirmButton = compiled.querySelector('.confirm-btn');

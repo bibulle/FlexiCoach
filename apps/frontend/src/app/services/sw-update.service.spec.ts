@@ -71,7 +71,7 @@ describe('SwUpdateService', () => {
 
     expect(mockServiceWorkerRegistration.addEventListener).toHaveBeenCalledWith(
       'updatefound',
-      expect.any(Function)
+      expect.any(Function),
     );
   });
 
@@ -80,7 +80,7 @@ describe('SwUpdateService', () => {
 
     expect(navigator.serviceWorker.addEventListener).toHaveBeenCalledWith(
       'controllerchange',
-      expect.any(Function)
+      expect.any(Function),
     );
   });
 
@@ -110,9 +110,10 @@ describe('SwUpdateService', () => {
     await new Promise((resolve) => setTimeout(resolve, 10));
 
     // Trigger updatefound event
-    const updatefoundCallback = mockServiceWorkerRegistration.addEventListener.mock.calls.find(
-      (call: any) => call[0] === 'updatefound'
-    )?.[1];
+    const updatefoundCallback =
+      mockServiceWorkerRegistration.addEventListener.mock.calls.find(
+        (call: any) => call[0] === 'updatefound',
+      )?.[1];
 
     if (updatefoundCallback) {
       updatefoundCallback();
@@ -156,7 +157,7 @@ describe('SwUpdateService', () => {
     // Delete serviceWorker from navigator
     const originalServiceWorker = Object.getOwnPropertyDescriptor(
       global.navigator,
-      'serviceWorker'
+      'serviceWorker',
     );
 
     // @ts-ignore - intentionally delete to test behavior
@@ -169,7 +170,11 @@ describe('SwUpdateService', () => {
 
     // Restore serviceWorker
     if (originalServiceWorker) {
-      Object.defineProperty(global.navigator, 'serviceWorker', originalServiceWorker);
+      Object.defineProperty(
+        global.navigator,
+        'serviceWorker',
+        originalServiceWorker,
+      );
     }
   });
 

@@ -122,7 +122,10 @@ describe('AuthService', () => {
     it('should clear localStorage and reset signals', () => {
       // Setup: simulate logged in state
       localStorage.setItem('auth_token', 'test-token');
-      localStorage.setItem('current_user', JSON.stringify({ _id: '123', email: 'test@example.com' }));
+      localStorage.setItem(
+        'current_user',
+        JSON.stringify({ _id: '123', email: 'test@example.com' }),
+      );
 
       service.logout();
 
@@ -158,25 +161,25 @@ describe('AuthService', () => {
     it('should make GET request and update isAdmin signal', async () => {
       service.checkAdminStatus();
 
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
       const req = httpMock.expectOne('/api/auth/is-admin');
       expect(req.request.method).toBe('GET');
       req.flush({ isAdmin: true });
 
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
       expect(service.isAdmin()).toBe(true);
     });
 
     it('should set isAdmin to false on error', async () => {
       service.checkAdminStatus();
 
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
       const req = httpMock.expectOne('/api/auth/is-admin');
       req.error(new ProgressEvent('error'));
 
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
       expect(service.isAdmin()).toBe(false);
     });
   });
@@ -193,7 +196,9 @@ describe('AuthService', () => {
         },
       };
 
-      const responsePromise = firstValueFrom(service.exchangeOAuthCode('temp-code-123'));
+      const responsePromise = firstValueFrom(
+        service.exchangeOAuthCode('temp-code-123'),
+      );
 
       const req = httpMock.expectOne('/api/auth/exchange');
       expect(req.request.method).toBe('POST');
@@ -234,7 +239,9 @@ describe('AuthService', () => {
       const userId = 'user123';
       const newPassword = 'NewPassword123';
 
-      const responsePromise = firstValueFrom(service.resetUserPassword(userId, newPassword));
+      const responsePromise = firstValueFrom(
+        service.resetUserPassword(userId, newPassword),
+      );
 
       const req = httpMock.expectOne(`/api/admin/users/${userId}/password`);
       expect(req.request.method).toBe('PATCH');

@@ -1,6 +1,12 @@
 import { Component, OnInit, OnDestroy, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterLink, RouterLinkActive, NavigationEnd, ActivatedRoute } from '@angular/router';
+import {
+  Router,
+  RouterLink,
+  RouterLinkActive,
+  NavigationEnd,
+  ActivatedRoute,
+} from '@angular/router';
 import { filter, Subscription } from 'rxjs';
 import { AuthService } from '../services/auth.service';
 import { UserMenuComponent } from './user-menu.component';
@@ -16,7 +22,7 @@ interface Breadcrumb {
   standalone: true,
   imports: [CommonModule, RouterLink, RouterLinkActive, UserMenuComponent],
   templateUrl: './header.component.html',
-  styleUrls: ['./header.component.scss']
+  styleUrls: ['./header.component.scss'],
 })
 export class HeaderComponent implements OnInit, OnDestroy {
   authService = inject(AuthService);
@@ -33,7 +39,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
     // Subscribe to route changes
     this.routerSubscription = this.router.events
-      .pipe(filter(event => event instanceof NavigationEnd))
+      .pipe(filter((event) => event instanceof NavigationEnd))
       .subscribe(() => {
         this.buildBreadcrumbs();
       });
@@ -48,7 +54,14 @@ export class HeaderComponent implements OnInit, OnDestroy {
     const crumbs: Breadcrumb[] = [];
 
     // Root path - no breadcrumbs
-    if (url === '/' || url === '/home' || url === '/calendar' || url === '/settings' || url === '/login' || url === '/signup') {
+    if (
+      url === '/' ||
+      url === '/home' ||
+      url === '/calendar' ||
+      url === '/settings' ||
+      url === '/login' ||
+      url === '/signup'
+    ) {
       this.breadcrumbs.set([]);
       return;
     }

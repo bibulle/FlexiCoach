@@ -6,16 +6,16 @@ export type RoutineDocument = Routine & Document;
 @Schema({ timestamps: true })
 export class Step {
   @Prop({ required: true })
-  name: string;
+  name!: string;
 
   @Prop({ required: true })
-  seconds: number;
+  seconds!: number;
 
   @Prop({ required: true, enum: ['mouvement', 'statique', 'respiration'] })
-  mode: string;
+  mode!: string;
 
   @Prop({ required: true })
-  text: string;
+  text!: string;
 
   @Prop({ type: [{ at: Number, say: String }], default: [] })
   cues?: Array<{
@@ -29,28 +29,28 @@ const StepSchema = SchemaFactory.createForClass(Step);
 @Schema({ timestamps: true })
 export class Routine {
   @Prop({ required: true, unique: true })
-  id: string;
+  id!: string;
 
   @Prop({ required: true, unique: true })
-  slug: string;
+  slug!: string;
 
   @Prop({ required: true })
-  name: string;
+  name!: string;
 
   @Prop()
   description?: string;
 
   @Prop({ required: true })
-  duration: number;
+  duration!: number;
 
   @Prop({ required: true })
-  level: string;
+  level!: string;
 
   @Prop({ type: [StepSchema], required: true })
-  steps: Step[];
+  steps!: Step[];
 
   @Prop({ required: true })
-  totalSeconds: number;
+  totalSeconds!: number;
 
   @Prop({ default: 10 })
   restSeconds?: number;
