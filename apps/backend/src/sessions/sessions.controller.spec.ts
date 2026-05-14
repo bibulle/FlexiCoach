@@ -87,41 +87,100 @@ describe('SessionsController', () => {
   });
 
   describe('findOne', () => {
-    it('should return a session by id', async () => {
-      service.findOne.mockResolvedValue(mockSession);
+    it('should return a session owned by the user', async () => {
+      const ownedSession = {
+        ...mockSession,
+        userId: mockUser._id.toString(),
+      };
+      service.findOne.mockResolvedValue(ownedSession);
 
-      const result = await controller.findOne('123');
+      const result = await controller.findOne(mockUser, '123');
 
-      expect(result).toEqual(mockSession);
+      expect(result).toEqual(ownedSession);
       expect(service.findOne).toHaveBeenCalledWith('123');
+    });
+
+    it('should throw ForbiddenException for session owned by another user', async () => {
+      const otherSession = { ...mockSession, userId: 'other-user-id' as any };
+      service.findOne.mockResolvedValue(otherSession);
+
+      await expect(controller.findOne(mockUser, '123')).rejects.toThrow(
+        'Access denied',
+      );
+    });
+
+    it('should throw NotFoundException for non-existent session', async () => {
+      service.findOne.mockResolvedValue(null);
+
+      await expect(controller.findOne(mockUser, '123')).rejects.toThrow(
+        'Session not found',
+      );
     });
   });
 
   describe('update', () => {
-    it('should update a session', async () => {
+    it('should update a session owned by the user', async () => {
       const updateDto = { completed: true };
-      const updatedSession = { ...mockSession, completed: true };
+      const ownedSession = {
+        ...mockSession,
+        userId: mockUser._id.toString(),
+      };
+      const updatedSession = { ...ownedSession, completed: true };
 
+      service.findOne.mockResolvedValue(ownedSession);
       service.update.mockResolvedValue(updatedSession);
 
-      const result = await controller.update('123', updateDto as any);
+      const result = await controller.update(
+        mockUser,
+        '123',
+        updateDto as any,
+      );
 
       expect(result).toEqual(updatedSession);
       expect(service.update).toHaveBeenCalledWith('123', updateDto);
     });
+
+    it('should throw ForbiddenException when updating another user session', async () => {
+      const otherSession = { ...mockSession, userId: 'other-user-id' as any };
+      service.findOne.mockResolvedValue(otherSession);
+
+      await expect(
+        controller.update(mockUser, '123', {} as any),
+      ).rejects.toThrow('Access denied');
+      expect(service.update).not.toHaveBeenCalled();
+    });
   });
 
   describe('complete', () => {
-    it('should complete a session', async () => {
+    it('should complete a session owned by the user', async () => {
       const completeDto = { completed: true, feeling: 5 };
-      const completedSession = { ...mockSession, completed: true, feeling: 5 };
+      const ownedSession = {
+        ...mockSession,
+        userId: mockUser._id.toString(),
+      };
+      const completedSession = { ...ownedSession, completed: true, feeling: 5 };
 
+      service.findOne.mockResolvedValue(ownedSession);
       service.complete.mockResolvedValue(completedSession);
 
-      const result = await controller.complete('123', completeDto as any);
+      const result = await controller.complete(
+        mockUser,
+        '123',
+        completeDto as any,
+      );
 
       expect(result).toEqual(completedSession);
       expect(service.complete).toHaveBeenCalledWith('123', true, 5);
+    });
+
+    it('should throw ForbiddenException when completing another user session', async () => {
+      const otherSession = { ...mockSession, userId: 'other-user-id' as any };
+      service.findOne.mockResolvedValue(otherSession);
+
+      await expect(
+        controller.complete(mockUser, '123', { completed: true } as any),
+      ).rejects.toThrow('Access denied');
+      expect(service.complete).not.toHaveBeenCalled();
     });
   });
 

@@ -11,6 +11,7 @@ import { AuthCallbackComponent } from './components/auth-callback.component';
 import { AdminComponent } from './components/admin.component';
 import { StatsComponent } from './components/stats.component';
 import { authGuard } from './guards/auth.guard';
+import { adminGuard } from './guards/admin.guard';
 
 export const appRoutes: Route[] = [
   { path: 'home', component: HomeComponent, canActivate: [authGuard] },
@@ -40,5 +41,5 @@ export const appRoutes: Route[] = [
   },
   { path: 'calendar', component: CalendarComponent, canActivate: [authGuard] },
   { path: 'settings', component: StatsComponent, canActivate: [authGuard] },
-  { path: 'admin', component: AdminComponent, canActivate: [authGuard] },
+  { path: 'admin', component: AdminComponent, canActivate: [adminGuard] },
 ];

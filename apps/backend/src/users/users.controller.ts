@@ -1,8 +1,17 @@
-import { Controller, Get, Body, Patch, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Body,
+  Patch,
+  UseGuards,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { UsersService } from './users.service';
 import { User } from '../schemas/user.schema';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CurrentUser } from '../auth/current-user.decorator';
+import { UpdateProfileDto } from './dto/update-profile.dto';
+import { UpdatePasswordDto } from './dto/update-password.dto';
 
 @Controller('users')
 @UseGuards(JwtAuthGuard)
@@ -15,7 +24,10 @@ export class UsersController {
   }
 
   @Patch('me')
-  updateProfile(@CurrentUser() user: User, @Body() updateData: Partial<User>) {
+  updateProfile(
+    @CurrentUser() user: User,
+    @Body() updateData: UpdateProfileDto,
+  ) {
     return this.usersService.update(user._id.toString(), updateData);
   }
 
@@ -30,8 +42,15 @@ export class UsersController {
   @Patch('me/password')
   async updatePassword(
     @CurrentUser() user: User,
-    @Body() body: { newPassword: string },
+    @Body() body: UpdatePasswordDto,
   ) {
+    const isValid = await this.usersService.verifyPassword(
+      user._id.toString(),
+      body.currentPassword,
+    );
+    if (!isValid) {
+      throw new UnauthorizedException('Mot de passe actuel incorrect');
+    }
     return this.usersService.updatePassword(
       user._id.toString(),
       body.newPassword,
