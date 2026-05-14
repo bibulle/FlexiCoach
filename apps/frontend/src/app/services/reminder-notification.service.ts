@@ -60,26 +60,42 @@ export class ReminderNotificationService {
 
   testNotification(): void {
     if (this.permission() !== 'granted') return;
-    try {
-      new Notification('FlexiCoach 💪', {
-        body: 'Test — Les notifications fonctionnent !',
-        icon: '/favicon.svg',
-        badge: '/favicon.svg',
-        tag: 'reminder-test',
-      });
-    } catch (e) {
-      console.error('[Notifications] Échec du test :', e);
-    }
+    this.sendNotification({
+      body: 'Test — Les notifications fonctionnent !',
+      tag: 'reminder-test',
+    });
   }
 
   private showNotification(time: string): void {
+    this.sendNotification({
+      body: `${time} — C'est l'heure de ta séance !`,
+      tag: `reminder-${time}`,
+    });
+  }
+
+  private sendNotification(options: { body: string; tag: string }): void {
+    const notifOptions = {
+      body: options.body,
+      icon: '/favicon.svg',
+      badge: '/favicon.svg',
+      tag: options.tag,
+    };
+
+    if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+      navigator.serviceWorker.ready
+        .then((reg) => reg.showNotification('FlexiCoach 💪', notifOptions))
+        .catch((e) => {
+          console.error('[Notifications] SW échec, fallback navigateur :', e);
+          this.browserNotification(notifOptions);
+        });
+    } else {
+      this.browserNotification(notifOptions);
+    }
+  }
+
+  private browserNotification(options: NotificationOptions & { tag?: string }): void {
     try {
-      new Notification('FlexiCoach 💪', {
-        body: `${time} — C'est l'heure de ta séance !`,
-        icon: '/favicon.svg',
-        badge: '/favicon.svg',
-        tag: `reminder-${time}`,
-      });
+      new Notification('FlexiCoach 💪', options);
     } catch (e) {
       console.error('[Notifications] Échec :', e);
     }

@@ -56,6 +56,19 @@ self.addEventListener('notificationclick', (event) => {
   );
 });
 
+// Gestion des push notifications (Android PWA)
+self.addEventListener('push', (event) => {
+  const data = event.data ? event.data.json() : {};
+  const title = data.title || 'FlexiCoach 💪';
+  const options = {
+    body: data.body || "C'est l'heure de ta séance !",
+    icon: '/favicon.svg',
+    badge: '/favicon.svg',
+    tag: data.tag || 'push-notification',
+  };
+  event.waitUntil(self.registration.showNotification(title, options));
+});
+
 // Stratégie de cache: Network First, fallback to cache
 self.addEventListener('fetch', (event) => {
   event.respondWith(

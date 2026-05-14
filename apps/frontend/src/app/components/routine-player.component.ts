@@ -26,6 +26,7 @@ export class RoutinePlayerComponent implements OnInit, OnDestroy {
   private synth = window.speechSynthesis;
   private audioContext: AudioContext | null = null;
   private voicesLoaded = false;
+  private wakeLock: WakeLockSentinel | null = null;
 
   readonly REST_SECONDS = 10;
 
@@ -271,6 +272,8 @@ export class RoutinePlayerComponent implements OnInit, OnDestroy {
     this.interval = setInterval(() => {
       this.tick();
     }, 1000);
+
+    this.acquireWakeLock();
   }
 
   pause() {
@@ -282,6 +285,7 @@ export class RoutinePlayerComponent implements OnInit, OnDestroy {
     if (this.synth) {
       this.synth.cancel();
     }
+    this.releaseWakeLock();
   }
 
   stop() {
@@ -521,5 +525,24 @@ export class RoutinePlayerComponent implements OnInit, OnDestroy {
 
   goBack() {
     this.router.navigate(['/']);
+  }
+
+  private async acquireWakeLock(): Promise<void> {
+    if (!('wakeLock' in navigator)) return;
+    try {
+      this.wakeLock = await navigator.wakeLock.request('screen');
+      this.wakeLock.addEventListener('release', () => {
+        this.wakeLock = null;
+      });
+    } catch {
+      // Wake Lock request can fail (e.g. low battery, background tab)
+    }
+  }
+
+  private async releaseWakeLock(): Promise<void> {
+    if (this.wakeLock) {
+      await this.wakeLock.release();
+      this.wakeLock = null;
+    }
   }
 }

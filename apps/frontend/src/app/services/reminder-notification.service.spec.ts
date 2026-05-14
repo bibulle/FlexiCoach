@@ -9,11 +9,11 @@ describe('ReminderNotificationService', () => {
     TestBed.configureTestingModule({});
     service = TestBed.inject(ReminderNotificationService);
 
-    // Mock Notification API
+    // Mock Notification API (use function syntax for Vitest 4 constructor support)
     Object.defineProperty(window, 'Notification', {
       writable: true,
       value: Object.assign(
-        vi.fn().mockImplementation(() => ({})),
+        vi.fn(function () { return {}; }),
         {
           permission: 'granted',
           requestPermission: vi.fn().mockResolvedValue('granted'),
@@ -120,5 +120,74 @@ describe('ReminderNotificationService', () => {
     localStorage.setItem('reminders', JSON.stringify(reminders));
     service.checkReminders();
     expect(window.Notification).not.toHaveBeenCalled();
+  });
+
+  describe('SW-based notifications (issue #105)', () => {
+    let mockShowNotification: ReturnType<typeof vi.fn>;
+    let originalServiceWorker: ServiceWorkerContainer;
+
+    beforeEach(() => {
+      mockShowNotification = vi.fn().mockResolvedValue(undefined);
+      originalServiceWorker = navigator.serviceWorker;
+
+      Object.defineProperty(navigator, 'serviceWorker', {
+        value: {
+          controller: {},
+          ready: Promise.resolve({
+            showNotification: mockShowNotification,
+          }),
+        },
+        configurable: true,
+        writable: true,
+      });
+    });
+
+    afterEach(() => {
+      Object.defineProperty(navigator, 'serviceWorker', {
+        value: originalServiceWorker,
+        configurable: true,
+        writable: true,
+      });
+    });
+
+    it('should use SW showNotification when controller is available', async () => {
+      service.testNotification();
+      await vi.waitFor(() => {
+        expect(mockShowNotification).toHaveBeenCalledWith(
+          'FlexiCoach 💪',
+          expect.objectContaining({ tag: 'reminder-test' }),
+        );
+      });
+    });
+
+    it('should fall back to browser Notification when no SW controller', () => {
+      Object.defineProperty(navigator, 'serviceWorker', {
+        value: { controller: null, ready: Promise.resolve({}) },
+        configurable: true,
+        writable: true,
+      });
+
+      service.testNotification();
+      expect(window.Notification).toHaveBeenCalled();
+    });
+
+    it('should use SW for reminder notifications', async () => {
+      const now = new Date();
+      const hhmm = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+      const day = (now.getDay() + 6) % 7;
+      const reminders = [{ time: hhmm, days: [day], enabled: true }];
+      localStorage.setItem('reminders', JSON.stringify(reminders));
+
+      service.checkReminders();
+
+      await vi.waitFor(() => {
+        expect(mockShowNotification).toHaveBeenCalledWith(
+          'FlexiCoach 💪',
+          expect.objectContaining({
+            tag: `reminder-${hhmm}`,
+          }),
+        );
+      });
+    });
   });
 });

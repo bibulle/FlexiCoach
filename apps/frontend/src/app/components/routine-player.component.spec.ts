@@ -219,6 +219,61 @@ describe('RoutinePlayerComponent', () => {
     expect(remaining).toBe(80);
   });
 
+  describe('Wake Lock (issue #106)', () => {
+    it('should acquire wake lock on start when API is available', async () => {
+      const mockRelease = vi.fn().mockResolvedValue(undefined);
+      const mockSentinel = {
+        release: mockRelease,
+        addEventListener: vi.fn(),
+      };
+      Object.defineProperty(navigator, 'wakeLock', {
+        value: { request: vi.fn().mockResolvedValue(mockSentinel) },
+        configurable: true,
+        writable: true,
+      });
+
+      fixture.detectChanges();
+      component.start();
+
+      await vi.waitFor(() => {
+        expect(navigator.wakeLock.request).toHaveBeenCalledWith('screen');
+      });
+    });
+
+    it('should release wake lock on pause', async () => {
+      const mockRelease = vi.fn().mockResolvedValue(undefined);
+      const mockSentinel = {
+        release: mockRelease,
+        addEventListener: vi.fn(),
+      };
+      Object.defineProperty(navigator, 'wakeLock', {
+        value: { request: vi.fn().mockResolvedValue(mockSentinel) },
+        configurable: true,
+        writable: true,
+      });
+
+      fixture.detectChanges();
+      component.start();
+
+      await vi.waitFor(() => {
+        expect(navigator.wakeLock.request).toHaveBeenCalled();
+      });
+
+      component.pause();
+
+      await vi.waitFor(() => {
+        expect(mockRelease).toHaveBeenCalled();
+      });
+    });
+
+    it('should not fail when wake lock API is not available', () => {
+      delete (navigator as any).wakeLock;
+      fixture.detectChanges();
+
+      expect(() => component.start()).not.toThrow();
+    });
+  });
+
   describe('Admin actions on routine page', () => {
     it('should not show admin actions when admin mode is off', () => {
       const userRoutine = {
