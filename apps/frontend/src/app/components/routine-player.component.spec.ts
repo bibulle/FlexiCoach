@@ -47,24 +47,26 @@ describe('RoutinePlayerComponent', () => {
 
   beforeEach(async () => {
     // Mock AudioContext
-    global.AudioContext = vi.fn().mockImplementation(() => ({
-      createOscillator: vi.fn().mockReturnValue({
-        connect: vi.fn(),
-        frequency: { value: 0 },
-        type: 'sine',
-        start: vi.fn(),
-        stop: vi.fn(),
-      }),
-      createGain: vi.fn().mockReturnValue({
-        connect: vi.fn(),
-        gain: {
-          setValueAtTime: vi.fn(),
-          exponentialRampToValueAtTime: vi.fn(),
-        },
-      }),
-      destination: {},
-      currentTime: 0,
-    })) as any;
+    global.AudioContext = function () {
+      return {
+        createOscillator: vi.fn().mockReturnValue({
+          connect: vi.fn(),
+          frequency: { value: 0 },
+          type: 'sine',
+          start: vi.fn(),
+          stop: vi.fn(),
+        }),
+        createGain: vi.fn().mockReturnValue({
+          connect: vi.fn(),
+          gain: {
+            setValueAtTime: vi.fn(),
+            exponentialRampToValueAtTime: vi.fn(),
+          },
+        }),
+        destination: {},
+        currentTime: 0,
+      };
+    } as any;
 
     mockRoutineService = {
       getBySlug: vi.fn(),

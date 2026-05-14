@@ -124,10 +124,9 @@ describe('RoutineEditorComponent', () => {
         }),
         onload: null as any,
       };
-      vi.stubGlobal(
-        'FileReader',
-        vi.fn(() => mockFileReader),
-      );
+      vi.stubGlobal('FileReader', function () {
+        return mockFileReader;
+      });
 
       fixture.detectChanges();
 
@@ -197,10 +196,9 @@ describe('RoutineEditorComponent', () => {
         }),
         onload: null as any,
       };
-      vi.stubGlobal(
-        'FileReader',
-        vi.fn(() => mockFileReader),
-      );
+      vi.stubGlobal('FileReader', function () {
+        return mockFileReader;
+      });
 
       fixture.detectChanges();
 
@@ -257,10 +255,9 @@ describe('RoutineEditorComponent', () => {
         }),
         onload: null as any,
       };
-      vi.stubGlobal(
-        'FileReader',
-        vi.fn(() => mockFileReader),
-      );
+      vi.stubGlobal('FileReader', function () {
+        return mockFileReader;
+      });
 
       fixture.detectChanges();
 
