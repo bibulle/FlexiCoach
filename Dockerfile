@@ -29,7 +29,6 @@ RUN npm ci --only=production && npm cache clean --force
 
 # Copy built backend from builder (main.js is at root of dist/apps/backend)
 COPY --from=builder /app/dist/apps/backend/main.js ./dist/apps/backend/
-COPY --from=builder /app/dist/apps/backend/assets ./dist/apps/backend/assets
 
 # Copy built frontend from builder (Angular outputs to browser subfolder)
 COPY --from=builder /app/dist/apps/frontend/browser ./public
