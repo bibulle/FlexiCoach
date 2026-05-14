@@ -1,6 +1,6 @@
 @if (authService.isAuthenticated()) {
   <nav class="bottom-nav">
-    <a routerLink="/home" routerLinkActive="active" class="bottom-nav-item">
+    <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" class="bottom-nav-item">
       <svg
         width="22"
         height="22"
@@ -35,9 +35,8 @@
       <span>Calendrier</span>
     </a>
     <a
-      routerLink="/"
+      routerLink="/routines"
       routerLinkActive="active"
-      [routerLinkActiveOptions]="{ exact: true }"
       class="bottom-nav-item"
     >
       <svg

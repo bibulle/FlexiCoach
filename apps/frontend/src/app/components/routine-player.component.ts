@@ -178,7 +178,7 @@ export class RoutinePlayerComponent implements OnInit, OnDestroy {
       },
       error: (err) => {
         console.error('Error loading routine:', err);
-        this.router.navigate(['/']);
+        this.router.navigate(['/routines']);
       },
     });
   }
@@ -514,7 +514,7 @@ export class RoutinePlayerComponent implements OnInit, OnDestroy {
     ) {
       this.routineService.delete(this.routine.id).subscribe({
         next: () => {
-          this.router.navigate(['/']);
+          this.router.navigate(['/routines']);
         },
         error: (err) => {
           console.error('Error deleting routine:', err);
@@ -524,7 +524,7 @@ export class RoutinePlayerComponent implements OnInit, OnDestroy {
   }
 
   goBack() {
-    this.router.navigate(['/']);
+    this.router.navigate(['/routines']);
   }
 
   private async acquireWakeLock(): Promise<void> {

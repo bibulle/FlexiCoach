@@ -214,7 +214,7 @@ export class RoutineEditorComponent implements OnInit {
           : 'Routine créée avec succès';
         this.loading = false;
         setTimeout(() => {
-          this.router.navigate(['/']);
+          this.router.navigate(['/routines']);
         }, 1500);
       },
       error: (err) => {
@@ -350,7 +350,7 @@ export class RoutineEditorComponent implements OnInit {
         'Êtes-vous sûr de vouloir annuler ? Les modifications non sauvegardées seront perdues.',
       )
     ) {
-      this.router.navigate(['/']);
+      this.router.navigate(['/routines']);
     }
   }
 
