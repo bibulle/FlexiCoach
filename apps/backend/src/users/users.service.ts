@@ -46,6 +46,12 @@ export class UsersService {
     return this.userModel.findByIdAndDelete(id).exec();
   }
 
+  async verifyPassword(id: string, password: string): Promise<boolean> {
+    const user = await this.userModel.findById(id).select('+password').exec();
+    if (!user || !user.password) return false;
+    return bcrypt.compare(password, user.password);
+  }
+
   async updatePassword(id: string, newPassword: string): Promise<User | null> {
     const hashedPassword = await bcrypt.hash(newPassword, 10);
     return this.userModel

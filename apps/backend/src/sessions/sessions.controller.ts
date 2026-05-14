@@ -7,6 +7,8 @@ import {
   Param,
   Query,
   UseGuards,
+  ForbiddenException,
+  NotFoundException,
 } from '@nestjs/common';
 import { SessionsService } from './sessions.service';
 import { CreateSessionDto } from './dto/create-session.dto';
@@ -58,20 +60,40 @@ export class SessionsController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.sessionsService.findOne(id);
+  async findOne(@CurrentUser() user: User, @Param('id') id: string) {
+    const session = await this.sessionsService.findOne(id);
+    if (!session) throw new NotFoundException('Session not found');
+    if (session.userId !== user._id.toString()) {
+      throw new ForbiddenException('Access denied');
+    }
+    return session;
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateSessionDto: UpdateSessionDto) {
+  async update(
+    @CurrentUser() user: User,
+    @Param('id') id: string,
+    @Body() updateSessionDto: UpdateSessionDto,
+  ) {
+    const session = await this.sessionsService.findOne(id);
+    if (!session) throw new NotFoundException('Session not found');
+    if (session.userId !== user._id.toString()) {
+      throw new ForbiddenException('Access denied');
+    }
     return this.sessionsService.update(id, updateSessionDto);
   }
 
   @Patch(':id/complete')
-  complete(
+  async complete(
+    @CurrentUser() user: User,
     @Param('id') id: string,
     @Body() completeSessionDto: CompleteSessionDto,
   ) {
+    const session = await this.sessionsService.findOne(id);
+    if (!session) throw new NotFoundException('Session not found');
+    if (session.userId !== user._id.toString()) {
+      throw new ForbiddenException('Access denied');
+    }
     return this.sessionsService.complete(
       id,
       completeSessionDto.completed,
