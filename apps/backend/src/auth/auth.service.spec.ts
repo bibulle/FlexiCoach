@@ -86,13 +86,15 @@ describe('AuthService', () => {
         password: 'Password123',
       };
 
-      usersService.findByEmail.mockResolvedValue({ _id: 'existing-user' } as any);
+      usersService.findByEmail.mockResolvedValue({
+        _id: 'existing-user',
+      } as any);
 
       await expect(service.register(registerDto)).rejects.toThrow(
-        ConflictException
+        ConflictException,
       );
       await expect(service.register(registerDto)).rejects.toThrow(
-        'Email already exists'
+        'Email already exists',
       );
       expect(usersService.create).not.toHaveBeenCalled();
     });
@@ -119,7 +121,7 @@ describe('AuthService', () => {
       const result = await service.login(loginDto);
 
       expect(usersService.findByEmailWithPassword).toHaveBeenCalledWith(
-        loginDto.email
+        loginDto.email,
       );
       expect(jwtService.sign).toHaveBeenCalledWith({
         sub: user._id,
@@ -151,10 +153,10 @@ describe('AuthService', () => {
       usersService.findByEmailWithPassword.mockResolvedValue(user as any);
 
       await expect(service.login(loginDto)).rejects.toThrow(
-        UnauthorizedException
+        UnauthorizedException,
       );
       await expect(service.login(loginDto)).rejects.toThrow(
-        'Invalid credentials'
+        'Invalid credentials',
       );
     });
 
@@ -167,10 +169,10 @@ describe('AuthService', () => {
       usersService.findByEmailWithPassword.mockResolvedValue(null);
 
       await expect(service.login(loginDto)).rejects.toThrow(
-        UnauthorizedException
+        UnauthorizedException,
       );
       await expect(service.login(loginDto)).rejects.toThrow(
-        'Invalid credentials'
+        'Invalid credentials',
       );
     });
   });

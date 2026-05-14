@@ -52,7 +52,11 @@ describe('UserMenuComponent', () => {
   });
 
   it('should display displayName when user has displayName', () => {
-    const user = { _id: '1', email: 'test@example.com', displayName: 'John Doe' };
+    const user = {
+      _id: '1',
+      email: 'test@example.com',
+      displayName: 'John Doe',
+    };
     currentUserSubject.next(user);
     fixture.detectChanges();
 
@@ -70,7 +74,11 @@ describe('UserMenuComponent', () => {
   });
 
   it('should calculate initials correctly from displayName', () => {
-    const user = { _id: '1', email: 'test@example.com', displayName: 'John Doe' };
+    const user = {
+      _id: '1',
+      email: 'test@example.com',
+      displayName: 'John Doe',
+    };
     currentUserSubject.next(user);
     fixture.detectChanges();
 
@@ -89,7 +97,12 @@ describe('UserMenuComponent', () => {
   });
 
   it('should add has-image class when user has avatar', () => {
-    const user = { _id: '1', email: 'test@example.com', displayName: 'John Doe', avatar: 'https://example.com/avatar.jpg' };
+    const user = {
+      _id: '1',
+      email: 'test@example.com',
+      displayName: 'John Doe',
+      avatar: 'https://example.com/avatar.jpg',
+    };
     currentUserSubject.next(user);
     fixture.detectChanges();
 
@@ -98,7 +111,11 @@ describe('UserMenuComponent', () => {
   });
 
   it('should not add has-image class when user has no avatar', () => {
-    const user = { _id: '1', email: 'test@example.com', displayName: 'John Doe' };
+    const user = {
+      _id: '1',
+      email: 'test@example.com',
+      displayName: 'John Doe',
+    };
     currentUserSubject.next(user);
     fixture.detectChanges();
 
@@ -115,29 +132,43 @@ describe('UserMenuComponent', () => {
   });
 
   it('should toggle menu open/close on click', () => {
-    const user = { _id: '1', email: 'test@example.com', displayName: 'John Doe' };
+    const user = {
+      _id: '1',
+      email: 'test@example.com',
+      displayName: 'John Doe',
+    };
     currentUserSubject.next(user);
     fixture.detectChanges();
 
     expect(component.isMenuOpen()).toBe(false);
-    expect(fixture.nativeElement.querySelector('.user-menu-dropdown')).toBeNull();
+    expect(
+      fixture.nativeElement.querySelector('.user-menu-dropdown'),
+    ).toBeNull();
 
     const trigger = fixture.nativeElement.querySelector('.user-menu-trigger');
     trigger.click();
     fixture.detectChanges();
 
     expect(component.isMenuOpen()).toBe(true);
-    expect(fixture.nativeElement.querySelector('.user-menu-dropdown')).toBeTruthy();
+    expect(
+      fixture.nativeElement.querySelector('.user-menu-dropdown'),
+    ).toBeTruthy();
 
     trigger.click();
     fixture.detectChanges();
 
     expect(component.isMenuOpen()).toBe(false);
-    expect(fixture.nativeElement.querySelector('.user-menu-dropdown')).toBeNull();
+    expect(
+      fixture.nativeElement.querySelector('.user-menu-dropdown'),
+    ).toBeNull();
   });
 
   it('should display email in dropdown menu', () => {
-    const user = { _id: '1', email: 'test@example.com', displayName: 'John Doe' };
+    const user = {
+      _id: '1',
+      email: 'test@example.com',
+      displayName: 'John Doe',
+    };
     currentUserSubject.next(user);
     fixture.detectChanges();
 
@@ -149,7 +180,11 @@ describe('UserMenuComponent', () => {
   });
 
   it('should call logout and navigate to /login on logout click', () => {
-    const user = { _id: '1', email: 'test@example.com', displayName: 'John Doe' };
+    const user = {
+      _id: '1',
+      email: 'test@example.com',
+      displayName: 'John Doe',
+    };
     currentUserSubject.next(user);
     fixture.detectChanges();
 
@@ -165,7 +200,11 @@ describe('UserMenuComponent', () => {
   });
 
   it('should close menu after logout', () => {
-    const user = { _id: '1', email: 'test@example.com', displayName: 'John Doe' };
+    const user = {
+      _id: '1',
+      email: 'test@example.com',
+      displayName: 'John Doe',
+    };
     currentUserSubject.next(user);
     fixture.detectChanges();
 
@@ -179,7 +218,11 @@ describe('UserMenuComponent', () => {
 
   describe('Admin mode toggle', () => {
     it('should not show admin toggle for non-admin users', () => {
-      const user = { _id: '1', email: 'test@example.com', displayName: 'John Doe' };
+      const user = {
+        _id: '1',
+        email: 'test@example.com',
+        displayName: 'John Doe',
+      };
       currentUserSubject.next(user);
       mockAuthService.isAdmin.set(false);
       fixture.detectChanges();
@@ -187,12 +230,17 @@ describe('UserMenuComponent', () => {
       component.toggleMenu();
       fixture.detectChanges();
 
-      const adminToggle = fixture.nativeElement.querySelector('.menu-item-admin');
+      const adminToggle =
+        fixture.nativeElement.querySelector('.menu-item-admin');
       expect(adminToggle).toBeNull();
     });
 
     it('should show admin toggle for admin users', () => {
-      const user = { _id: '1', email: 'test@example.com', displayName: 'John Doe' };
+      const user = {
+        _id: '1',
+        email: 'test@example.com',
+        displayName: 'John Doe',
+      };
       currentUserSubject.next(user);
       mockAuthService.isAdmin.set(true);
       fixture.detectChanges();
@@ -200,12 +248,17 @@ describe('UserMenuComponent', () => {
       component.toggleMenu();
       fixture.detectChanges();
 
-      const adminToggle = fixture.nativeElement.querySelector('.menu-item-admin');
+      const adminToggle =
+        fixture.nativeElement.querySelector('.menu-item-admin');
       expect(adminToggle).toBeTruthy();
     });
 
     it('should show OFF indicator when admin mode is disabled', () => {
-      const user = { _id: '1', email: 'test@example.com', displayName: 'John Doe' };
+      const user = {
+        _id: '1',
+        email: 'test@example.com',
+        displayName: 'John Doe',
+      };
       currentUserSubject.next(user);
       mockAuthService.isAdmin.set(true);
       mockAuthService.isAdminMode.set(false);
@@ -214,13 +267,18 @@ describe('UserMenuComponent', () => {
       component.toggleMenu();
       fixture.detectChanges();
 
-      const indicator = fixture.nativeElement.querySelector('.toggle-indicator');
+      const indicator =
+        fixture.nativeElement.querySelector('.toggle-indicator');
       expect(indicator.textContent.trim()).toBe('OFF');
       expect(indicator.classList.contains('active')).toBe(false);
     });
 
     it('should show ON indicator when admin mode is enabled', () => {
-      const user = { _id: '1', email: 'test@example.com', displayName: 'John Doe' };
+      const user = {
+        _id: '1',
+        email: 'test@example.com',
+        displayName: 'John Doe',
+      };
       currentUserSubject.next(user);
       mockAuthService.isAdmin.set(true);
       mockAuthService.isAdminMode.set(true);
@@ -229,13 +287,18 @@ describe('UserMenuComponent', () => {
       component.toggleMenu();
       fixture.detectChanges();
 
-      const indicator = fixture.nativeElement.querySelector('.toggle-indicator');
+      const indicator =
+        fixture.nativeElement.querySelector('.toggle-indicator');
       expect(indicator.textContent.trim()).toBe('ON');
       expect(indicator.classList.contains('active')).toBe(true);
     });
 
     it('should call toggleAdminMode when toggle is clicked', () => {
-      const user = { _id: '1', email: 'test@example.com', displayName: 'John Doe' };
+      const user = {
+        _id: '1',
+        email: 'test@example.com',
+        displayName: 'John Doe',
+      };
       currentUserSubject.next(user);
       mockAuthService.isAdmin.set(true);
       fixture.detectChanges();
@@ -243,7 +306,8 @@ describe('UserMenuComponent', () => {
       component.toggleMenu();
       fixture.detectChanges();
 
-      const adminToggle = fixture.nativeElement.querySelector('.menu-item-admin');
+      const adminToggle =
+        fixture.nativeElement.querySelector('.menu-item-admin');
       adminToggle.click();
 
       expect(mockAuthService.toggleAdminMode).toHaveBeenCalled();

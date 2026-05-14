@@ -21,12 +21,14 @@ describe('RoutinesController', () => {
     description: 'Test Description',
     duration: 10,
     level: 'débutant',
-    steps: [{
-      name: 'Step 1',
-      seconds: 30,
-      mode: 'mouvement',
-      text: 'Test step',
-    }],
+    steps: [
+      {
+        name: 'Step 1',
+        seconds: 30,
+        mode: 'mouvement',
+        text: 'Test step',
+      },
+    ],
     totalSeconds: 600,
     visibility: 'user',
     ownerId: 'user-123',
@@ -66,12 +68,14 @@ describe('RoutinesController', () => {
       const routineData = {
         name: 'New Routine',
         description: 'New Description',
-        steps: [{
-          name: 'Step 1',
-          seconds: 30,
-          mode: 'mouvement' as 'mouvement',
-          text: 'Do this',
-        }],
+        steps: [
+          {
+            name: 'Step 1',
+            seconds: 30,
+            mode: 'mouvement' as 'mouvement',
+            text: 'Do this',
+          },
+        ],
       };
 
       service.create.mockResolvedValue(mockRoutine);
@@ -89,12 +93,14 @@ describe('RoutinesController', () => {
         version: '1.0',
         routine: {
           name: 'Imported Routine',
-          steps: [{
-            name: 'Step 1',
-            seconds: 30,
-            mode: 'mouvement' as 'mouvement',
-            text: 'Imported step',
-          }],
+          steps: [
+            {
+              name: 'Step 1',
+              seconds: 30,
+              mode: 'mouvement' as 'mouvement',
+              text: 'Imported step',
+            },
+          ],
         },
       };
 
@@ -103,7 +109,10 @@ describe('RoutinesController', () => {
       const result = await controller.import(importData, mockUser);
 
       expect(result).toEqual(mockRoutine);
-      expect(service.create).toHaveBeenCalledWith(importData.routine, mockUser._id);
+      expect(service.create).toHaveBeenCalledWith(
+        importData.routine,
+        mockUser._id,
+      );
     });
   });
 
@@ -132,14 +141,18 @@ describe('RoutinesController', () => {
     it('should throw NotFoundException if routine not found', async () => {
       service.findOne.mockResolvedValue(null);
 
-      await expect(controller.findOne('non-existent', mockUser)).rejects.toThrow(NotFoundException);
+      await expect(
+        controller.findOne('non-existent', mockUser),
+      ).rejects.toThrow(NotFoundException);
     });
 
     it('should throw ForbiddenException if user is not owner', async () => {
       const otherRoutine = { ...mockRoutine, ownerId: 'other-user' };
       service.findOne.mockResolvedValue(otherRoutine);
 
-      await expect(controller.findOne('test-routine', mockUser)).rejects.toThrow(ForbiddenException);
+      await expect(
+        controller.findOne('test-routine', mockUser),
+      ).rejects.toThrow(ForbiddenException);
     });
 
     it('should allow access to built-in routines', async () => {
@@ -165,14 +178,18 @@ describe('RoutinesController', () => {
     it('should throw NotFoundException if routine not found', async () => {
       service.findBySlug.mockResolvedValue(null);
 
-      await expect(controller.findBySlug('non-existent', mockUser)).rejects.toThrow(NotFoundException);
+      await expect(
+        controller.findBySlug('non-existent', mockUser),
+      ).rejects.toThrow(NotFoundException);
     });
 
     it('should throw ForbiddenException if user is not owner', async () => {
       const otherRoutine = { ...mockRoutine, ownerId: 'other-user' };
       service.findBySlug.mockResolvedValue(otherRoutine);
 
-      await expect(controller.findBySlug('test-routine', mockUser)).rejects.toThrow(ForbiddenException);
+      await expect(
+        controller.findBySlug('test-routine', mockUser),
+      ).rejects.toThrow(ForbiddenException);
     });
   });
 
@@ -186,7 +203,11 @@ describe('RoutinesController', () => {
       service.findOne.mockResolvedValue(mockRoutine);
       service.update.mockResolvedValue(updatedRoutine);
 
-      const result = await controller.update('test-routine', updateData, mockUser);
+      const result = await controller.update(
+        'test-routine',
+        updateData,
+        mockUser,
+      );
 
       expect(result).toEqual(updatedRoutine);
       expect(service.update).toHaveBeenCalledWith('test-routine', updateData);
@@ -195,14 +216,18 @@ describe('RoutinesController', () => {
     it('should throw NotFoundException if routine not found', async () => {
       service.findOne.mockResolvedValue(null);
 
-      await expect(controller.update('non-existent', {}, mockUser)).rejects.toThrow(NotFoundException);
+      await expect(
+        controller.update('non-existent', {}, mockUser),
+      ).rejects.toThrow(NotFoundException);
     });
 
     it('should throw ForbiddenException if user is not owner', async () => {
       const otherRoutine = { ...mockRoutine, ownerId: 'other-user' };
       service.findOne.mockResolvedValue(otherRoutine);
 
-      await expect(controller.update('test-routine', {}, mockUser)).rejects.toThrow(ForbiddenException);
+      await expect(
+        controller.update('test-routine', {}, mockUser),
+      ).rejects.toThrow(ForbiddenException);
     });
   });
 
@@ -219,14 +244,18 @@ describe('RoutinesController', () => {
     it('should throw NotFoundException if routine not found', async () => {
       service.findOne.mockResolvedValue(null);
 
-      await expect(controller.remove('non-existent', mockUser)).rejects.toThrow(NotFoundException);
+      await expect(controller.remove('non-existent', mockUser)).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('should throw ForbiddenException if user is not owner', async () => {
       const otherRoutine = { ...mockRoutine, ownerId: 'other-user' };
       service.findOne.mockResolvedValue(otherRoutine);
 
-      await expect(controller.remove('test-routine', mockUser)).rejects.toThrow(ForbiddenException);
+      await expect(controller.remove('test-routine', mockUser)).rejects.toThrow(
+        ForbiddenException,
+      );
     });
   });
 });

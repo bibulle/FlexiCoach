@@ -14,7 +14,7 @@ export class ReminderNotificationService {
 
   // Signal so Angular templates react to permission changes
   readonly permission = signal<NotificationPermission>(
-    this.isSupported ? Notification.permission : 'denied'
+    this.isSupported ? Notification.permission : 'denied',
   );
 
   async requestPermission(): Promise<NotificationPermission> {

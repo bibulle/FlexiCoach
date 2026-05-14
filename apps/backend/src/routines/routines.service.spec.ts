@@ -31,8 +31,12 @@ describe('RoutinesService', () => {
     const mockExec = jest.fn();
     const mockSelect = jest.fn().mockReturnValue({ exec: mockExec });
     const mockSort = jest.fn().mockReturnValue({ exec: mockExec });
-    const mockFind = jest.fn().mockReturnValue({ exec: mockExec, sort: mockSort });
-    const mockFindOne = jest.fn().mockReturnValue({ exec: mockExec, select: mockSelect });
+    const mockFind = jest
+      .fn()
+      .mockReturnValue({ exec: mockExec, sort: mockSort });
+    const mockFindOne = jest
+      .fn()
+      .mockReturnValue({ exec: mockExec, select: mockSelect });
     const mockFindOneAndUpdate = jest.fn().mockReturnValue({ exec: mockExec });
     const mockFindOneAndDelete = jest.fn().mockReturnValue({ exec: mockExec });
 
@@ -65,7 +69,10 @@ describe('RoutinesService', () => {
 
   describe('findAll', () => {
     it('should return all routines', async () => {
-      const mockRoutines = [mockRoutine, { ...mockRoutine, id: 'routine-456', name: 'Routine 2' }];
+      const mockRoutines = [
+        mockRoutine,
+        { ...mockRoutine, id: 'routine-456', name: 'Routine 2' },
+      ];
       mockRoutineModel.find().exec.mockResolvedValue(mockRoutines);
 
       const result = await service.findAll();
@@ -86,8 +93,14 @@ describe('RoutinesService', () => {
   describe('findAllForUser', () => {
     it('should return built-in and user routines for a specific user', async () => {
       const builtInRoutine = { ...mockRoutine, visibility: 'builtIn' };
-      const userRoutine = { ...mockRoutine, visibility: 'user', ownerId: testUserId };
-      mockRoutineModel.find().exec.mockResolvedValue([builtInRoutine, userRoutine]);
+      const userRoutine = {
+        ...mockRoutine,
+        visibility: 'user',
+        ownerId: testUserId,
+      };
+      mockRoutineModel
+        .find()
+        .exec.mockResolvedValue([builtInRoutine, userRoutine]);
 
       const result = await service.findAllForUser(testUserId);
 
@@ -121,7 +134,9 @@ describe('RoutinesService', () => {
       const result = await service.findOne('routine-123');
 
       expect(result).toEqual(mockRoutine);
-      expect(mockRoutineModel.findOne).toHaveBeenCalledWith({ id: 'routine-123' });
+      expect(mockRoutineModel.findOne).toHaveBeenCalledWith({
+        id: 'routine-123',
+      });
     });
 
     it('should return null for non-existent ID', async () => {
@@ -140,7 +155,9 @@ describe('RoutinesService', () => {
       const result = await service.findBySlug('test-routine');
 
       expect(result).toEqual(mockRoutine);
-      expect(mockRoutineModel.findOne).toHaveBeenCalledWith({ slug: 'test-routine' });
+      expect(mockRoutineModel.findOne).toHaveBeenCalledWith({
+        slug: 'test-routine',
+      });
     });
 
     it('should return null for non-existent slug', async () => {
@@ -162,8 +179,18 @@ describe('RoutinesService', () => {
         description: 'A new routine',
         difficulty: 'intermediate' as const,
         steps: [
-          { name: 'Step 1', seconds: 60, mode: 'mouvement' as const, text: 'Move' },
-          { name: 'Step 2', seconds: 30, mode: 'statique' as const, text: 'Hold' },
+          {
+            name: 'Step 1',
+            seconds: 60,
+            mode: 'mouvement' as const,
+            text: 'Move',
+          },
+          {
+            name: 'Step 2',
+            seconds: 30,
+            mode: 'statique' as const,
+            text: 'Hold',
+          },
         ],
       };
 
@@ -182,13 +209,21 @@ describe('RoutinesService', () => {
 
     it('should generate unique slugs for routines with same name', async () => {
       // First call returns existing routine, second call returns null (unique slug found)
-      mockRoutineModel.findOne().exec
-        .mockResolvedValueOnce({ slug: 'morning-routine' }) // First slug exists
+      mockRoutineModel
+        .findOne()
+        .exec.mockResolvedValueOnce({ slug: 'morning-routine' }) // First slug exists
         .mockResolvedValueOnce(null); // Second slug is unique
 
       const routineData = {
         name: 'Morning Routine',
-        steps: [{ name: 'Step', seconds: 30, mode: 'mouvement' as const, text: 'Test' }],
+        steps: [
+          {
+            name: 'Step',
+            seconds: 30,
+            mode: 'mouvement' as const,
+            text: 'Test',
+          },
+        ],
       };
 
       const result = await service.create(routineData, testUserId);
@@ -202,9 +237,24 @@ describe('RoutinesService', () => {
       const routineData = {
         name: 'Test Routine',
         steps: [
-          { name: 'Step 1', seconds: 30, mode: 'mouvement' as const, text: 'Test' },
-          { name: 'Step 2', seconds: 45, mode: 'statique' as const, text: 'Test' },
-          { name: 'Step 3', seconds: 60, mode: 'respiration' as const, text: 'Test' },
+          {
+            name: 'Step 1',
+            seconds: 30,
+            mode: 'mouvement' as const,
+            text: 'Test',
+          },
+          {
+            name: 'Step 2',
+            seconds: 45,
+            mode: 'statique' as const,
+            text: 'Test',
+          },
+          {
+            name: 'Step 3',
+            seconds: 60,
+            mode: 'respiration' as const,
+            text: 'Test',
+          },
         ],
       };
 
@@ -219,7 +269,14 @@ describe('RoutinesService', () => {
 
       const routineData = {
         name: 'Étirement Matinal !',
-        steps: [{ name: 'Step', seconds: 30, mode: 'mouvement' as const, text: 'Test' }],
+        steps: [
+          {
+            name: 'Step',
+            seconds: 30,
+            mode: 'mouvement' as const,
+            text: 'Test',
+          },
+        ],
       };
 
       const result = await service.create(routineData, testUserId);
@@ -232,7 +289,14 @@ describe('RoutinesService', () => {
 
       const routineData = {
         name: 'Test Routine',
-        steps: [{ name: 'Step', seconds: 30, mode: 'mouvement' as const, text: 'Test' }],
+        steps: [
+          {
+            name: 'Step',
+            seconds: 30,
+            mode: 'mouvement' as const,
+            text: 'Test',
+          },
+        ],
       };
 
       const result = await service.create(routineData, testUserId);
@@ -253,13 +317,25 @@ describe('RoutinesService', () => {
         totalSeconds: 120,
         duration: 2,
       };
-      mockRoutineModel.findOneAndUpdate().exec.mockResolvedValue(updatedRoutine);
+      mockRoutineModel
+        .findOneAndUpdate()
+        .exec.mockResolvedValue(updatedRoutine);
 
       const result = await service.update('routine-123', {
         name: 'Updated Name',
         steps: [
-          { name: 'Step 1', seconds: 60, mode: 'mouvement' as const, text: 'Updated' },
-          { name: 'Step 2', seconds: 60, mode: 'statique' as const, text: 'More' },
+          {
+            name: 'Step 1',
+            seconds: 60,
+            mode: 'mouvement' as const,
+            text: 'Updated',
+          },
+          {
+            name: 'Step 2',
+            seconds: 60,
+            mode: 'statique' as const,
+            text: 'More',
+          },
         ],
       });
 
@@ -271,7 +347,7 @@ describe('RoutinesService', () => {
           totalSeconds: 120,
           duration: 2,
         }),
-        { new: true }
+        { new: true },
       );
     });
 
@@ -287,7 +363,7 @@ describe('RoutinesService', () => {
         expect.objectContaining({
           level: 'advanced',
         }),
-        { new: true }
+        { new: true },
       );
     });
 
@@ -313,7 +389,7 @@ describe('RoutinesService', () => {
           totalSeconds: expect.any(Number),
           duration: expect.any(Number),
         }),
-        { new: true }
+        { new: true },
       );
     });
   });
@@ -325,7 +401,9 @@ describe('RoutinesService', () => {
       const result = await service.remove('routine-123');
 
       expect(result).toEqual(mockRoutine);
-      expect(mockRoutineModel.findOneAndDelete).toHaveBeenCalledWith({ id: 'routine-123' });
+      expect(mockRoutineModel.findOneAndDelete).toHaveBeenCalledWith({
+        id: 'routine-123',
+      });
     });
 
     it('should return null for non-existent ID', async () => {

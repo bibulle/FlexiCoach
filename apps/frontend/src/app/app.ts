@@ -9,7 +9,13 @@ import { HeaderComponent } from './components/header.component';
 import { BottomNavComponent } from './components/bottom-nav.component';
 
 @Component({
-  imports: [RouterModule, CommonModule, UpdateNotificationComponent, HeaderComponent, BottomNavComponent],
+  imports: [
+    RouterModule,
+    CommonModule,
+    UpdateNotificationComponent,
+    HeaderComponent,
+    BottomNavComponent,
+  ],
   selector: 'app-root',
   templateUrl: './app.html',
   styleUrls: ['./app.sass'],
@@ -18,7 +24,7 @@ export class AppComponent implements OnInit {
   constructor(
     private swUpdateService: SwUpdateService,
     private authService: AuthService,
-    private reminderNotifications: ReminderNotificationService
+    private reminderNotifications: ReminderNotificationService,
   ) {}
 
   ngOnInit(): void {

@@ -19,7 +19,7 @@ import { AuthCodeStore } from './auth-code.store';
         const secret = configService.get<string>('JWT_SECRET');
         if (!secret) {
           throw new Error(
-            'JWT_SECRET environment variable is required. Application cannot start without it.'
+            'JWT_SECRET environment variable is required. Application cannot start without it.',
           );
         }
         return { secret, signOptions: { expiresIn: '7d' } };

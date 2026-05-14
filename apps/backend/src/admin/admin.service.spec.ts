@@ -56,7 +56,7 @@ describe('AdminService', () => {
 
       expect(usersService.updatePassword).toHaveBeenCalledWith(
         userId,
-        newPassword
+        newPassword,
       );
       expect(result).toEqual(updatedUser);
     });

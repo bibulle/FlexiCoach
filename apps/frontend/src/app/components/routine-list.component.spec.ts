@@ -81,7 +81,7 @@ describe('RoutineListComponent', () => {
         totalMinutes: 250,
         adherenceRate: 75,
         favoriteRoutine: 'douce-10min',
-      })
+      }),
     );
 
     fixture = TestBed.createComponent(RoutineListComponent);
@@ -112,7 +112,7 @@ describe('RoutineListComponent', () => {
 
   it('should handle error when loading routines', () => {
     mockRoutineService.getAll.mockReturnValue(
-      throwError(() => new Error('Load error'))
+      throwError(() => new Error('Load error')),
     );
 
     fixture.detectChanges();
@@ -152,10 +152,12 @@ describe('RoutineListComponent', () => {
       mockAuthService.isAdmin.set(true);
       mockAuthService.isAdminMode.set(true);
 
-      const userRoutines: Routine[] = [{
-        ...mockRoutines[0],
-        visibility: 'user' as 'builtIn' | 'user',
-      }];
+      const userRoutines: Routine[] = [
+        {
+          ...mockRoutines[0],
+          visibility: 'user' as 'builtIn' | 'user',
+        },
+      ];
 
       mockRoutineService.getAll.mockReturnValue(of(userRoutines));
       component.loadRoutines();

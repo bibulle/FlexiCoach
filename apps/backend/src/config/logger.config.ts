@@ -9,7 +9,7 @@ const logFormat = winston.format.combine(
   winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
   winston.format.errors({ stack: true }),
   winston.format.splat(),
-  winston.format.json()
+  winston.format.json(),
 );
 
 // Console format for development (more readable)
@@ -17,9 +17,11 @@ const consoleFormat = winston.format.combine(
   winston.format.colorize(),
   winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
   winston.format.printf(({ timestamp, level, message, context, ...meta }) => {
-    const metaStr = Object.keys(meta).length ? JSON.stringify(meta, null, 2) : '';
+    const metaStr = Object.keys(meta).length
+      ? JSON.stringify(meta, null, 2)
+      : '';
     return `${timestamp} [${context || 'Application'}] ${level}: ${message} ${metaStr}`;
-  })
+  }),
 );
 
 // Create transports array
@@ -30,7 +32,7 @@ transports.push(
   new winston.transports.Console({
     format: isProduction ? logFormat : consoleFormat,
     level: isProduction ? 'info' : 'debug',
-  })
+  }),
 );
 
 // File transports (only in production)
@@ -44,7 +46,7 @@ if (isProduction) {
       format: logFormat,
       maxFiles: '30d',
       maxSize: '20m',
-    })
+    }),
   );
 
   // Combined logs rotation
@@ -55,7 +57,7 @@ if (isProduction) {
       format: logFormat,
       maxFiles: '14d',
       maxSize: '20m',
-    })
+    }),
   );
 }
 

@@ -111,7 +111,11 @@
 
   &--current {
     height: 30px;
-    background-image: linear-gradient(180deg, rgba(255,255,255,0.18), transparent);
+    background-image: linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.18),
+      transparent
+    );
   }
 
   &--todo {
@@ -312,9 +316,15 @@
   }
 
   .timeline-bar {
-    &--done    { height: 18px; }
-    &--current { height: 40px; }
-    &--todo    { height: 18px; }
+    &--done {
+      height: 18px;
+    }
+    &--current {
+      height: 40px;
+    }
+    &--todo {
+      height: 18px;
+    }
   }
 
   .player-chrono-section {

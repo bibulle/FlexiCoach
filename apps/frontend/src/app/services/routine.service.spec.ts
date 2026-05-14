@@ -147,7 +147,9 @@ describe('RoutineService', () => {
         exercises: [],
       } as Routine;
 
-      const responsePromise = firstValueFrom(service.update(routineId, updateData));
+      const responsePromise = firstValueFrom(
+        service.update(routineId, updateData),
+      );
 
       const req = httpMock.expectOne('/api/routines/123');
       expect(req.request.method).toBe('PATCH');

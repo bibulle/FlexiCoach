@@ -62,7 +62,7 @@ describe('Routines API', () => {
   describe('GET /api/routines/slug/:slug', () => {
     it('should return a routine by slug', async () => {
       const res = await axios.get(
-        `${API_URL}/api/routines/slug/test-routine-1`
+        `${API_URL}/api/routines/slug/test-routine-1`,
       );
 
       expect(res.status).toBe(200);

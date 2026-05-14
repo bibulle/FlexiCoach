@@ -20,42 +20,82 @@ export class RoutineListComponent implements OnInit {
   loading = false;
   error = '';
 
-  readonly filters: FilterKey[] = ['Tout', 'Quotidien', 'Bureau', 'Sport', 'Mes routines'];
+  readonly filters: FilterKey[] = [
+    'Tout',
+    'Quotidien',
+    'Bureau',
+    'Sport',
+    'Mes routines',
+  ];
   activeFilter = signal<FilterKey>('Tout');
 
   get userRoutinesCount(): number {
-    return this.routines.filter(r => r.visibility === 'user').length;
+    return this.routines.filter((r) => r.visibility === 'user').length;
   }
 
   private readonly FILTER_TAGS: Record<string, string[]> = {
-    'Quotidien': ['quotidien'],
-    'Bureau':    ['bureau'],
-    'Sport':     ['sport'],
+    Quotidien: ['quotidien'],
+    Bureau: ['bureau'],
+    Sport: ['sport'],
   };
 
   // Fallback keyword matching for routines without a tag
   private readonly FILTER_KEYWORDS: Record<string, string[]> = {
-    'Quotidien': ['quotidien', 'matin', 'soir', 'douce', 'réveil', 'lever', 'détente', 'relaxation'],
-    'Bureau':    ['bureau', 'cervical', 'assis', 'ordinateur', 'poste', 'travail', 'express', 'siège'],
-    'Sport':     ['sport', 'squash', 'golf', 'running', 'mobilité', 'hanches', 'ischio', 'mollet', 'épaule', 'rotation', 'post-'],
+    Quotidien: [
+      'quotidien',
+      'matin',
+      'soir',
+      'douce',
+      'réveil',
+      'lever',
+      'détente',
+      'relaxation',
+    ],
+    Bureau: [
+      'bureau',
+      'cervical',
+      'assis',
+      'ordinateur',
+      'poste',
+      'travail',
+      'express',
+      'siège',
+    ],
+    Sport: [
+      'sport',
+      'squash',
+      'golf',
+      'running',
+      'mobilité',
+      'hanches',
+      'ischio',
+      'mollet',
+      'épaule',
+      'rotation',
+      'post-',
+    ],
   };
 
   filteredRoutines = computed(() => {
     const f = this.activeFilter();
-    if (f === 'Mes routines') return this.routines.filter(r => r.visibility === 'user');
+    if (f === 'Mes routines')
+      return this.routines.filter((r) => r.visibility === 'user');
     const tags = this.FILTER_TAGS[f];
     if (!tags) return this.routines;
     const keywords = this.FILTER_KEYWORDS[f] ?? [];
-    const text = (r: Routine) => `${r.name} ${r.description ?? ''}`.toLowerCase();
-    return this.routines.filter(r =>
-      r.tag ? tags.includes(r.tag) : keywords.some(kw => text(r).includes(kw))
+    const text = (r: Routine) =>
+      `${r.name} ${r.description ?? ''}`.toLowerCase();
+    return this.routines.filter((r) =>
+      r.tag
+        ? tags.includes(r.tag)
+        : keywords.some((kw) => text(r).includes(kw)),
     );
   });
 
   constructor(
     private routineService: RoutineService,
     private router: Router,
-    public authService: AuthService
+    public authService: AuthService,
   ) {}
 
   ngOnInit() {
@@ -90,19 +130,27 @@ export class RoutineListComponent implements OnInit {
   getRoutineColor(routine: Routine): string {
     if (routine.visibility === 'user') return 'var(--primary-500)';
     switch (routine.level) {
-      case 'Débutant':      return '#22c55e';
-      case 'Intermédiaire': return 'var(--primary-500)';
-      case 'Avancé':        return '#a855f7';
-      default:              return 'var(--primary-400)';
+      case 'Débutant':
+        return '#22c55e';
+      case 'Intermédiaire':
+        return 'var(--primary-500)';
+      case 'Avancé':
+        return '#a855f7';
+      default:
+        return 'var(--primary-400)';
     }
   }
 
   getBadgeClass(level: string): string {
     switch (level) {
-      case 'Débutant':      return 'badge-debutant';
-      case 'Intermédiaire': return 'badge-intermediaire';
-      case 'Avancé':        return 'badge-avance';
-      default:              return 'badge-intermediaire';
+      case 'Débutant':
+        return 'badge-debutant';
+      case 'Intermédiaire':
+        return 'badge-intermediaire';
+      case 'Avancé':
+        return 'badge-avance';
+      default:
+        return 'badge-intermediaire';
     }
   }
 }

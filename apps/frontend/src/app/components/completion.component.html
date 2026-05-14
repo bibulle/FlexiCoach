@@ -1,10 +1,19 @@
 <div class="completion-shell">
-
   <!-- Hero check -->
   <div class="completion-hero">
     <div class="completion-check">
-      <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <polyline points="20 6 9 17 4 12"/>
+      <svg
+        width="44"
+        height="44"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="3"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+      >
+        <polyline points="20 6 9 17 4 12" />
       </svg>
       <span class="completion-sparkle" aria-hidden="true">✨</span>
     </div>
@@ -15,8 +24,12 @@
 
     <p class="type-body completion-desc">
       Tu viens de boucler
-      @if (routineName) { <strong>{{ routineName }}</strong> }
-      @if (duration) { en {{ formatDuration(duration) }}. }
+      @if (routineName) {
+        <strong>{{ routineName }}</strong>
+      }
+      @if (duration) {
+        en {{ formatDuration(duration) }}.
+      }
       Continue comme ça !
     </p>
   </div>
@@ -25,7 +38,9 @@
   <div class="completion-stats">
     <div class="stat-block">
       <span class="type-label stat-label">Durée</span>
-      <span class="stat-value stat-value--mono">{{ formatDuration(duration) }}</span>
+      <span class="stat-value stat-value--mono">{{
+        formatDuration(duration)
+      }}</span>
     </div>
     @if (routineName) {
       <div class="stat-block">
@@ -40,8 +55,11 @@
     <h3 class="type-h3 completion-section-title">Comment tu te sens ?</h3>
     <div class="feelings-grid">
       @for (feeling of feelings; track feeling.value) {
-        <button class="feeling-btn" [class.feeling-btn--selected]="selectedFeeling === feeling.value"
-                (click)="selectFeeling(feeling.value)">
+        <button
+          class="feeling-btn"
+          [class.feeling-btn--selected]="selectedFeeling === feeling.value"
+          (click)="selectFeeling(feeling.value)"
+        >
           <span class="feeling-emoji">{{ feeling.emoji }}</span>
           <span class="feeling-label">{{ feeling.label }}</span>
         </button>
@@ -51,23 +69,28 @@
 
   <!-- Note -->
   <div class="completion-section">
-    <label class="type-label completion-note-label" for="completion-note">Note rapide (optionnel)</label>
+    <label class="type-label completion-note-label" for="completion-note"
+      >Note rapide (optionnel)</label
+    >
     <textarea
       id="completion-note"
       class="input completion-textarea"
       placeholder="Hanche droite tendue ce matin…"
-      [(ngModel)]="note">
+      [(ngModel)]="note"
+    >
     </textarea>
   </div>
 
   <!-- Actions -->
   <div class="completion-actions">
-    <button class="btn btn-primary btn-lg completion-cta" (click)="navigateToCalendar()">
+    <button
+      class="btn btn-primary btn-lg completion-cta"
+      (click)="navigateToCalendar()"
+    >
       Voir mon calendrier
     </button>
     <button class="btn btn-secondary btn-lg completion-cta" (click)="finish()">
       Retour aux routines
     </button>
   </div>
-
 </div>

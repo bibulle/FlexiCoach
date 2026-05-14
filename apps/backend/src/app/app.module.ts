@@ -23,7 +23,7 @@ import { winstonConfig } from '../config/logger.config';
     }),
     WinstonModule.forRoot(winstonConfig),
     MongooseModule.forRoot(
-      process.env.MONGODB_URI || 'mongodb://localhost:27017/flexicoach'
+      process.env.MONGODB_URI || 'mongodb://localhost:27017/flexicoach',
     ),
     ThrottlerModule.forRoot([
       {

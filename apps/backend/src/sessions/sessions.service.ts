@@ -8,7 +8,7 @@ import { Routine, RoutineDocument } from '../schemas/routine.schema';
 export class SessionsService {
   constructor(
     @InjectModel(Session.name) private sessionModel: Model<SessionDocument>,
-    @InjectModel(Routine.name) private routineModel: Model<RoutineDocument>
+    @InjectModel(Routine.name) private routineModel: Model<RoutineDocument>,
   ) {}
 
   async create(session: Partial<Session>): Promise<Session> {
@@ -34,13 +34,13 @@ export class SessionsService {
   async complete(
     id: string,
     completed: boolean,
-    feeling?: number
+    feeling?: number,
   ): Promise<Session | null> {
     return this.sessionModel
       .findByIdAndUpdate(
         id,
         { completed, endAt: new Date(), feeling },
-        { new: true }
+        { new: true },
       )
       .exec();
   }
@@ -57,7 +57,7 @@ export class SessionsService {
       totalSessions: sessions.length,
       completedSessions: sessions.filter((s) => s.completed).length,
       totalMinutes: Math.round(
-        sessions.reduce((acc, s) => acc + s.durationSec, 0) / 60
+        sessions.reduce((acc, s) => acc + s.durationSec, 0) / 60,
       ),
     };
   }
@@ -65,7 +65,7 @@ export class SessionsService {
   async getCalendar(
     userId?: string,
     from?: string,
-    to?: string
+    to?: string,
   ): Promise<Array<{ date: string; completionRate: number }>> {
     const filter: any = userId ? { userId } : {};
 
@@ -174,7 +174,7 @@ export class SessionsService {
         } else {
           const prevDate = new Date(sortedDates[i - 1]);
           const dayDiff = Math.round(
-            (currentDate.getTime() - prevDate.getTime()) / 86400000
+            (currentDate.getTime() - prevDate.getTime()) / 86400000,
           );
 
           if (dayDiff === 1) {
@@ -191,7 +191,7 @@ export class SessionsService {
     // Calculate adherence rate (percentage of days with sessions in last 30 days)
     const thirtyDaysAgo = new Date(Date.now() - 30 * 86400000);
     const recentSessionDates = sortedDates.filter(
-      (date) => new Date(date) >= thirtyDaysAgo
+      (date) => new Date(date) >= thirtyDaysAgo,
     );
     const adherenceRate =
       recentSessionDates.length > 0
@@ -217,7 +217,9 @@ export class SessionsService {
     // Resolve the routine name from its ID
     let favoriteRoutine: string | null = null;
     if (favoriteRoutineId) {
-      const routine = await this.routineModel.findOne({ id: favoriteRoutineId }).exec();
+      const routine = await this.routineModel
+        .findOne({ id: favoriteRoutineId })
+        .exec();
       favoriteRoutine = routine ? routine.name : favoriteRoutineId;
     }
 

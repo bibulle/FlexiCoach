@@ -23,7 +23,9 @@ test.describe('Admin Panel Flow', () => {
     await expect(page).toHaveURL('/admin');
 
     // Should display admin panel title
-    const adminTitle = page.locator('h1:has-text("Admin"), h2:has-text("Admin"), h1:has-text("Administration")');
+    const adminTitle = page.locator(
+      'h1:has-text("Admin"), h2:has-text("Admin"), h1:has-text("Administration")',
+    );
     await expect(adminTitle).toBeVisible({ timeout: 5000 });
   });
 
@@ -43,37 +45,57 @@ test.describe('Admin Panel Flow', () => {
     await page.goto('/admin');
 
     // Should display email addresses
-    const emailPattern = page.locator('text=/[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}/');
+    const emailPattern = page.locator(
+      'text=/[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}/',
+    );
     await expect(emailPattern.first()).toBeVisible({ timeout: 5000 });
   });
 
   test('should show reset password button for users', async ({ page }) => {
     await page.goto('/admin');
-    await page.waitForSelector('.user-list, table, [class*="user"]', { timeout: 5000 });
+    await page.waitForSelector('.user-list, table, [class*="user"]', {
+      timeout: 5000,
+    });
 
     // Should have reset password button
-    const resetButton = page.locator('button:has-text("Reset"), button:has-text("Réinitialiser"), button[aria-label*="reset"]').first();
+    const resetButton = page
+      .locator(
+        'button:has-text("Reset"), button:has-text("Réinitialiser"), button[aria-label*="reset"]',
+      )
+      .first();
     const hasResetButton = await resetButton.isVisible({ timeout: 3000 });
 
     expect(hasResetButton).toBe(true);
   });
 
-  test('should show confirmation dialog for password reset', async ({ page }) => {
+  test('should show confirmation dialog for password reset', async ({
+    page,
+  }) => {
     await page.goto('/admin');
-    await page.waitForSelector('.user-list, table, [class*="user"]', { timeout: 5000 });
+    await page.waitForSelector('.user-list, table, [class*="user"]', {
+      timeout: 5000,
+    });
 
     // Click first reset password button
-    const resetButton = page.locator('button:has-text("Reset"), button:has-text("Réinitialiser"), button[aria-label*="reset"]').first();
+    const resetButton = page
+      .locator(
+        'button:has-text("Reset"), button:has-text("Réinitialiser"), button[aria-label*="reset"]',
+      )
+      .first();
     if (await resetButton.isVisible({ timeout: 3000 })) {
       await resetButton.click();
 
       // Should show confirmation dialog
-      const confirmDialog = page.locator('dialog, [role="dialog"], .dialog, .modal').first();
+      const confirmDialog = page
+        .locator('dialog, [role="dialog"], .dialog, .modal')
+        .first();
       const hasDialog = await confirmDialog.isVisible({ timeout: 2000 });
 
       if (hasDialog) {
         // Cancel the dialog
-        const cancelButton = page.locator('button:has-text("Annuler"), button:has-text("Cancel")').first();
+        const cancelButton = page
+          .locator('button:has-text("Annuler"), button:has-text("Cancel")')
+          .first();
         if (await cancelButton.isVisible({ timeout: 1000 })) {
           await cancelButton.click();
         }
@@ -86,7 +108,9 @@ test.describe('Admin Panel Flow', () => {
   test('should not allow non-admin to access admin panel', async ({ page }) => {
     // Logout first
     await page.goto('/');
-    const logoutButton = page.locator('button:has-text("Déconnexion"), button:has-text("Logout"), a:has-text("Déconnexion")');
+    const logoutButton = page.locator(
+      'button:has-text("Déconnexion"), button:has-text("Logout"), a:has-text("Déconnexion")',
+    );
     if (await logoutButton.isVisible({ timeout: 3000 })) {
       await logoutButton.click();
     }
@@ -109,19 +133,31 @@ test.describe('Admin Panel Flow', () => {
 
     // Should not stay on admin page OR should show access denied message
     const isRedirected = !currentUrl.includes('/admin');
-    const accessDenied = page.locator('text=/accès refusé|access denied|non autorisé|forbidden/i');
-    const hasAccessDenied = await accessDenied.isVisible({ timeout: 1000 }).catch(() => false);
+    const accessDenied = page.locator(
+      'text=/accès refusé|access denied|non autorisé|forbidden/i',
+    );
+    const hasAccessDenied = await accessDenied
+      .isVisible({ timeout: 1000 })
+      .catch(() => false);
 
     expect(isRedirected || hasAccessDenied).toBe(true);
   });
 
   test('should filter or search users', async ({ page }) => {
     await page.goto('/admin');
-    await page.waitForSelector('.user-list, table, [class*="user"]', { timeout: 5000 });
+    await page.waitForSelector('.user-list, table, [class*="user"]', {
+      timeout: 5000,
+    });
 
     // Look for search or filter input
-    const searchInput = page.locator('input[type="search"], input[placeholder*="Rechercher"], input[placeholder*="Search"]').first();
-    const hasSearch = await searchInput.isVisible({ timeout: 2000 }).catch(() => false);
+    const searchInput = page
+      .locator(
+        'input[type="search"], input[placeholder*="Rechercher"], input[placeholder*="Search"]',
+      )
+      .first();
+    const hasSearch = await searchInput
+      .isVisible({ timeout: 2000 })
+      .catch(() => false);
 
     if (hasSearch) {
       await searchInput.fill(adminEmail);
@@ -137,23 +173,39 @@ test.describe('Admin Panel Flow', () => {
     }
   });
 
-  test('should display user registration dates or metadata', async ({ page }) => {
+  test('should display user registration dates or metadata', async ({
+    page,
+  }) => {
     await page.goto('/admin');
-    await page.waitForSelector('.user-list, table, [class*="user"]', { timeout: 5000 });
+    await page.waitForSelector('.user-list, table, [class*="user"]', {
+      timeout: 5000,
+    });
 
     // Should show some metadata (dates, counts, etc.)
-    const metadata = page.locator('text=/\\d{4}-\\d{2}-\\d{2}|\\d{2}\\/\\d{2}\\/\\d{4}|il y a|ago/i').first();
-    const hasMetadata = await metadata.isVisible({ timeout: 3000 }).catch(() => false);
+    const metadata = page
+      .locator(
+        'text=/\\d{4}-\\d{2}-\\d{2}|\\d{2}\\/\\d{2}\\/\\d{4}|il y a|ago/i',
+      )
+      .first();
+    const hasMetadata = await metadata
+      .isVisible({ timeout: 3000 })
+      .catch(() => false);
 
     // Metadata display is optional but good to have
     expect(hasMetadata || true).toBeTruthy();
   });
 
-  test('should navigate back to main app from admin panel', async ({ page }) => {
+  test('should navigate back to main app from admin panel', async ({
+    page,
+  }) => {
     await page.goto('/admin');
 
     // Look for navigation back to home/routines
-    const homeLink = page.locator('a[href="/"], a:has-text("Accueil"), a:has-text("Home"), a:has-text("Routines")').first();
+    const homeLink = page
+      .locator(
+        'a[href="/"], a:has-text("Accueil"), a:has-text("Home"), a:has-text("Routines")',
+      )
+      .first();
     if (await homeLink.isVisible({ timeout: 3000 })) {
       await homeLink.click();
 

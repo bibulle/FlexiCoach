@@ -65,7 +65,7 @@ describe('AllExceptionsFilter', () => {
           error: 'HttpException',
           message: 'Not found',
           path: '/test',
-        })
+        }),
       );
       expect(mockLogger.warn).toHaveBeenCalled();
     });
@@ -73,7 +73,7 @@ describe('AllExceptionsFilter', () => {
     it('should handle HttpException with object response', () => {
       const exception = new HttpException(
         { message: 'Validation failed', error: 'Bad Request' },
-        HttpStatus.BAD_REQUEST
+        HttpStatus.BAD_REQUEST,
       );
 
       filter.catch(exception, mockArgumentsHost);
@@ -84,7 +84,7 @@ describe('AllExceptionsFilter', () => {
           statusCode: 400,
           error: 'Bad Request',
           message: 'Validation failed',
-        })
+        }),
       );
       expect(mockLogger.warn).toHaveBeenCalled();
     });
@@ -100,7 +100,7 @@ describe('AllExceptionsFilter', () => {
           statusCode: 500,
           error: 'Error',
           message: 'Unexpected error',
-        })
+        }),
       );
       expect(mockLogger.error).toHaveBeenCalled();
     });
@@ -108,7 +108,7 @@ describe('AllExceptionsFilter', () => {
     it('should log errors with status >= 500 as error level', () => {
       const exception = new HttpException(
         'Internal error',
-        HttpStatus.INTERNAL_SERVER_ERROR
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
 
       filter.catch(exception, mockArgumentsHost);
@@ -119,12 +119,15 @@ describe('AllExceptionsFilter', () => {
           statusCode: 500,
           error: 'HttpException',
           message: 'Internal error',
-        })
+        }),
       );
     });
 
     it('should log errors with status >= 400 and < 500 as warn level', () => {
-      const exception = new HttpException('Bad request', HttpStatus.BAD_REQUEST);
+      const exception = new HttpException(
+        'Bad request',
+        HttpStatus.BAD_REQUEST,
+      );
 
       filter.catch(exception, mockArgumentsHost);
 
@@ -134,7 +137,7 @@ describe('AllExceptionsFilter', () => {
           statusCode: 400,
           error: 'HttpException',
           message: 'Bad request',
-        })
+        }),
       );
     });
 
@@ -149,14 +152,17 @@ describe('AllExceptionsFilter', () => {
         expect.objectContaining({
           message: 'An unexpected error occurred',
           statusCode: 500,
-        })
+        }),
       );
     });
 
     it('should not sanitize 400 errors in production', () => {
       process.env.NODE_ENV = 'production';
 
-      const exception = new HttpException('Validation error', HttpStatus.BAD_REQUEST);
+      const exception = new HttpException(
+        'Validation error',
+        HttpStatus.BAD_REQUEST,
+      );
 
       filter.catch(exception, mockArgumentsHost);
 
@@ -164,7 +170,7 @@ describe('AllExceptionsFilter', () => {
         expect.objectContaining({
           message: 'Validation error',
           statusCode: 400,
-        })
+        }),
       );
     });
 
@@ -177,7 +183,7 @@ describe('AllExceptionsFilter', () => {
         expect.objectContaining({
           timestamp: expect.any(String),
           path: '/test',
-        })
+        }),
       );
     });
 
@@ -193,7 +199,7 @@ describe('AllExceptionsFilter', () => {
           method: 'GET',
           userAgent: 'test-agent',
           ip: '127.0.0.1',
-        })
+        }),
       );
     });
   });

@@ -231,7 +231,12 @@
 /* Shimmer */
 .routine-mini-card--shimmer {
   height: 110px;
-  background: linear-gradient(90deg, var(--surface-2) 25%, var(--surface-3) 50%, var(--surface-2) 75%);
+  background: linear-gradient(
+    90deg,
+    var(--surface-2) 25%,
+    var(--surface-3) 50%,
+    var(--surface-2) 75%
+  );
   background-size: 200% 100%;
   animation: shimmer 1.4s infinite;
   cursor: default;
@@ -244,8 +249,12 @@
 }
 
 @keyframes shimmer {
-  0%   { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
 }
 
 /* === Desktop (≥768px) === */

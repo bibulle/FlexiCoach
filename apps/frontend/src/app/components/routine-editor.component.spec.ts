@@ -37,7 +37,11 @@ describe('RoutineEditorComponent', () => {
     };
 
     await TestBed.configureTestingModule({
-      imports: [RoutineEditorComponent, ReactiveFormsModule, RouterTestingModule],
+      imports: [
+        RoutineEditorComponent,
+        ReactiveFormsModule,
+        RouterTestingModule,
+      ],
       providers: [
         provideHttpClient(),
         { provide: RoutineService, useValue: mockRoutineService },
@@ -97,26 +101,32 @@ describe('RoutineEditorComponent', () => {
               seconds: 45,
               mode: 'statique',
               text: 'Another step',
-              cues: [
-                { _id: 'cue-id-3', at: 15, say: 'Keep going' },
-              ],
+              cues: [{ _id: 'cue-id-3', at: 15, say: 'Keep going' }],
             },
           ],
         },
       };
 
-      const blob = new Blob([JSON.stringify(importData)], { type: 'application/json' });
-      const file = new File([blob], 'test.routine.json', { type: 'application/json' });
+      const blob = new Blob([JSON.stringify(importData)], {
+        type: 'application/json',
+      });
+      const file = new File([blob], 'test.routine.json', {
+        type: 'application/json',
+      });
 
       // Mock FileReader: readAsText triggers onload synchronously
       // (the component sets reader.onload before calling reader.readAsText)
       const mockFileReader: any = {
         readAsText: vi.fn(function () {
-          mockFileReader.onload({ target: { result: JSON.stringify(importData) } });
+          mockFileReader.onload({
+            target: { result: JSON.stringify(importData) },
+          });
         }),
         onload: null as any,
       };
-      vi.stubGlobal('FileReader', vi.fn(() => mockFileReader));
+      vi.stubGlobal('FileReader', function () {
+        return mockFileReader;
+      });
 
       fixture.detectChanges();
 
@@ -167,24 +177,28 @@ describe('RoutineEditorComponent', () => {
               seconds: 60,
               mode: 'respiration',
               text: 'Instructions',
-              cues: [
-                { _id: 'cue-id', at: 30, say: 'Breathe' },
-              ],
+              cues: [{ _id: 'cue-id', at: 30, say: 'Breathe' }],
             },
           ],
         },
       };
 
-      const blob = new Blob([JSON.stringify(importData)], { type: 'application/json' });
+      const blob = new Blob([JSON.stringify(importData)], {
+        type: 'application/json',
+      });
       const file = new File([blob], 'test.routine.json');
 
       const mockFileReader: any = {
         readAsText: vi.fn(function () {
-          mockFileReader.onload({ target: { result: JSON.stringify(importData) } });
+          mockFileReader.onload({
+            target: { result: JSON.stringify(importData) },
+          });
         }),
         onload: null as any,
       };
-      vi.stubGlobal('FileReader', vi.fn(() => mockFileReader));
+      vi.stubGlobal('FileReader', function () {
+        return mockFileReader;
+      });
 
       fixture.detectChanges();
 
@@ -193,9 +207,13 @@ describe('RoutineEditorComponent', () => {
 
       // All fields should be preserved
       expect(component.routineForm.get('name')?.value).toBe('Test Routine');
-      expect(component.routineForm.get('description')?.value).toBe('Description');
+      expect(component.routineForm.get('description')?.value).toBe(
+        'Description',
+      );
       expect(component.routineForm.get('category')?.value).toBe('category');
-      expect(component.routineForm.get('difficulty')?.value).toBe('intermediate');
+      expect(component.routineForm.get('difficulty')?.value).toBe(
+        'intermediate',
+      );
       expect(component.routineForm.get('icon')?.value).toBe('test-icon');
 
       const step = component.steps.at(0).value;
@@ -224,16 +242,22 @@ describe('RoutineEditorComponent', () => {
         ],
       };
 
-      const blob = new Blob([JSON.stringify(legacyData)], { type: 'application/json' });
+      const blob = new Blob([JSON.stringify(legacyData)], {
+        type: 'application/json',
+      });
       const file = new File([blob], 'legacy.routine.json');
 
       const mockFileReader: any = {
         readAsText: vi.fn(function () {
-          mockFileReader.onload({ target: { result: JSON.stringify(legacyData) } });
+          mockFileReader.onload({
+            target: { result: JSON.stringify(legacyData) },
+          });
         }),
         onload: null as any,
       };
-      vi.stubGlobal('FileReader', vi.fn(() => mockFileReader));
+      vi.stubGlobal('FileReader', function () {
+        return mockFileReader;
+      });
 
       fixture.detectChanges();
 
@@ -262,7 +286,7 @@ describe('RoutineEditorComponent', () => {
       seconds: 30,
       mode: 'mouvement',
       text: 'Test instruction',
-      cues: []
+      cues: [],
     });
     component.steps.push(stepGroup);
 
@@ -295,14 +319,30 @@ describe('RoutineEditorComponent', () => {
   describe('selectStep / getModeColor / formatSeconds', () => {
     it('should select a step by index', () => {
       fixture.detectChanges();
-      component.steps.push(component.createStepFormGroup({ name: 'A', seconds: 60, mode: 'mouvement', text: 'x', cues: [] }));
+      component.steps.push(
+        component.createStepFormGroup({
+          name: 'A',
+          seconds: 60,
+          mode: 'mouvement',
+          text: 'x',
+          cues: [],
+        }),
+      );
       component.selectStep(0);
       expect(component.selectedStepIndex).toBe(0);
     });
 
     it('should deselect step when same index clicked again', () => {
       fixture.detectChanges();
-      component.steps.push(component.createStepFormGroup({ name: 'A', seconds: 60, mode: 'mouvement', text: 'x', cues: [] }));
+      component.steps.push(
+        component.createStepFormGroup({
+          name: 'A',
+          seconds: 60,
+          mode: 'mouvement',
+          text: 'x',
+          cues: [],
+        }),
+      );
       component.selectStep(0);
       component.selectStep(0);
       expect(component.selectedStepIndex).toBeNull();
@@ -310,7 +350,15 @@ describe('RoutineEditorComponent', () => {
 
     it('should return selectedStep matching selected index', () => {
       fixture.detectChanges();
-      component.steps.push(component.createStepFormGroup({ name: 'A', seconds: 60, mode: 'mouvement', text: 'x', cues: [] }));
+      component.steps.push(
+        component.createStepFormGroup({
+          name: 'A',
+          seconds: 60,
+          mode: 'mouvement',
+          text: 'x',
+          cues: [],
+        }),
+      );
       component.selectStep(0);
       expect(component.selectedStep?.name).toBe('A');
     });
@@ -350,8 +398,24 @@ describe('RoutineEditorComponent', () => {
 
     it('should count unique modes', () => {
       fixture.detectChanges();
-      component.steps.push(component.createStepFormGroup({ name: 'A', seconds: 60, mode: 'mouvement', text: 'x', cues: [] }));
-      component.steps.push(component.createStepFormGroup({ name: 'B', seconds: 90, mode: 'statique', text: 'y', cues: [] }));
+      component.steps.push(
+        component.createStepFormGroup({
+          name: 'A',
+          seconds: 60,
+          mode: 'mouvement',
+          text: 'x',
+          cues: [],
+        }),
+      );
+      component.steps.push(
+        component.createStepFormGroup({
+          name: 'B',
+          seconds: 90,
+          mode: 'statique',
+          text: 'y',
+          cues: [],
+        }),
+      );
       expect(component.uniqueModesCount).toBe(2);
     });
 

@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { of, throwError } from 'rxjs';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { provideRouter } from '@angular/router';
+import { safeDetectChanges } from '../../test-utils';
 
 describe('LoginComponent', () => {
   let component: LoginComponent;
@@ -30,7 +31,7 @@ describe('LoginComponent', () => {
 
     fixture = TestBed.createComponent(LoginComponent);
     component = fixture.componentInstance;
-    fixture.detectChanges();
+    safeDetectChanges(fixture);
   });
 
   it('should create', () => {
@@ -148,7 +149,7 @@ describe('LoginComponent', () => {
     component.onSubmit();
 
     expect(component.errorMessage).toBe(
-      'Erreur de connexion. Vérifiez vos identifiants.'
+      'Erreur de connexion. Vérifiez vos identifiants.',
     );
   });
 
@@ -179,7 +180,7 @@ describe('LoginComponent', () => {
 
   it('should display error in template when errorMessage is set', () => {
     component.errorMessage = 'Test error';
-    fixture.detectChanges();
+    safeDetectChanges(fixture);
 
     const compiled = fixture.nativeElement as HTMLElement;
     const errorElement = compiled.querySelector('.error-message');
@@ -190,7 +191,7 @@ describe('LoginComponent', () => {
     const emailControl = component.loginForm.get('email');
     emailControl?.markAsTouched();
     emailControl?.setValue('');
-    fixture.detectChanges();
+    safeDetectChanges(fixture);
 
     const compiled = fixture.nativeElement as HTMLElement;
     const errorElement = compiled.querySelector('.field-error');
@@ -204,7 +205,7 @@ describe('LoginComponent', () => {
     const passwordControl = component.loginForm.get('password');
     passwordControl?.markAsTouched();
     passwordControl?.setValue('');
-    fixture.detectChanges();
+    safeDetectChanges(fixture);
 
     const compiled = fixture.nativeElement as HTMLElement;
     const errorElement = compiled.querySelector('.field-error');
@@ -212,11 +213,11 @@ describe('LoginComponent', () => {
   });
 
   it('should disable submit button when form is invalid', () => {
-    fixture.detectChanges();
+    safeDetectChanges(fixture);
 
     const compiled = fixture.nativeElement as HTMLElement;
     const submitButton = compiled.querySelector(
-      'button[type="submit"]'
+      'button[type="submit"]',
     ) as HTMLButtonElement;
     expect(submitButton.disabled).toBe(true);
   });
@@ -226,18 +227,18 @@ describe('LoginComponent', () => {
       email: 'test@example.com',
       password: 'password123',
     });
-    fixture.detectChanges();
+    safeDetectChanges(fixture);
 
     const compiled = fixture.nativeElement as HTMLElement;
     const submitButton = compiled.querySelector(
-      'button[type="submit"]'
+      'button[type="submit"]',
     ) as HTMLButtonElement;
     expect(submitButton.disabled).toBe(false);
   });
 
   it('should display "Connexion..." when loading', () => {
     component.loading = true;
-    fixture.detectChanges();
+    safeDetectChanges(fixture);
 
     const compiled = fixture.nativeElement as HTMLElement;
     const submitButton = compiled.querySelector('button[type="submit"]');
@@ -246,7 +247,7 @@ describe('LoginComponent', () => {
 
   it('should display "Se connecter" when not loading', () => {
     component.loading = false;
-    fixture.detectChanges();
+    safeDetectChanges(fixture);
 
     const compiled = fixture.nativeElement as HTMLElement;
     const submitButton = compiled.querySelector('button[type="submit"]');

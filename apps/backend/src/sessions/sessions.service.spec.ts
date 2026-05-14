@@ -24,7 +24,9 @@ describe('SessionsService', () => {
     // Create mock functions
     const mockExec = jest.fn();
     const mockSort = jest.fn().mockReturnValue({ exec: mockExec });
-    const mockFind = jest.fn().mockReturnValue({ exec: mockExec, sort: mockSort });
+    const mockFind = jest
+      .fn()
+      .mockReturnValue({ exec: mockExec, sort: mockSort });
     const mockFindById = jest.fn().mockReturnValue({ exec: mockExec });
     const mockFindByIdAndUpdate = jest.fn().mockReturnValue({ exec: mockExec });
 
@@ -44,7 +46,9 @@ describe('SessionsService', () => {
 
     // Create mock routine model
     const mockRoutineExec = jest.fn().mockResolvedValue(null);
-    const mockRoutineFindOne = jest.fn().mockReturnValue({ exec: mockRoutineExec });
+    const mockRoutineFindOne = jest
+      .fn()
+      .mockReturnValue({ exec: mockRoutineExec });
     mockRoutineModel = {
       findOne: mockRoutineFindOne,
     };
@@ -119,7 +123,9 @@ describe('SessionsService', () => {
 
       await service.findAll();
 
-      expect(mockSessionModel.find().sort).toHaveBeenCalledWith({ startAt: -1 });
+      expect(mockSessionModel.find().sort).toHaveBeenCalledWith({
+        startAt: -1,
+      });
     });
   });
 
@@ -130,7 +136,9 @@ describe('SessionsService', () => {
       const result = await service.findOne('session-mongo-id');
 
       expect(result).toBeDefined();
-      expect(mockSessionModel.findById).toHaveBeenCalledWith('session-mongo-id');
+      expect(mockSessionModel.findById).toHaveBeenCalledWith(
+        'session-mongo-id',
+      );
     });
 
     it('should return null for non-existent id', async () => {
@@ -145,23 +153,29 @@ describe('SessionsService', () => {
   describe('update', () => {
     it('should update session', async () => {
       const updatedSession = { ...mockSession, completed: true };
-      mockSessionModel.findByIdAndUpdate().exec.mockResolvedValue(updatedSession);
+      mockSessionModel
+        .findByIdAndUpdate()
+        .exec.mockResolvedValue(updatedSession);
 
-      const result = await service.update('session-mongo-id', { completed: true });
+      const result = await service.update('session-mongo-id', {
+        completed: true,
+      });
 
       expect(result).toBeDefined();
       expect(result?.completed).toBe(true);
       expect(mockSessionModel.findByIdAndUpdate).toHaveBeenCalledWith(
         'session-mongo-id',
         { completed: true },
-        { new: true }
+        { new: true },
       );
     });
 
     it('should return null for non-existent id', async () => {
       mockSessionModel.findByIdAndUpdate().exec.mockResolvedValue(null);
 
-      const result = await service.update('non-existent-id', { completed: true });
+      const result = await service.update('non-existent-id', {
+        completed: true,
+      });
 
       expect(result).toBeNull();
     });
@@ -169,8 +183,14 @@ describe('SessionsService', () => {
 
   describe('complete', () => {
     it('should mark session as completed with endAt', async () => {
-      const completedSession = { ...mockSession, completed: true, endAt: new Date() };
-      mockSessionModel.findByIdAndUpdate().exec.mockResolvedValue(completedSession);
+      const completedSession = {
+        ...mockSession,
+        completed: true,
+        endAt: new Date(),
+      };
+      mockSessionModel
+        .findByIdAndUpdate()
+        .exec.mockResolvedValue(completedSession);
 
       const result = await service.complete('session-mongo-id', true);
 
@@ -183,13 +203,15 @@ describe('SessionsService', () => {
           completed: true,
           endAt: expect.any(Date),
         }),
-        { new: true }
+        { new: true },
       );
     });
 
     it('should mark session with feeling', async () => {
       const completedSession = { ...mockSession, completed: true, feeling: 5 };
-      mockSessionModel.findByIdAndUpdate().exec.mockResolvedValue(completedSession);
+      mockSessionModel
+        .findByIdAndUpdate()
+        .exec.mockResolvedValue(completedSession);
 
       const result = await service.complete('session-mongo-id', true, 5);
 
@@ -200,7 +222,9 @@ describe('SessionsService', () => {
 
     it('should mark session as incomplete', async () => {
       const incompleteSession = { ...mockSession, completed: false };
-      mockSessionModel.findByIdAndUpdate().exec.mockResolvedValue(incompleteSession);
+      mockSessionModel
+        .findByIdAndUpdate()
+        .exec.mockResolvedValue(incompleteSession);
 
       const result = await service.complete('session-mongo-id', false);
 
@@ -254,9 +278,21 @@ describe('SessionsService', () => {
   describe('getCalendar', () => {
     it('should group sessions by date', async () => {
       const mockSessions = [
-        { ...mockSession, startAt: new Date('2024-01-01T10:00:00Z'), completed: true },
-        { ...mockSession, startAt: new Date('2024-01-01T14:00:00Z'), completed: true },
-        { ...mockSession, startAt: new Date('2024-01-02T10:00:00Z'), completed: false },
+        {
+          ...mockSession,
+          startAt: new Date('2024-01-01T10:00:00Z'),
+          completed: true,
+        },
+        {
+          ...mockSession,
+          startAt: new Date('2024-01-01T14:00:00Z'),
+          completed: true,
+        },
+        {
+          ...mockSession,
+          startAt: new Date('2024-01-02T10:00:00Z'),
+          completed: false,
+        },
       ];
       mockSessionModel.find().exec.mockResolvedValue(mockSessions);
 
@@ -285,9 +321,21 @@ describe('SessionsService', () => {
 
     it('should sort calendar by date ascending', async () => {
       const mockSessions = [
-        { ...mockSession, startAt: new Date('2024-01-03T10:00:00Z'), completed: true },
-        { ...mockSession, startAt: new Date('2024-01-01T10:00:00Z'), completed: true },
-        { ...mockSession, startAt: new Date('2024-01-02T10:00:00Z'), completed: true },
+        {
+          ...mockSession,
+          startAt: new Date('2024-01-03T10:00:00Z'),
+          completed: true,
+        },
+        {
+          ...mockSession,
+          startAt: new Date('2024-01-01T10:00:00Z'),
+          completed: true,
+        },
+        {
+          ...mockSession,
+          startAt: new Date('2024-01-02T10:00:00Z'),
+          completed: true,
+        },
       ];
       mockSessionModel.find().exec.mockResolvedValue(mockSessions);
 
@@ -334,8 +382,18 @@ describe('SessionsService', () => {
 
       const mockSessions = [
         { ...mockSession, startAt: today, completed: true, durationSec: 600 },
-        { ...mockSession, startAt: yesterday, completed: true, durationSec: 600 },
-        { ...mockSession, startAt: twoDaysAgo, completed: true, durationSec: 600 },
+        {
+          ...mockSession,
+          startAt: yesterday,
+          completed: true,
+          durationSec: 600,
+        },
+        {
+          ...mockSession,
+          startAt: twoDaysAgo,
+          completed: true,
+          durationSec: 600,
+        },
       ];
       mockSessionModel.find().exec.mockResolvedValue(mockSessions);
 
@@ -349,8 +407,18 @@ describe('SessionsService', () => {
       const twoDaysAgo = new Date(Date.now() - 2 * 86400000);
 
       const mockSessions = [
-        { ...mockSession, startAt: yesterday, completed: true, durationSec: 600 },
-        { ...mockSession, startAt: twoDaysAgo, completed: true, durationSec: 600 },
+        {
+          ...mockSession,
+          startAt: yesterday,
+          completed: true,
+          durationSec: 600,
+        },
+        {
+          ...mockSession,
+          startAt: twoDaysAgo,
+          completed: true,
+          durationSec: 600,
+        },
       ];
       mockSessionModel.find().exec.mockResolvedValue(mockSessions);
 
@@ -363,7 +431,12 @@ describe('SessionsService', () => {
       const threeDaysAgo = new Date(Date.now() - 3 * 86400000);
 
       const mockSessions = [
-        { ...mockSession, startAt: threeDaysAgo, completed: true, durationSec: 600 },
+        {
+          ...mockSession,
+          startAt: threeDaysAgo,
+          completed: true,
+          durationSec: 600,
+        },
       ];
       mockSessionModel.find().exec.mockResolvedValue(mockSessions);
 
@@ -393,13 +466,30 @@ describe('SessionsService', () => {
 
     it('should find favorite routine and resolve its name', async () => {
       const mockSessions = [
-        { ...mockSession, startAt: new Date(), routineId: 'routine1', durationSec: 600 },
-        { ...mockSession, startAt: new Date(), routineId: 'routine1', durationSec: 600 },
-        { ...mockSession, startAt: new Date(), routineId: 'routine2', durationSec: 600 },
+        {
+          ...mockSession,
+          startAt: new Date(),
+          routineId: 'routine1',
+          durationSec: 600,
+        },
+        {
+          ...mockSession,
+          startAt: new Date(),
+          routineId: 'routine1',
+          durationSec: 600,
+        },
+        {
+          ...mockSession,
+          startAt: new Date(),
+          routineId: 'routine2',
+          durationSec: 600,
+        },
       ];
       mockSessionModel.find().exec.mockResolvedValue(mockSessions);
       mockRoutineModel.findOne.mockReturnValue({
-        exec: jest.fn().mockResolvedValue({ id: 'routine1', name: 'Douce 10 min' }),
+        exec: jest
+          .fn()
+          .mockResolvedValue({ id: 'routine1', name: 'Douce 10 min' }),
       });
 
       const result = await service.getSummary('user1');
@@ -410,7 +500,12 @@ describe('SessionsService', () => {
 
     it('should fallback to routine ID when routine not found in database', async () => {
       const mockSessions = [
-        { ...mockSession, startAt: new Date(), routineId: 'deleted-routine', durationSec: 600 },
+        {
+          ...mockSession,
+          startAt: new Date(),
+          routineId: 'deleted-routine',
+          durationSec: 600,
+        },
       ];
       mockSessionModel.find().exec.mockResolvedValue(mockSessions);
       mockRoutineModel.findOne.mockReturnValue({

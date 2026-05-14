@@ -30,32 +30,40 @@ export class RoutinePlayerComponent implements OnInit, OnDestroy {
   readonly REST_SECONDS = 10;
 
   readonly MODE_COLORS: Record<string, string> = {
-    mouvement:   'var(--primary-500)',
-    statique:    'var(--mode-stat)',
+    mouvement: 'var(--primary-500)',
+    statique: 'var(--mode-stat)',
     respiration: 'var(--mode-resp)',
   };
 
   readonly MODE_LABELS: Record<string, string> = {
-    mouvement:   'Mouvement',
-    statique:    'Statique',
+    mouvement: 'Mouvement',
+    statique: 'Statique',
     respiration: 'Respiration',
   };
 
   get upcomingStep(): Step | null {
     if (!this.routine) return null;
-    const nextIdx = this.isResting ? this.currentStepIndex : this.currentStepIndex + 1;
+    const nextIdx = this.isResting
+      ? this.currentStepIndex
+      : this.currentStepIndex + 1;
     return this.routine.steps[nextIdx] ?? null;
   }
 
-  get modeLegend(): { mode: string; label: string; color: string; count: number }[] {
+  get modeLegend(): {
+    mode: string;
+    label: string;
+    color: string;
+    count: number;
+  }[] {
     if (!this.routine) return [];
     return Object.entries(this.MODE_LABELS)
       .map(([mode, label]) => ({
-        mode, label,
+        mode,
+        label,
         color: this.MODE_COLORS[mode],
-        count: this.routine!.steps.filter(s => s.mode === mode).length,
+        count: this.routine!.steps.filter((s) => s.mode === mode).length,
       }))
-      .filter(e => e.count > 0);
+      .filter((e) => e.count > 0);
   }
 
   getModeColor(mode: string): string {
@@ -66,23 +74,42 @@ export class RoutinePlayerComponent implements OnInit, OnDestroy {
     return this.MODE_LABELS[mode] ?? mode;
   }
 
-  getTimelineSegments(): { flex: number; color: string; status: 'done' | 'current' | 'todo'; progress: number }[] {
+  getTimelineSegments(): {
+    flex: number;
+    color: string;
+    status: 'done' | 'current' | 'todo';
+    progress: number;
+  }[] {
     if (!this.routine) return [];
     return this.routine.steps.map((step, i) => {
       let status: 'done' | 'current' | 'todo';
       if (this.isResting) {
         status = i < this.currentStepIndex ? 'done' : 'todo';
       } else {
-        status = i < this.currentStepIndex ? 'done' : i === this.currentStepIndex ? 'current' : 'todo';
+        status =
+          i < this.currentStepIndex
+            ? 'done'
+            : i === this.currentStepIndex
+              ? 'current'
+              : 'todo';
       }
       const elapsed = status === 'current' ? step.seconds - this.timeLeft : 0;
-      const progress = status === 'current' && step.seconds > 0 ? elapsed / step.seconds : 0;
-      return { flex: step.seconds, color: this.getModeColor(step.mode), status, progress };
+      const progress =
+        status === 'current' && step.seconds > 0 ? elapsed / step.seconds : 0;
+      return {
+        flex: step.seconds,
+        color: this.getModeColor(step.mode),
+        status,
+        progress,
+      };
     });
   }
 
   previousStep() {
-    if (this.interval) { clearInterval(this.interval); this.interval = null; }
+    if (this.interval) {
+      clearInterval(this.interval);
+      this.interval = null;
+    }
     this.isResting = false;
     if (this.currentStepIndex > 0) this.currentStepIndex--;
     this.startStep();
@@ -93,7 +120,10 @@ export class RoutinePlayerComponent implements OnInit, OnDestroy {
 
   skipToNext() {
     if (!this.routine) return;
-    if (this.interval) { clearInterval(this.interval); this.interval = null; }
+    if (this.interval) {
+      clearInterval(this.interval);
+      this.interval = null;
+    }
     this.isResting = false;
     this.currentStepIndex++;
     if (this.currentStepIndex >= this.routine.steps.length) {
@@ -111,7 +141,7 @@ export class RoutinePlayerComponent implements OnInit, OnDestroy {
     private router: Router,
     private routineService: RoutineService,
     private sessionService: SessionService,
-    public authService: AuthService
+    public authService: AuthService,
   ) {
     // Load voices
     if (this.synth) {
@@ -155,7 +185,7 @@ export class RoutinePlayerComponent implements OnInit, OnDestroy {
   calculateTotalSeconds(routine: Routine): number {
     const stepsTotal = routine.steps.reduce(
       (sum, step) => sum + step.seconds,
-      0
+      0,
     );
     const restsTotal = (routine.steps.length - 1) * this.REST_SECONDS;
     return stepsTotal + restsTotal;
@@ -186,14 +216,17 @@ export class RoutinePlayerComponent implements OnInit, OnDestroy {
 
   get progressPercent(): number {
     if (!this.routine || !this.startTime || !this.isPlaying) return 0;
-    
+
     // Calculate elapsed time since start
     const now = new Date();
     const elapsedMs = now.getTime() - this.startTime.getTime();
     const elapsedSeconds = Math.floor(elapsedMs / 1000);
-    
+
     // Clamp between 0 and 100
-    return Math.max(0, Math.min(100, (elapsedSeconds / this.totalSeconds) * 100));
+    return Math.max(
+      0,
+      Math.min(100, (elapsedSeconds / this.totalSeconds) * 100),
+    );
   }
 
   remainingGlobalTime(): number {
@@ -300,7 +333,7 @@ export class RoutinePlayerComponent implements OnInit, OnDestroy {
 
     if (nextStep) {
       this.speak(
-        `Pause de ${this.REST_SECONDS} secondes. Prépare-toi pour le prochain exercice.`
+        `Pause de ${this.REST_SECONDS} secondes. Prépare-toi pour le prochain exercice.`,
       );
     }
   }
@@ -333,7 +366,7 @@ export class RoutinePlayerComponent implements OnInit, OnDestroy {
 
     const endTime = new Date();
     const durationSec = Math.floor(
-      (endTime.getTime() - this.startTime.getTime()) / 1000
+      (endTime.getTime() - this.startTime.getTime()) / 1000,
     );
 
     // Save session
@@ -379,14 +412,26 @@ export class RoutinePlayerComponent implements OnInit, OnDestroy {
     }
   }
 
-  private getVoiceSettings(): { speed: number; volume: number; bips: boolean; voiceName: string } {
+  private getVoiceSettings(): {
+    speed: number;
+    volume: number;
+    bips: boolean;
+    voiceName: string;
+  } {
     try {
       const raw = localStorage.getItem('voiceSettings');
       if (raw) {
         const v = JSON.parse(raw);
-        return { speed: v.speed ?? 1.0, volume: v.volume ?? 0.7, bips: v.bips ?? true, voiceName: v.voiceName ?? '' };
+        return {
+          speed: v.speed ?? 1.0,
+          volume: v.volume ?? 0.7,
+          bips: v.bips ?? true,
+          voiceName: v.voiceName ?? '',
+        };
       }
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
     return { speed: 1.0, volume: 0.7, bips: true, voiceName: '' };
   }
 
@@ -407,8 +452,8 @@ export class RoutinePlayerComponent implements OnInit, OnDestroy {
     const voices = this.synth.getVoices();
     const voiceName = settings.voiceName;
     const selectedVoice = voiceName
-      ? voices.find(v => v.name === voiceName)
-      : voices.find(v => v.lang.startsWith('fr'));
+      ? voices.find((v) => v.name === voiceName)
+      : voices.find((v) => v.lang.startsWith('fr'));
     if (selectedVoice) {
       utterance.voice = selectedVoice;
     }
@@ -435,7 +480,10 @@ export class RoutinePlayerComponent implements OnInit, OnDestroy {
       oscillator.type = 'sine';
 
       gain.gain.setValueAtTime(0.001, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(Math.max(peakGain, 0.001), ctx.currentTime + 0.02);
+      gain.gain.exponentialRampToValueAtTime(
+        Math.max(peakGain, 0.001),
+        ctx.currentTime + 0.02,
+      );
 
       oscillator.start();
 
@@ -455,7 +503,11 @@ export class RoutinePlayerComponent implements OnInit, OnDestroy {
 
   deleteRoutine() {
     if (!this.routine) return;
-    if (confirm(`Êtes-vous sûr de vouloir supprimer la routine "${this.routine.name}" ?`)) {
+    if (
+      confirm(
+        `Êtes-vous sûr de vouloir supprimer la routine "${this.routine.name}" ?`,
+      )
+    ) {
       this.routineService.delete(this.routine.id).subscribe({
         next: () => {
           this.router.navigate(['/']);

@@ -9,41 +9,25 @@
 
       <nav class="main-nav">
         @if (authService.isAuthenticated()) {
-          <a
-            routerLink="/home"
-            routerLinkActive="active"
-            class="nav-link"
-          >
+          <a routerLink="/home" routerLinkActive="active" class="nav-link">
             Accueil
           </a>
           <a
             routerLink="/"
             routerLinkActive="active"
-            [routerLinkActiveOptions]="{exact: true}"
+            [routerLinkActiveOptions]="{ exact: true }"
             class="nav-link"
           >
             Routines
           </a>
-          <a
-            routerLink="/calendar"
-            routerLinkActive="active"
-            class="nav-link"
-          >
+          <a routerLink="/calendar" routerLinkActive="active" class="nav-link">
             Calendrier
           </a>
-          <a
-            routerLink="/settings"
-            routerLinkActive="active"
-            class="nav-link"
-          >
+          <a routerLink="/settings" routerLinkActive="active" class="nav-link">
             Paramètres
           </a>
           @if (authService.isAdminMode()) {
-            <a
-              routerLink="/admin"
-              routerLinkActive="active"
-              class="nav-link"
-            >
+            <a routerLink="/admin" routerLinkActive="active" class="nav-link">
               Admin
             </a>
           }
@@ -62,7 +46,9 @@
     <div class="breadcrumbs">
       @for (crumb of breadcrumbs(); track crumb.url) {
         @if (!$last) {
-          <a [routerLink]="crumb.url" class="breadcrumb-link">{{ crumb.label }}</a>
+          <a [routerLink]="crumb.url" class="breadcrumb-link">{{
+            crumb.label
+          }}</a>
           <span class="separator">›</span>
         } @else {
           <span class="current">{{ crumb.label }}</span>

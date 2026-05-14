@@ -8,15 +8,11 @@
   "targets": {
     "build": {
       "executor": "@angular/build:application",
-      "outputs": [
-        "{options.outputPath}"
-      ],
+      "outputs": ["{options.outputPath}"],
       "options": {
         "outputPath": "dist/apps/frontend",
         "browser": "apps/frontend/src/main.ts",
-        "polyfills": [
-          "zone.js"
-        ],
+        "polyfills": ["zone.js"],
         "tsConfig": "apps/frontend/tsconfig.app.json",
         "inlineStyleLanguage": "sass",
         "assets": [
@@ -25,9 +21,7 @@
             "input": "apps/frontend/public"
           }
         ],
-        "styles": [
-          "apps/frontend/src/styles.sass"
-        ]
+        "styles": ["apps/frontend/src/styles.sass"]
       },
       "configurations": {
         "production": {
@@ -78,9 +72,7 @@
     },
     "test": {
       "executor": "@nx/vite:test",
-      "outputs": [
-        "{options.reportsDirectory}"
-      ],
+      "outputs": ["{options.reportsDirectory}"],
       "options": {
         "reportsDirectory": "../../coverage/apps/frontend"
       }

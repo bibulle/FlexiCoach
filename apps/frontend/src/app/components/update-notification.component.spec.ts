@@ -4,6 +4,7 @@ import { SwUpdateService } from '../services/sw-update.service';
 import { BehaviorSubject } from 'rxjs';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { provideAnimations } from '@angular/platform-browser/animations';
+import { safeDetectChanges } from '../../test-utils';
 
 describe('UpdateNotificationComponent', () => {
   let component: UpdateNotificationComponent;
@@ -29,7 +30,7 @@ describe('UpdateNotificationComponent', () => {
 
     fixture = TestBed.createComponent(UpdateNotificationComponent);
     component = fixture.componentInstance;
-    fixture.detectChanges();
+    safeDetectChanges(fixture);
   });
 
   it('should create', () => {
@@ -46,24 +47,24 @@ describe('UpdateNotificationComponent', () => {
 
   it('should show notification when update is available', () => {
     updateAvailableSubject.next(true);
-    fixture.detectChanges();
+    safeDetectChanges(fixture);
 
     expect(component.show).toBe(true);
   });
 
   it('should hide notification when update is not available', () => {
     updateAvailableSubject.next(true);
-    fixture.detectChanges();
+    safeDetectChanges(fixture);
     expect(component.show).toBe(true);
 
     updateAvailableSubject.next(false);
-    fixture.detectChanges();
+    safeDetectChanges(fixture);
     expect(component.show).toBe(false);
   });
 
   it('should display notification element when show is true', () => {
     component.show = true;
-    fixture.detectChanges();
+    safeDetectChanges(fixture);
 
     const compiled = fixture.nativeElement as HTMLElement;
     const notification = compiled.querySelector('.update-notification');
@@ -72,7 +73,7 @@ describe('UpdateNotificationComponent', () => {
 
   it('should not display notification element when show is false', () => {
     component.show = false;
-    fixture.detectChanges();
+    safeDetectChanges(fixture);
 
     const compiled = fixture.nativeElement as HTMLElement;
     const notification = compiled.querySelector('.update-notification');
@@ -81,7 +82,7 @@ describe('UpdateNotificationComponent', () => {
 
   it('should display update message', () => {
     component.show = true;
-    fixture.detectChanges();
+    safeDetectChanges(fixture);
 
     const compiled = fixture.nativeElement as HTMLElement;
     const message = compiled.querySelector('.update-message');
@@ -90,7 +91,7 @@ describe('UpdateNotificationComponent', () => {
 
   it('should display update icon', () => {
     component.show = true;
-    fixture.detectChanges();
+    safeDetectChanges(fixture);
 
     const compiled = fixture.nativeElement as HTMLElement;
     const icon = compiled.querySelector('mat-icon');
@@ -99,7 +100,7 @@ describe('UpdateNotificationComponent', () => {
 
   it('should display update button', () => {
     component.show = true;
-    fixture.detectChanges();
+    safeDetectChanges(fixture);
 
     const compiled = fixture.nativeElement as HTMLElement;
     const button = compiled.querySelector('button');
@@ -108,7 +109,7 @@ describe('UpdateNotificationComponent', () => {
 
   it('should call applyUpdate when clicking update button', () => {
     component.show = true;
-    fixture.detectChanges();
+    safeDetectChanges(fixture);
 
     const compiled = fixture.nativeElement as HTMLElement;
     const button = compiled.querySelector('button') as HTMLButtonElement;
@@ -135,20 +136,20 @@ describe('UpdateNotificationComponent', () => {
     expect(component.show).toBe(false);
 
     updateAvailableSubject.next(true);
-    fixture.detectChanges();
+    safeDetectChanges(fixture);
     expect(component.show).toBe(true);
 
     updateAvailableSubject.next(false);
-    fixture.detectChanges();
+    safeDetectChanges(fixture);
     expect(component.show).toBe(false);
 
     updateAvailableSubject.next(true);
-    fixture.detectChanges();
+    safeDetectChanges(fixture);
     expect(component.show).toBe(true);
   });
 
   it('should trigger change detection when updateAvailable$ emits', () => {
-    const cdrSpy = vi.spyOn(component['cdr'], 'detectChanges');
+    const cdrSpy = vi.spyOn(component['cdr'], 'markForCheck');
 
     updateAvailableSubject.next(true);
 

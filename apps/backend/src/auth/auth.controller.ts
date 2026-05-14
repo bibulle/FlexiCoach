@@ -1,8 +1,19 @@
-import { Controller, Post, Get, Body, HttpCode, HttpStatus, UseGuards, Req, Res, UnauthorizedException } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Get,
+  Body,
+  HttpCode,
+  HttpStatus,
+  UseGuards,
+  Req,
+  Res,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Throttle } from '@nestjs/throttler';
 import { AuthGuard } from '@nestjs/passport';
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import { AuthService } from './auth.service';
 import { AuthCodeStore } from './auth-code.store';
 import { RegisterDto } from './dto/register.dto';
@@ -22,11 +33,12 @@ export class AuthController {
     private authCodeStore: AuthCodeStore,
     private configService: ConfigService,
   ) {
-    this.frontendUrl = this.configService.get<string>('FRONTEND_URL') || 'http://localhost:4200';
+    this.frontendUrl =
+      this.configService.get<string>('FRONTEND_URL') || 'http://localhost:4200';
     this.adminEmails = (this.configService.get<string>('ADMIN_EMAILS') || '')
       .split(',')
-      .map(email => email.trim())
-      .filter(email => email.length > 0);
+      .map((email) => email.trim())
+      .filter((email) => email.length > 0);
   }
 
   @Post('register')
@@ -69,9 +81,9 @@ export class AuthController {
 
   @Get('google/callback')
   @UseGuards(AuthGuard('google'))
-  async googleAuthRedirect(@Req() req, @Res() res: Response) {
+  async googleAuthRedirect(@Req() req: Request, @Res() res: Response) {
     try {
-      const user = req.user;
+      const user = req.user as any;
 
       // Générer un JWT token via la méthode publique
       const payload = { sub: user._id.toString(), email: user.email };
@@ -89,7 +101,9 @@ export class AuthController {
       res.redirect(`${this.frontendUrl}/auth/callback?code=${code}`);
     } catch (error) {
       // En cas d'erreur, rediriger vers login avec message d'erreur
-      res.redirect(`${this.frontendUrl}/login?error=${encodeURIComponent('Erreur lors de l\'authentification Google')}`);
+      res.redirect(
+        `${this.frontendUrl}/login?error=${encodeURIComponent("Erreur lors de l'authentification Google")}`,
+      );
     }
   }
 }

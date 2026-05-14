@@ -36,7 +36,9 @@ describe('UsersService', () => {
     const mockExec = jest.fn();
     const mockSelect = jest.fn().mockReturnValue({ exec: mockExec });
     const mockFind = jest.fn().mockReturnValue({ exec: mockExec });
-    const mockFindOne = jest.fn().mockReturnValue({ exec: mockExec, select: mockSelect });
+    const mockFindOne = jest
+      .fn()
+      .mockReturnValue({ exec: mockExec, select: mockSelect });
     const mockFindById = jest.fn().mockReturnValue({ exec: mockExec });
     const mockFindByIdAndUpdate = jest.fn().mockReturnValue({ exec: mockExec });
     const mockFindByIdAndDelete = jest.fn().mockReturnValue({ exec: mockExec });
@@ -161,7 +163,9 @@ describe('UsersService', () => {
       expect(result).toBeDefined();
       expect(result?.email).toBe('test@example.com');
       expect(result?.displayName).toBe('Test User');
-      expect(mockUserModel.findOne).toHaveBeenCalledWith({ email: 'test@example.com' });
+      expect(mockUserModel.findOne).toHaveBeenCalledWith({
+        email: 'test@example.com',
+      });
     });
 
     it('should return null for non-existent email', async () => {
@@ -183,7 +187,9 @@ describe('UsersService', () => {
       expect(result).toBeDefined();
       expect(result?.email).toBe('test@example.com');
       expect((result as any).password).toBe('secretPassword');
-      expect(mockUserModel.findOne).toHaveBeenCalledWith({ email: 'test@example.com' });
+      expect(mockUserModel.findOne).toHaveBeenCalledWith({
+        email: 'test@example.com',
+      });
     });
   });
 
@@ -207,7 +213,7 @@ describe('UsersService', () => {
       expect(mockUserModel.findByIdAndUpdate).toHaveBeenCalledWith(
         'user-mongo-id',
         { displayName: 'Updated Name', tz: 'America/New_York' },
-        { new: true }
+        { new: true },
       );
     });
 
@@ -232,7 +238,7 @@ describe('UsersService', () => {
       expect(mockUserModel.findByIdAndUpdate).toHaveBeenCalledWith(
         'user-mongo-id',
         { displayName: 'New Name' },
-        { new: true }
+        { new: true },
       );
     });
   });
@@ -260,7 +266,7 @@ describe('UsersService', () => {
       expect(mockUserModel.findByIdAndUpdate).toHaveBeenCalledWith(
         'user-mongo-id',
         { $set: { settings } },
-        { new: true }
+        { new: true },
       );
     });
 
@@ -276,7 +282,7 @@ describe('UsersService', () => {
       expect(mockUserModel.findByIdAndUpdate).toHaveBeenCalledWith(
         'user-mongo-id',
         { $set: { settings: partialSettings } },
-        { new: true }
+        { new: true },
       );
     });
   });
@@ -297,7 +303,7 @@ describe('UsersService', () => {
       expect(mockUserModel.findByIdAndUpdate).toHaveBeenCalledWith(
         'user-mongo-id',
         { password: hashedPassword },
-        { new: true }
+        { new: true },
       );
     });
 
@@ -305,7 +311,10 @@ describe('UsersService', () => {
       (bcrypt.hash as jest.Mock).mockResolvedValue('hashedPassword');
       mockUserModel.findByIdAndUpdate().exec.mockResolvedValue(null);
 
-      const result = await service.updatePassword('non-existent-id', 'newPassword');
+      const result = await service.updatePassword(
+        'non-existent-id',
+        'newPassword',
+      );
 
       expect(result).toBeNull();
     });
@@ -319,7 +328,9 @@ describe('UsersService', () => {
 
       expect(result).toBeDefined();
       expect(result?.email).toBe('test@example.com');
-      expect(mockUserModel.findByIdAndDelete).toHaveBeenCalledWith('user-mongo-id');
+      expect(mockUserModel.findByIdAndDelete).toHaveBeenCalledWith(
+        'user-mongo-id',
+      );
     });
 
     it('should return null for non-existent ID', async () => {

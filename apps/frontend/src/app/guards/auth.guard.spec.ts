@@ -27,7 +27,9 @@ describe('authGuard', () => {
   it('should allow activation when user is authenticated', () => {
     mockAuthService.isAuthenticated.mockReturnValue(true);
 
-    const result = TestBed.runInInjectionContext(() => authGuard(null as any, null as any));
+    const result = TestBed.runInInjectionContext(() =>
+      authGuard(null as any, null as any),
+    );
 
     expect(result).toBe(true);
   });
@@ -35,7 +37,9 @@ describe('authGuard', () => {
   it('should redirect to /login when user is not authenticated', () => {
     mockAuthService.isAuthenticated.mockReturnValue(false);
 
-    const result = TestBed.runInInjectionContext(() => authGuard(null as any, null as any));
+    const result = TestBed.runInInjectionContext(() =>
+      authGuard(null as any, null as any),
+    );
 
     expect(result).toBeTruthy();
     expect(result).not.toBe(true);

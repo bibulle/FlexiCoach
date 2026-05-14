@@ -179,7 +179,7 @@ describe('SessionsController', () => {
       expect(service.getCalendar).toHaveBeenCalledWith(
         mockUser._id.toString(),
         '2024-01-01',
-        '2024-01-31'
+        '2024-01-31',
       );
     });
   });

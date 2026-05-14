@@ -41,7 +41,7 @@ export class StatsComponent implements OnInit {
 
   currentUser = computed(() => {
     let user: any = null;
-    this.authService.currentUser$.subscribe(u => (user = u)).unsubscribe();
+    this.authService.currentUser$.subscribe((u) => (user = u)).unsubscribe();
     return user;
   });
 
@@ -99,8 +99,12 @@ export class StatsComponent implements OnInit {
     const synth = window.speechSynthesis;
     if (!synth) return;
     const populate = () => {
-      this.availableVoices = synth.getVoices()
-        .filter(v => v.lang.startsWith('fr') && !v.name.match(/\(French \([^)]+\)\)/))
+      this.availableVoices = synth
+        .getVoices()
+        .filter(
+          (v) =>
+            v.lang.startsWith('fr') && !v.name.match(/\(French \([^)]+\)\)/),
+        )
         .sort((a, b) => this.voiceQuality(b) - this.voiceQuality(a));
       if (this.availableVoices.length > 0 && !this.selectedVoiceName) {
         this.selectedVoiceName = this.availableVoices[0].name;
@@ -112,7 +116,11 @@ export class StatsComponent implements OnInit {
 
   private loadFromStorage(): void {
     // Theme
-    const savedTheme = localStorage.getItem('theme') as 'light' | 'dark' | 'auto' | null;
+    const savedTheme = localStorage.getItem('theme') as
+      | 'light'
+      | 'dark'
+      | 'auto'
+      | null;
     if (savedTheme) {
       this.selectedTheme.set(savedTheme);
       this.applyTheme(savedTheme);
@@ -121,9 +129,13 @@ export class StatsComponent implements OnInit {
     // Reminders
     try {
       const raw = localStorage.getItem('reminders');
-      this.reminders = raw ? JSON.parse(raw) : [...DEFAULT_REMINDERS.map(r => ({ ...r, days: [...r.days] }))];
+      this.reminders = raw
+        ? JSON.parse(raw)
+        : [...DEFAULT_REMINDERS.map((r) => ({ ...r, days: [...r.days] }))];
     } catch {
-      this.reminders = [...DEFAULT_REMINDERS.map(r => ({ ...r, days: [...r.days] }))];
+      this.reminders = [
+        ...DEFAULT_REMINDERS.map((r) => ({ ...r, days: [...r.days] })),
+      ];
     }
 
     // Voice settings
@@ -136,7 +148,9 @@ export class StatsComponent implements OnInit {
         this.bipsEnabled = v.bips ?? true;
         this.selectedVoiceName = v.voiceName ?? '';
       }
-    } catch { /* use defaults */ }
+    } catch {
+      /* use defaults */
+    }
   }
 
   private loadSummary(): void {
@@ -167,7 +181,7 @@ export class StatsComponent implements OnInit {
   }
 
   get maxDayCount(): number {
-    return Math.max(...this.dayActivity.map(d => d.count), 1);
+    return Math.max(...this.dayActivity.map((d) => d.count), 1);
   }
 
   // ── Theme ─────────────────────────────────────────────────────────────────
@@ -180,15 +194,20 @@ export class StatsComponent implements OnInit {
 
   private applyTheme(theme: 'light' | 'dark' | 'auto'): void {
     const targets = [document.documentElement, document.body];
-    targets.forEach(el => el.classList.remove('theme-light', 'theme-dark'));
-    if (theme === 'light') targets.forEach(el => el.classList.add('theme-light'));
-    else if (theme === 'dark') targets.forEach(el => el.classList.add('theme-dark'));
+    targets.forEach((el) => el.classList.remove('theme-light', 'theme-dark'));
+    if (theme === 'light')
+      targets.forEach((el) => el.classList.add('theme-light'));
+    else if (theme === 'dark')
+      targets.forEach((el) => el.classList.add('theme-dark'));
   }
 
   // ── Reminders ─────────────────────────────────────────────────────────────
 
   toggleReminder(index: number): void {
-    this.reminders[index] = { ...this.reminders[index], enabled: !this.reminders[index].enabled };
+    this.reminders[index] = {
+      ...this.reminders[index],
+      enabled: !this.reminders[index].enabled,
+    };
     this.saveReminders();
   }
 
@@ -213,7 +232,11 @@ export class StatsComponent implements OnInit {
 
   addReminder(): void {
     if (!this.newReminderTime) return;
-    this.reminders.push({ time: this.newReminderTime, days: [...this.newReminderDays], enabled: true });
+    this.reminders.push({
+      time: this.newReminderTime,
+      days: [...this.newReminderDays],
+      enabled: true,
+    });
     this.saveReminders();
     this.showAddReminder = false;
     this.newReminderTime = '08:00';
@@ -233,12 +256,15 @@ export class StatsComponent implements OnInit {
   // ── Voice ─────────────────────────────────────────────────────────────────
 
   saveVoiceSettings(): void {
-    localStorage.setItem('voiceSettings', JSON.stringify({
-      speed: this.voiceSpeed,
-      volume: this.voiceVolume,
-      bips: this.bipsEnabled,
-      voiceName: this.selectedVoiceName,
-    }));
+    localStorage.setItem(
+      'voiceSettings',
+      JSON.stringify({
+        speed: this.voiceSpeed,
+        volume: this.voiceVolume,
+        bips: this.bipsEnabled,
+        voiceName: this.selectedVoiceName,
+      }),
+    );
   }
 
   toggleBips(): void {
@@ -250,11 +276,15 @@ export class StatsComponent implements OnInit {
     const synth = window.speechSynthesis;
     if (!synth) return;
     synth.cancel();
-    const utterance = new SpeechSynthesisUtterance('Bonjour, je suis votre coach vocal.');
+    const utterance = new SpeechSynthesisUtterance(
+      'Bonjour, je suis votre coach vocal.',
+    );
     utterance.lang = 'fr-FR';
     utterance.rate = this.voiceSpeed;
     utterance.volume = this.voiceVolume;
-    const voice = this.availableVoices.find(v => v.name === this.selectedVoiceName);
+    const voice = this.availableVoices.find(
+      (v) => v.name === this.selectedVoiceName,
+    );
     if (voice) utterance.voice = voice;
     synth.speak(utterance);
   }

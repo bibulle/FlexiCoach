@@ -9,7 +9,12 @@ export interface Step {
   }>;
 }
 
-export type RoutineTag = 'quotidien' | 'bureau' | 'sport' | 'mobilite' | 'respiration';
+export type RoutineTag =
+  | 'quotidien'
+  | 'bureau'
+  | 'sport'
+  | 'mobilite'
+  | 'respiration';
 
 export interface Routine {
   id: string;

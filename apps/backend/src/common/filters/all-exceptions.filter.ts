@@ -13,7 +13,7 @@ import { Logger } from 'winston';
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
   constructor(
-    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger
+    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
   ) {}
 
   catch(exception: unknown, host: ArgumentsHost): void {

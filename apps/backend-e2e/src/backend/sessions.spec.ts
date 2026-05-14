@@ -73,7 +73,7 @@ describe('Sessions API', () => {
 
     it('should filter summary by userId', async () => {
       const res = await axios.get(
-        `${API_URL}/api/sessions/stats/summary?userId=test-user`
+        `${API_URL}/api/sessions/stats/summary?userId=test-user`,
       );
 
       expect(res.status).toBe(200);
@@ -93,7 +93,7 @@ describe('Sessions API', () => {
       const from = '2025-11-01';
       const to = '2025-11-30';
       const res = await axios.get(
-        `${API_URL}/api/sessions/calendar?from=${from}&to=${to}`
+        `${API_URL}/api/sessions/calendar?from=${from}&to=${to}`,
       );
 
       expect(res.status).toBe(200);
@@ -112,7 +112,7 @@ describe('Sessions API', () => {
 
     it('should filter calendar by userId', async () => {
       const res = await axios.get(
-        `${API_URL}/api/sessions/calendar?userId=test-user`
+        `${API_URL}/api/sessions/calendar?userId=test-user`,
       );
 
       expect(res.status).toBe(200);
@@ -136,7 +136,7 @@ describe('Sessions API', () => {
         {
           completed: true,
           feeling: 4,
-        }
+        },
       );
 
       expect(res.status).toBe(200);

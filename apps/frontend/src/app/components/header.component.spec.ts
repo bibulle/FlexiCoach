@@ -52,7 +52,10 @@ describe('HeaderComponent', () => {
     const logo = fixture.nativeElement.querySelector('.logo');
     expect(logo).toBeTruthy();
     // In test environment, routerLink is a directive attribute, not href
-    expect(logo.hasAttribute('ng-reflect-router-link') || logo.getAttribute('routerlink') === '/').toBeTruthy();
+    expect(
+      logo.hasAttribute('ng-reflect-router-link') ||
+        logo.getAttribute('routerlink') === '/',
+    ).toBeTruthy();
 
     const logoText = fixture.nativeElement.querySelector('.logo-text');
     expect(logoText.textContent).toBe('FlexiCoach');
@@ -75,8 +78,8 @@ describe('HeaderComponent', () => {
     const navLinks = fixture.nativeElement.querySelectorAll('.nav-link');
     expect(navLinks.length).toBeGreaterThan(0);
 
-    const routinesLink = Array.from(navLinks).find((link: any) =>
-      link.textContent.trim() === 'Routines'
+    const routinesLink = Array.from(navLinks).find(
+      (link: any) => link.textContent.trim() === 'Routines',
     );
     expect(routinesLink).toBeTruthy();
   });
@@ -95,8 +98,8 @@ describe('HeaderComponent', () => {
     fixture.detectChanges();
 
     const navLinks = fixture.nativeElement.querySelectorAll('.nav-link');
-    const adminLink = Array.from(navLinks).find((link: any) =>
-      link.textContent.trim() === 'Admin'
+    const adminLink = Array.from(navLinks).find(
+      (link: any) => link.textContent.trim() === 'Admin',
     );
     expect(adminLink).toBeTruthy();
   });
@@ -107,8 +110,8 @@ describe('HeaderComponent', () => {
     fixture.detectChanges();
 
     const navLinks = fixture.nativeElement.querySelectorAll('.nav-link');
-    const adminLink = Array.from(navLinks).find((link: any) =>
-      link.textContent.trim() === 'Admin'
+    const adminLink = Array.from(navLinks).find(
+      (link: any) => link.textContent.trim() === 'Admin',
     );
     expect(adminLink).toBeFalsy();
   });
@@ -145,7 +148,10 @@ describe('HeaderComponent', () => {
     const crumbs = component.breadcrumbs();
     expect(crumbs.length).toBe(2);
     expect(crumbs[0]).toEqual({ label: 'Routines', url: '/' });
-    expect(crumbs[1]).toEqual({ label: 'Nouvelle routine', url: '/routines/new' });
+    expect(crumbs[1]).toEqual({
+      label: 'Nouvelle routine',
+      url: '/routines/new',
+    });
   });
 
   it('should display breadcrumbs for /routines/:id/edit', () => {
@@ -211,7 +217,8 @@ describe('HeaderComponent', () => {
     vi.spyOn(router, 'url', 'get').mockReturnValue('/routines/new');
     fixture.detectChanges();
 
-    const breadcrumbsContainer = fixture.nativeElement.querySelector('.breadcrumbs');
+    const breadcrumbsContainer =
+      fixture.nativeElement.querySelector('.breadcrumbs');
     expect(breadcrumbsContainer).toBeTruthy();
 
     const links = breadcrumbsContainer.querySelectorAll('.breadcrumb-link');

@@ -9,7 +9,7 @@ import { getTestBed } from '@angular/core/testing';
 
 getTestBed().initTestEnvironment(
   BrowserTestingModule,
-  platformBrowserTesting()
+  platformBrowserTesting(),
 );
 
 // Mock speechSynthesis globally for all tests
@@ -33,7 +33,9 @@ global.SpeechSynthesisUtterance = class MockSpeechSynthesisUtterance {
   volume = 1;
   voice: SpeechSynthesisVoice | null = null;
   text: string;
-  constructor(text: string) { this.text = text; }
+  constructor(text: string) {
+    this.text = text;
+  }
 } as any;
 
 // Mock AudioContext globally for all tests

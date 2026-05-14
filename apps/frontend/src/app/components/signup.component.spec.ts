@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { of, throwError } from 'rxjs';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { provideRouter } from '@angular/router';
+import { safeDetectChanges } from '../../test-utils';
 
 describe('SignupComponent', () => {
   let component: SignupComponent;
@@ -30,7 +31,7 @@ describe('SignupComponent', () => {
 
     fixture = TestBed.createComponent(SignupComponent);
     component = fixture.componentInstance;
-    fixture.detectChanges();
+    safeDetectChanges(fixture);
   });
 
   it('should create', () => {
@@ -220,7 +221,9 @@ describe('SignupComponent', () => {
 
     component.onSubmit();
 
-    expect(component.errorMessage).toBe('Erreur lors de la création du compte.');
+    expect(component.errorMessage).toBe(
+      'Erreur lors de la création du compte.',
+    );
   });
 
   it('should not submit if form is invalid', () => {
@@ -256,7 +259,7 @@ describe('SignupComponent', () => {
 
   it('should display error in template when errorMessage is set', () => {
     component.errorMessage = 'Test error';
-    fixture.detectChanges();
+    safeDetectChanges(fixture);
 
     const compiled = fixture.nativeElement as HTMLElement;
     const errorElement = compiled.querySelector('.error-message');
@@ -267,12 +270,12 @@ describe('SignupComponent', () => {
     const emailControl = component.signupForm.get('email');
     emailControl?.markAsTouched();
     emailControl?.setValue('');
-    fixture.detectChanges();
+    safeDetectChanges(fixture);
 
     const compiled = fixture.nativeElement as HTMLElement;
     const errorElements = compiled.querySelectorAll('.field-error');
     const errorTexts = Array.from(errorElements).map((el) =>
-      el.textContent?.trim()
+      el.textContent?.trim(),
     );
     expect(errorTexts).toContain('Email invalide');
   });
@@ -281,15 +284,15 @@ describe('SignupComponent', () => {
     const passwordControl = component.signupForm.get('password');
     passwordControl?.markAsTouched();
     passwordControl?.setValue('123');
-    fixture.detectChanges();
+    safeDetectChanges(fixture);
 
     const compiled = fixture.nativeElement as HTMLElement;
     const errorElements = compiled.querySelectorAll('.field-error');
     const errorTexts = Array.from(errorElements).map((el) =>
-      el.textContent?.trim()
+      el.textContent?.trim(),
     );
     expect(errorTexts).toContain(
-      'Le mot de passe doit contenir au moins 6 caractères'
+      'Le mot de passe doit contenir au moins 6 caractères',
     );
   });
 
@@ -300,22 +303,22 @@ describe('SignupComponent', () => {
     });
     const confirmPasswordControl = component.signupForm.get('confirmPassword');
     confirmPasswordControl?.markAsTouched();
-    fixture.detectChanges();
+    safeDetectChanges(fixture);
 
     const compiled = fixture.nativeElement as HTMLElement;
     const errorElements = compiled.querySelectorAll('.field-error');
     const errorTexts = Array.from(errorElements).map((el) =>
-      el.textContent?.trim()
+      el.textContent?.trim(),
     );
     expect(errorTexts).toContain('Les mots de passe ne correspondent pas');
   });
 
   it('should disable submit button when form is invalid', () => {
-    fixture.detectChanges();
+    safeDetectChanges(fixture);
 
     const compiled = fixture.nativeElement as HTMLElement;
     const submitButton = compiled.querySelector(
-      'button[type="submit"]'
+      'button[type="submit"]',
     ) as HTMLButtonElement;
     expect(submitButton.disabled).toBe(true);
   });
@@ -328,18 +331,18 @@ describe('SignupComponent', () => {
       confirmPassword: 'password123',
       acceptCgu: true,
     });
-    fixture.detectChanges();
+    safeDetectChanges(fixture);
 
     const compiled = fixture.nativeElement as HTMLElement;
     const submitButton = compiled.querySelector(
-      'button[type="submit"]'
+      'button[type="submit"]',
     ) as HTMLButtonElement;
     expect(submitButton.disabled).toBe(false);
   });
 
   it('should display "Création..." when loading', () => {
     component.loading = true;
-    fixture.detectChanges();
+    safeDetectChanges(fixture);
 
     const compiled = fixture.nativeElement as HTMLElement;
     const submitButton = compiled.querySelector('button[type="submit"]');
@@ -348,7 +351,7 @@ describe('SignupComponent', () => {
 
   it('should display "Créer mon compte" when not loading', () => {
     component.loading = false;
-    fixture.detectChanges();
+    safeDetectChanges(fixture);
 
     const compiled = fixture.nativeElement as HTMLElement;
     const submitButton = compiled.querySelector('button[type="submit"]');

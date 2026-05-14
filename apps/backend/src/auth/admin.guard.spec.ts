@@ -34,7 +34,9 @@ describe('AdminGuard', () => {
         },
       };
 
-      (mockExecutionContext.switchToHttp().getRequest as jest.Mock).mockReturnValue(mockRequest);
+      (
+        mockExecutionContext.switchToHttp().getRequest as jest.Mock
+      ).mockReturnValue(mockRequest);
 
       const result = guard.canActivate(mockExecutionContext);
 
@@ -51,7 +53,9 @@ describe('AdminGuard', () => {
         },
       };
 
-      (mockExecutionContext.switchToHttp().getRequest as jest.Mock).mockReturnValue(mockRequest);
+      (
+        mockExecutionContext.switchToHttp().getRequest as jest.Mock
+      ).mockReturnValue(mockRequest);
 
       const result = guard.canActivate(mockExecutionContext);
 
@@ -63,10 +67,12 @@ describe('AdminGuard', () => {
         user: null,
       };
 
-      (mockExecutionContext.switchToHttp().getRequest as jest.Mock).mockReturnValue(mockRequest);
+      (
+        mockExecutionContext.switchToHttp().getRequest as jest.Mock
+      ).mockReturnValue(mockRequest);
 
       expect(() => guard.canActivate(mockExecutionContext)).toThrow(
-        new ForbiddenException('User not authenticated')
+        new ForbiddenException('User not authenticated'),
       );
     });
 
@@ -80,10 +86,12 @@ describe('AdminGuard', () => {
         },
       };
 
-      (mockExecutionContext.switchToHttp().getRequest as jest.Mock).mockReturnValue(mockRequest);
+      (
+        mockExecutionContext.switchToHttp().getRequest as jest.Mock
+      ).mockReturnValue(mockRequest);
 
       expect(() => guard.canActivate(mockExecutionContext)).toThrow(
-        new ForbiddenException('Admin access required')
+        new ForbiddenException('Admin access required'),
       );
     });
 
@@ -97,10 +105,12 @@ describe('AdminGuard', () => {
         },
       };
 
-      (mockExecutionContext.switchToHttp().getRequest as jest.Mock).mockReturnValue(mockRequest);
+      (
+        mockExecutionContext.switchToHttp().getRequest as jest.Mock
+      ).mockReturnValue(mockRequest);
 
       expect(() => guard.canActivate(mockExecutionContext)).toThrow(
-        new ForbiddenException('Admin access required')
+        new ForbiddenException('Admin access required'),
       );
     });
 
@@ -114,10 +124,12 @@ describe('AdminGuard', () => {
         },
       };
 
-      (mockExecutionContext.switchToHttp().getRequest as jest.Mock).mockReturnValue(mockRequest);
+      (
+        mockExecutionContext.switchToHttp().getRequest as jest.Mock
+      ).mockReturnValue(mockRequest);
 
       expect(() => guard.canActivate(mockExecutionContext)).toThrow(
-        new ForbiddenException('Admin access required')
+        new ForbiddenException('Admin access required'),
       );
     });
   });

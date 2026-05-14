@@ -42,7 +42,9 @@ test.describe('Authentication Flow', () => {
     await page.waitForURL('/');
 
     // Logout
-    await page.click('button:has-text("Déconnexion"), a:has-text("Déconnexion")');
+    await page.click(
+      'button:has-text("Déconnexion"), a:has-text("Déconnexion")',
+    );
     await expect(page).toHaveURL('/login');
 
     // Login with same credentials
@@ -87,7 +89,9 @@ test.describe('Authentication Flow', () => {
     await page.locator('input[id="confirmPassword"]').blur();
 
     // Should show error about password mismatch
-    await expect(page.locator('.field-error')).toContainText('ne correspondent pas');
+    await expect(page.locator('.field-error')).toContainText(
+      'ne correspondent pas',
+    );
   });
 
   test('should logout successfully', async ({ page }) => {
@@ -102,13 +106,17 @@ test.describe('Authentication Flow', () => {
     await page.waitForURL('/');
 
     // Logout
-    await page.click('button:has-text("Déconnexion"), a:has-text("Déconnexion")');
+    await page.click(
+      'button:has-text("Déconnexion"), a:has-text("Déconnexion")',
+    );
 
     // Should redirect to login
     await expect(page).toHaveURL('/login');
   });
 
-  test('should redirect to login when accessing protected route', async ({ page }) => {
+  test('should redirect to login when accessing protected route', async ({
+    page,
+  }) => {
     // Clear any existing auth
     await page.context().clearCookies();
     await page.evaluate(() => localStorage.clear());

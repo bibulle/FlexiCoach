@@ -47,24 +47,26 @@ describe('RoutinePlayerComponent', () => {
 
   beforeEach(async () => {
     // Mock AudioContext
-    global.AudioContext = vi.fn().mockImplementation(() => ({
-      createOscillator: vi.fn().mockReturnValue({
-        connect: vi.fn(),
-        frequency: { value: 0 },
-        type: 'sine',
-        start: vi.fn(),
-        stop: vi.fn(),
-      }),
-      createGain: vi.fn().mockReturnValue({
-        connect: vi.fn(),
-        gain: {
-          setValueAtTime: vi.fn(),
-          exponentialRampToValueAtTime: vi.fn(),
-        },
-      }),
-      destination: {},
-      currentTime: 0,
-    })) as any;
+    global.AudioContext = function () {
+      return {
+        createOscillator: vi.fn().mockReturnValue({
+          connect: vi.fn(),
+          frequency: { value: 0 },
+          type: 'sine',
+          start: vi.fn(),
+          stop: vi.fn(),
+        }),
+        createGain: vi.fn().mockReturnValue({
+          connect: vi.fn(),
+          gain: {
+            setValueAtTime: vi.fn(),
+            exponentialRampToValueAtTime: vi.fn(),
+          },
+        }),
+        destination: {},
+        currentTime: 0,
+      };
+    } as any;
 
     mockRoutineService = {
       getBySlug: vi.fn(),
@@ -139,7 +141,7 @@ describe('RoutinePlayerComponent', () => {
 
   it('should navigate to home on load error', () => {
     mockRoutineService.getBySlug.mockReturnValue(
-      throwError(() => new Error('Not found'))
+      throwError(() => new Error('Not found')),
     );
 
     fixture.detectChanges();
@@ -219,22 +221,30 @@ describe('RoutinePlayerComponent', () => {
 
   describe('Admin actions on routine page', () => {
     it('should not show admin actions when admin mode is off', () => {
-      const userRoutine = { ...mockRoutine, visibility: 'user' as 'builtIn' | 'user' };
+      const userRoutine = {
+        ...mockRoutine,
+        visibility: 'user' as 'builtIn' | 'user',
+      };
       mockRoutineService.getBySlug.mockReturnValue(of(userRoutine));
       mockAuthService.isAdminMode.set(false);
       fixture.detectChanges();
 
-      const adminActions = fixture.nativeElement.querySelector('.admin-actions');
+      const adminActions =
+        fixture.nativeElement.querySelector('.admin-actions');
       expect(adminActions).toBeNull();
     });
 
     it('should show admin actions when admin mode is on and routine is user-created', () => {
-      const userRoutine = { ...mockRoutine, visibility: 'user' as 'builtIn' | 'user' };
+      const userRoutine = {
+        ...mockRoutine,
+        visibility: 'user' as 'builtIn' | 'user',
+      };
       mockRoutineService.getBySlug.mockReturnValue(of(userRoutine));
       mockAuthService.isAdminMode.set(true);
       fixture.detectChanges();
 
-      const adminActions = fixture.nativeElement.querySelector('.admin-actions');
+      const adminActions =
+        fixture.nativeElement.querySelector('.admin-actions');
       expect(adminActions).toBeTruthy();
 
       const buttons = adminActions.querySelectorAll('button');
@@ -242,12 +252,16 @@ describe('RoutinePlayerComponent', () => {
     });
 
     it('should not show admin actions on built-in routines even in admin mode', () => {
-      const builtInRoutine = { ...mockRoutine, visibility: 'builtIn' as 'builtIn' | 'user' };
+      const builtInRoutine = {
+        ...mockRoutine,
+        visibility: 'builtIn' as 'builtIn' | 'user',
+      };
       mockRoutineService.getBySlug.mockReturnValue(of(builtInRoutine));
       mockAuthService.isAdminMode.set(true);
       fixture.detectChanges();
 
-      const adminActions = fixture.nativeElement.querySelector('.admin-actions');
+      const adminActions =
+        fixture.nativeElement.querySelector('.admin-actions');
       expect(adminActions).toBeNull();
     });
 
@@ -256,7 +270,11 @@ describe('RoutinePlayerComponent', () => {
 
       component.editRoutine();
 
-      expect(mockRouter.navigate).toHaveBeenCalledWith(['/routines', 'test-routine', 'edit']);
+      expect(mockRouter.navigate).toHaveBeenCalledWith([
+        '/routines',
+        'test-routine',
+        'edit',
+      ]);
     });
 
     it('should not navigate when editRoutine is called with no routine', () => {

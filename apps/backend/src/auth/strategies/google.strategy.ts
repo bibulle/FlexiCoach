@@ -8,7 +8,7 @@ import { AuthService } from '../auth.service';
 export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
   constructor(
     private configService: ConfigService,
-    private authService: AuthService
+    private authService: AuthService,
   ) {
     super({
       clientID: configService.get('GOOGLE_CLIENT_ID'),
@@ -22,7 +22,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     accessToken: string,
     refreshToken: string,
     profile: Profile,
-    done: VerifyCallback
+    done: VerifyCallback,
   ): Promise<any> {
     const { name, emails, photos } = profile;
 
@@ -30,22 +30,20 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     if (!emails || !emails[0]?.value || !emails[0]?.verified) {
       return done(
         new UnauthorizedException('Email non vérifié par Google'),
-        null
+        false,
       );
     }
 
     // Vérification de sécurité : providerId non vide
     if (!profile.id) {
-      return done(
-        new UnauthorizedException('ID Google invalide'),
-        null
-      );
+      return done(new UnauthorizedException('ID Google invalide'), false);
     }
 
     try {
       const user = await this.authService.validateOAuthUser({
         email: emails[0].value,
-        displayName: `${name?.givenName || ''} ${name?.familyName || ''}`.trim(),
+        displayName:
+          `${name?.givenName || ''} ${name?.familyName || ''}`.trim(),
         avatar: photos && photos[0]?.value,
         provider: 'google',
         providerId: profile.id,
@@ -53,7 +51,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
 
       done(null, user);
     } catch (error) {
-      done(error, null);
+      done(error as Error, false);
     }
   }
 }

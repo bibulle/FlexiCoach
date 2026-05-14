@@ -9,7 +9,7 @@ export class DailySummary {
   userId?: Types.ObjectId;
 
   @Prop({ required: true })
-  date: string; // Format: 'YYYY-MM-DD'
+  date!: string; // Format: 'YYYY-MM-DD'
 
   @Prop({
     type: [
@@ -21,14 +21,14 @@ export class DailySummary {
     ],
     default: [],
   })
-  routines: Array<{
+  routines!: Array<{
     routineId: string;
     completed: boolean;
     durationSec: number;
   }>;
 
   @Prop({ required: true, default: 0 })
-  totalSec: number;
+  totalSec!: number;
 
   @Prop()
   streakAfter?: number;

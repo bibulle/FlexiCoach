@@ -8,7 +8,7 @@ export class User {
   _id?: any;
 
   @Prop({ required: true, unique: true })
-  email: string;
+  email!: string;
 
   @Prop({ required: false, select: false })
   password?: string;
@@ -20,7 +20,7 @@ export class User {
   avatar?: string;
 
   @Prop({ enum: ['local', 'google'], default: 'local' })
-  provider: string;
+  provider!: string;
 
   @Prop()
   providerId?: string;

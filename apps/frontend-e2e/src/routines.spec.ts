@@ -25,7 +25,9 @@ test.describe('Routines Flow', () => {
   });
 
   test('should filter routines by level', async ({ page }) => {
-    await page.waitForSelector('.routine-card, [class*="routine"]', { timeout: 10000 });
+    await page.waitForSelector('.routine-card, [class*="routine"]', {
+      timeout: 10000,
+    });
 
     // Check if filter exists
     const filterSelect = page.locator('select, [role="combobox"]').first();
@@ -43,10 +45,14 @@ test.describe('Routines Flow', () => {
   });
 
   test('should navigate to routine detail', async ({ page }) => {
-    await page.waitForSelector('.routine-card, [class*="routine"]', { timeout: 10000 });
+    await page.waitForSelector('.routine-card, [class*="routine"]', {
+      timeout: 10000,
+    });
 
     // Click on first routine
-    const firstRoutine = page.locator('.routine-card, [class*="routine"]').first();
+    const firstRoutine = page
+      .locator('.routine-card, [class*="routine"]')
+      .first();
     await firstRoutine.click();
 
     // Should navigate to routine detail/player page
@@ -54,7 +60,9 @@ test.describe('Routines Flow', () => {
   });
 
   test('should start a routine session', async ({ page }) => {
-    await page.waitForSelector('.routine-card, [class*="routine"]', { timeout: 10000 });
+    await page.waitForSelector('.routine-card, [class*="routine"]', {
+      timeout: 10000,
+    });
 
     // Click on first routine
     await page.locator('.routine-card, [class*="routine"]').first().click();
@@ -63,17 +71,23 @@ test.describe('Routines Flow', () => {
     await page.waitForURL(/\/(routine|player)/);
 
     // Look for start button
-    const startButton = page.locator('button:has-text("Commencer"), button:has-text("Démarrer"), button:has-text("Start")');
+    const startButton = page.locator(
+      'button:has-text("Commencer"), button:has-text("Démarrer"), button:has-text("Start")',
+    );
     if (await startButton.isVisible({ timeout: 5000 })) {
       await startButton.click();
 
       // Should show exercise player or timer
-      await expect(page.locator('.timer, .exercise, [class*="player"]')).toBeVisible({ timeout: 5000 });
+      await expect(
+        page.locator('.timer, .exercise, [class*="player"]'),
+      ).toBeVisible({ timeout: 5000 });
     }
   });
 
   test('should display routine information', async ({ page }) => {
-    await page.waitForSelector('.routine-card, [class*="routine"]', { timeout: 10000 });
+    await page.waitForSelector('.routine-card, [class*="routine"]', {
+      timeout: 10000,
+    });
 
     // Click on first routine
     await page.locator('.routine-card, [class*="routine"]').first().click();
@@ -84,27 +98,38 @@ test.describe('Routines Flow', () => {
     await expect(page.locator('h1, h2')).not.toBeEmpty();
 
     // Should display duration or exercises count
-    const hasInfo = await page.locator('text=/\\d+\\s*(min|exercices?)/i').isVisible({ timeout: 3000 });
+    const hasInfo = await page
+      .locator('text=/\\d+\\s*(min|exercices?)/i')
+      .isVisible({ timeout: 3000 });
     expect(hasInfo).toBeTruthy();
   });
 
   test('should navigate between exercises in player', async ({ page }) => {
-    await page.waitForSelector('.routine-card, [class*="routine"]', { timeout: 10000 });
+    await page.waitForSelector('.routine-card, [class*="routine"]', {
+      timeout: 10000,
+    });
 
     // Select a routine
     await page.locator('.routine-card, [class*="routine"]').first().click();
     await page.waitForURL(/\/(routine|player)/);
 
     // Start routine if needed
-    const startButton = page.locator('button:has-text("Commencer"), button:has-text("Démarrer")');
+    const startButton = page.locator(
+      'button:has-text("Commencer"), button:has-text("Démarrer")',
+    );
     if (await startButton.isVisible({ timeout: 3000 })) {
       await startButton.click();
     }
 
     // Look for next/skip button
-    const nextButton = page.locator('button:has-text("Suivant"), button:has-text("Next"), button:has-text("Skip"), button[aria-label*="next"]');
+    const nextButton = page.locator(
+      'button:has-text("Suivant"), button:has-text("Next"), button:has-text("Skip"), button[aria-label*="next"]',
+    );
     if (await nextButton.isVisible({ timeout: 5000 })) {
-      const initialText = await page.locator('h1, h2, h3').first().textContent();
+      const initialText = await page
+        .locator('h1, h2, h3')
+        .first()
+        .textContent();
       await nextButton.click();
 
       // Wait for change
@@ -112,25 +137,34 @@ test.describe('Routines Flow', () => {
 
       const newText = await page.locator('h1, h2, h3').first().textContent();
       // Exercise should have changed (different text) or routine completed
-      expect(initialText !== newText || await page.locator('text=/complet|terminé|finished/i').isVisible()).toBeTruthy();
+      expect(
+        initialText !== newText ||
+          (await page.locator('text=/complet|terminé|finished/i').isVisible()),
+      ).toBeTruthy();
     }
   });
 
   test('should complete a routine session', async ({ page }) => {
-    await page.waitForSelector('.routine-card, [class*="routine"]', { timeout: 10000 });
+    await page.waitForSelector('.routine-card, [class*="routine"]', {
+      timeout: 10000,
+    });
 
     // Select a short routine or any routine
     await page.locator('.routine-card, [class*="routine"]').first().click();
     await page.waitForURL(/\/(routine|player)/);
 
     // Start routine
-    const startButton = page.locator('button:has-text("Commencer"), button:has-text("Démarrer")');
+    const startButton = page.locator(
+      'button:has-text("Commencer"), button:has-text("Démarrer")',
+    );
     if (await startButton.isVisible({ timeout: 3000 })) {
       await startButton.click();
     }
 
     // Look for complete/finish button (might need to skip through exercises)
-    const finishButton = page.locator('button:has-text("Terminer"), button:has-text("Compléter"), button:has-text("Finish")');
+    const finishButton = page.locator(
+      'button:has-text("Terminer"), button:has-text("Compléter"), button:has-text("Finish")',
+    );
 
     // Try to skip to end if skip buttons exist
     let attempts = 0;
@@ -140,7 +174,9 @@ test.describe('Routines Flow', () => {
         break;
       }
 
-      const skipButton = page.locator('button:has-text("Suivant"), button:has-text("Skip")');
+      const skipButton = page.locator(
+        'button:has-text("Suivant"), button:has-text("Skip")',
+      );
       if (await skipButton.isVisible({ timeout: 1000 })) {
         await skipButton.click();
         await page.waitForTimeout(300);
@@ -151,13 +187,17 @@ test.describe('Routines Flow', () => {
     }
 
     // Should show completion screen or redirect
-    const completionIndicators = page.locator('text=/complet|terminé|finished|bravo|félicitations/i');
+    const completionIndicators = page.locator(
+      'text=/complet|terminé|finished|bravo|félicitations/i',
+    );
     if (await completionIndicators.isVisible({ timeout: 3000 })) {
       expect(await completionIndicators.isVisible()).toBeTruthy();
     }
   });
 
-  test('Issue #35: should hide admin-only buttons for non-admin users', async ({ page }) => {
+  test('Issue #35: should hide admin-only buttons for non-admin users', async ({
+    page,
+  }) => {
     // User is already logged in as non-admin from beforeEach
 
     // Verify "Nouvelle routine" button is NOT visible
@@ -193,7 +233,9 @@ test.describe('Issue #33: Modal scroll with multiple cues', () => {
     await page.waitForURL('/');
   });
 
-  test.skip('should allow scrolling in step editor modal with many cues', async ({ page }) => {
+  test.skip('should allow scrolling in step editor modal with many cues', async ({
+    page,
+  }) => {
     // This test requires admin access to create routines
     // Skip for now - can be enabled once admin user setup is available
 
@@ -217,14 +259,18 @@ test.describe('Issue #33: Modal scroll with multiple cues', () => {
 
     // Verify modal is scrollable
     const modalBody = page.locator('.modal-body');
-    const isScrollable = await modalBody.evaluate((el) => el.scrollHeight > el.clientHeight);
+    const isScrollable = await modalBody.evaluate(
+      (el) => el.scrollHeight > el.clientHeight,
+    );
     expect(isScrollable).toBeTruthy();
 
     // Scroll to bottom
     await modalBody.evaluate((el) => el.scrollTo(0, el.scrollHeight));
 
     // Verify save button is still accessible
-    const saveButton = page.locator('button[type="submit"]:has-text("Ajouter")');
+    const saveButton = page.locator(
+      'button[type="submit"]:has-text("Ajouter")',
+    );
     await expect(saveButton).toBeVisible();
   });
 });
@@ -243,7 +289,9 @@ test.describe('Issue #34: Import/Export with MongoDB _id fields', () => {
     await page.waitForURL('/');
   });
 
-  test.skip('should export and re-import routine without _id errors', async ({ page }) => {
+  test.skip('should export and re-import routine without _id errors', async ({
+    page,
+  }) => {
     // This test requires admin access to create and export routines
     // Skip for now - can be enabled once admin user setup is available
 
@@ -252,7 +300,10 @@ test.describe('Issue #34: Import/Export with MongoDB _id fields', () => {
 
     // Create a routine with steps and cues
     await page.fill('input[name="name"]', 'Export Test Routine');
-    await page.fill('textarea[name="description"]', 'Test routine for export/import');
+    await page.fill(
+      'textarea[name="description"]',
+      'Test routine for export/import',
+    );
 
     // Add a step with cues
     await page.click('button:has-text("Ajouter une étape")');
@@ -274,7 +325,9 @@ test.describe('Issue #34: Import/Export with MongoDB _id fields', () => {
 
     // Save routine
     await page.click('button[type="submit"]:has-text("Créer")');
-    await expect(page.locator('text=/créée avec succès/i')).toBeVisible({ timeout: 5000 });
+    await expect(page.locator('text=/créée avec succès/i')).toBeVisible({
+      timeout: 5000,
+    });
 
     // Export the routine
     const downloadPromise = page.waitForEvent('download');
@@ -286,15 +339,21 @@ test.describe('Issue #34: Import/Export with MongoDB _id fields', () => {
     await page.setInputFiles('input[type="file"]', await download.path());
 
     // Wait for import success
-    await expect(page.locator('text=/importée avec succès/i')).toBeVisible({ timeout: 5000 });
+    await expect(page.locator('text=/importée avec succès/i')).toBeVisible({
+      timeout: 5000,
+    });
 
     // Save the imported routine
     await page.click('button[type="submit"]:has-text("Créer")');
 
     // Should NOT show _id validation error
-    await expect(page.locator('text=/_id should not exist/i')).not.toBeVisible({ timeout: 2000 });
+    await expect(page.locator('text=/_id should not exist/i')).not.toBeVisible({
+      timeout: 2000,
+    });
 
     // Should show success
-    await expect(page.locator('text=/créée avec succès/i')).toBeVisible({ timeout: 5000 });
+    await expect(page.locator('text=/créée avec succès/i')).toBeVisible({
+      timeout: 5000,
+    });
   });
 });

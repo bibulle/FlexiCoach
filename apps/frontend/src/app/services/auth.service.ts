@@ -31,7 +31,7 @@ export class AuthService {
   private readonly USER_KEY = 'current_user';
 
   private currentUserSubject = new BehaviorSubject<AuthResponse['user'] | null>(
-    this.getUserFromStorage()
+    this.getUserFromStorage(),
   );
   public currentUser$ = this.currentUserSubject.asObservable();
 
@@ -56,15 +56,15 @@ export class AuthService {
   }
 
   register(data: RegisterData): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>('/api/auth/register', data).pipe(
-      tap((response) => this.handleAuthResponse(response))
-    );
+    return this.http
+      .post<AuthResponse>('/api/auth/register', data)
+      .pipe(tap((response) => this.handleAuthResponse(response)));
   }
 
   login(credentials: LoginCredentials): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>('/api/auth/login', credentials).pipe(
-      tap((response) => this.handleAuthResponse(response))
-    );
+    return this.http
+      .post<AuthResponse>('/api/auth/login', credentials)
+      .pipe(tap((response) => this.handleAuthResponse(response)));
   }
 
   logout(): void {
@@ -94,7 +94,7 @@ export class AuthService {
   }
 
   toggleAdminMode(): void {
-    this.isAdminMode.update(value => !value);
+    this.isAdminMode.update((value) => !value);
   }
 
   checkAdminStatus(): void {
@@ -109,12 +109,14 @@ export class AuthService {
   }
 
   resetUserPassword(userId: string, newPassword: string): Observable<any> {
-    return this.http.patch(`/api/admin/users/${userId}/password`, { newPassword });
+    return this.http.patch(`/api/admin/users/${userId}/password`, {
+      newPassword,
+    });
   }
 
   exchangeOAuthCode(code: string): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>('/api/auth/exchange', { code }).pipe(
-      tap((response) => this.handleAuthResponse(response))
-    );
+    return this.http
+      .post<AuthResponse>('/api/auth/exchange', { code })
+      .pipe(tap((response) => this.handleAuthResponse(response)));
   }
 }

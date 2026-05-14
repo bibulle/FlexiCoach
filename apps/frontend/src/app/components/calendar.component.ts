@@ -40,7 +40,20 @@ export class CalendarComponent implements OnInit {
   calendarData: { date: string; completionRate: number }[] = [];
   loading = true;
 
-  readonly MONTH_LABELS = ['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'];
+  readonly MONTH_LABELS = [
+    'Jan',
+    'Fév',
+    'Mar',
+    'Avr',
+    'Mai',
+    'Jun',
+    'Jul',
+    'Aoû',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Déc',
+  ];
   readonly HEAT_LABELS = ['L', 'M', 'V', 'D'];
   readonly TREND_W = 720;
   readonly TREND_PAD_X = 8;
@@ -63,9 +76,11 @@ export class CalendarComponent implements OnInit {
 
     forkJoin({
       summary: this.statsService.getSummary().pipe(catchError(() => of(null))),
-      calendar: this.http.get<{ date: string; completionRate: number }[]>(
-        `/api/sessions/calendar?from=${from}&to=${to}`
-      ).pipe(catchError(() => of([]))),
+      calendar: this.http
+        .get<
+          { date: string; completionRate: number }[]
+        >(`/api/sessions/calendar?from=${from}&to=${to}`)
+        .pipe(catchError(() => of([]))),
     }).subscribe(({ summary, calendar }) => {
       this.summary = summary;
       this.calendarData = calendar ?? [];
@@ -91,7 +106,9 @@ export class CalendarComponent implements OnInit {
     const today = startOfDay(new Date());
     const jan1 = new Date(this.currentYear, 0, 1);
     const weekStart = startOfWeek(jan1, { weekStartsOn: 1 });
-    const dataMap = new Map(this.calendarData.map(d => [d.date, d.completionRate]));
+    const dataMap = new Map(
+      this.calendarData.map((d) => [d.date, d.completionRate]),
+    );
     const weeks: HeatDay[][] = [];
     let current = weekStart;
 
@@ -103,7 +120,12 @@ export class CalendarComponent implements OnInit {
         const dateStr = format(date, 'yyyy-MM-dd');
         const future = isBefore(today, date);
         const rate = dataMap.get(dateStr) ?? 0;
-        week.push({ date, dateStr, intensity: future ? 0 : this.heatIntensity(rate), future });
+        week.push({
+          date,
+          dateStr,
+          intensity: future ? 0 : this.heatIntensity(rate),
+          future,
+        });
       }
       if (week.length > 0 && week[0].date.getFullYear() <= this.currentYear) {
         weeks.push(week);
@@ -116,11 +138,14 @@ export class CalendarComponent implements OnInit {
 
   get monthlyTrend(): MonthlyPoint[] {
     const counts = new Array(12).fill(0);
-    this.calendarData.forEach(d => {
+    this.calendarData.forEach((d) => {
       const month = parseInt(d.date.split('-')[1], 10) - 1;
       if (month >= 0 && month < 12 && d.completionRate > 0) counts[month]++;
     });
-    return this.MONTH_LABELS.map((label, i) => ({ label, sessions: counts[i] }));
+    return this.MONTH_LABELS.map((label, i) => ({
+      label,
+      sessions: counts[i],
+    }));
   }
 
   get totalSessions(): number {
@@ -137,20 +162,20 @@ export class CalendarComponent implements OnInit {
 
   get peakMonth(): string {
     const trend = this.monthlyTrend;
-    const max = Math.max(...trend.map(t => t.sessions));
+    const max = Math.max(...trend.map((t) => t.sessions));
     if (max === 0) return '—';
-    return trend.find(t => t.sessions === max)?.label ?? '—';
+    return trend.find((t) => t.sessions === max)?.label ?? '—';
   }
 
   get peakIndex(): number {
     const trend = this.monthlyTrend;
-    const max = Math.max(...trend.map(t => t.sessions));
-    return max === 0 ? -1 : trend.findIndex(t => t.sessions === max);
+    const max = Math.max(...trend.map((t) => t.sessions));
+    return max === 0 ? -1 : trend.findIndex((t) => t.sessions === max);
   }
 
   buildTrendSvg(height: number): TrendSvg {
     const trend = this.monthlyTrend;
-    const max = Math.max(...trend.map(t => t.sessions), 1);
+    const max = Math.max(...trend.map((t) => t.sessions), 1);
     const innerW = this.TREND_W - this.TREND_PAD_X * 2;
     const points = trend.map((t, i) => ({
       x: this.TREND_PAD_X + (i / (trend.length - 1)) * innerW,
@@ -171,6 +196,10 @@ export class CalendarComponent implements OnInit {
     return { path, area, points };
   }
 
-  get trendDesktop(): TrendSvg { return this.buildTrendSvg(150); }
-  get trendMobile(): TrendSvg { return this.buildTrendSvg(100); }
+  get trendDesktop(): TrendSvg {
+    return this.buildTrendSvg(150);
+  }
+  get trendMobile(): TrendSvg {
+    return this.buildTrendSvg(100);
+  }
 }

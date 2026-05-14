@@ -67,7 +67,12 @@
 /* === Skeleton === */
 .cal-skeleton {
   height: 140px;
-  background: linear-gradient(90deg, var(--surface-2) 25%, var(--surface-3) 50%, var(--surface-2) 75%);
+  background: linear-gradient(
+    90deg,
+    var(--surface-2) 25%,
+    var(--surface-3) 50%,
+    var(--surface-2) 75%
+  );
   background-size: 200% 100%;
   animation: cal-shimmer 1.4s infinite;
 }
@@ -77,8 +82,12 @@
 }
 
 @keyframes cal-shimmer {
-  0%   { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
 }
 
 /* === Trend chart === */
@@ -87,8 +96,12 @@
   overflow: visible;
 }
 
-.trend-desktop { display: none; }
-.trend-mobile  { display: block; }
+.trend-desktop {
+  display: none;
+}
+.trend-mobile {
+  display: block;
+}
 
 /* === Heatmap === */
 .heatmap-scroll {
@@ -213,8 +226,12 @@
     display: block;
   }
 
-  .trend-desktop { display: block; }
-  .trend-mobile  { display: none; }
+  .trend-desktop {
+    display: block;
+  }
+  .trend-mobile {
+    display: none;
+  }
 
   .heatmap-inner {
     min-width: auto;
