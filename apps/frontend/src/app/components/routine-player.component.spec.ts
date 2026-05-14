@@ -136,7 +136,7 @@ describe('RoutinePlayerComponent', () => {
 
   it('should navigate back', () => {
     component.goBack();
-    expect(mockRouter.navigate).toHaveBeenCalledWith(['/']);
+    expect(mockRouter.navigate).toHaveBeenCalledWith(['/routines']);
   });
 
   it('should navigate to home on load error', () => {
@@ -146,7 +146,7 @@ describe('RoutinePlayerComponent', () => {
 
     fixture.detectChanges();
 
-    expect(mockRouter.navigate).toHaveBeenCalledWith(['/']);
+    expect(mockRouter.navigate).toHaveBeenCalledWith(['/routines']);
   });
 
   it('should start routine', () => {
@@ -348,7 +348,7 @@ describe('RoutinePlayerComponent', () => {
       component.deleteRoutine();
 
       expect(mockRoutineService.delete).toHaveBeenCalledWith('test-routine');
-      expect(mockRouter.navigate).toHaveBeenCalledWith(['/']);
+      expect(mockRouter.navigate).toHaveBeenCalledWith(['/routines']);
     });
 
     it('should not delete routine when user cancels', () => {

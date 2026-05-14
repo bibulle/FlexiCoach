@@ -14,11 +14,11 @@ import { authGuard } from './guards/auth.guard';
 import { adminGuard } from './guards/admin.guard';
 
 export const appRoutes: Route[] = [
-  { path: 'home', component: HomeComponent, canActivate: [authGuard] },
+  { path: '', component: HomeComponent, canActivate: [authGuard] },
+  { path: 'routines', component: RoutineListComponent, canActivate: [authGuard] },
   { path: 'login', component: LoginComponent },
   { path: 'signup', component: SignupComponent },
   { path: 'auth/callback', component: AuthCallbackComponent },
-  { path: '', component: RoutineListComponent, canActivate: [authGuard] },
   {
     path: 'routines/new',
     component: RoutineEditorComponent,
