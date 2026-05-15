@@ -125,6 +125,13 @@ Le frontend se lance normalement via `preview_start` (`.claude/launch.json`) san
 
 ---
 
+## Versioning (OBLIGATOIRE)
+- **Avant chaque PR**, exécuter `npm version patch` pour incrémenter automatiquement la version (cela exécute le script `version` du `package.json` qui met à jour `apps/frontend/src/app/version.ts`)
+- Si l'utilisateur demande explicitement une montée de version différente (minor, major), utiliser la commande correspondante (`npm version minor`, `npm version major`)
+- Par défaut, toujours faire un `patch`
+
+---
+
 ## Méthodologie attendue
 - Travailler par étapes : analyse → proposition → implémentation → validation
 - Justifier les choix effectués
