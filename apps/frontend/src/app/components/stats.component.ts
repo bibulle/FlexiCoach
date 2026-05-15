@@ -329,6 +329,13 @@ export class StatsComponent implements OnInit {
     this.debugSwController = ('serviceWorker' in navigator && navigator.serviceWorker.controller)
       ? `Actif (${navigator.serviceWorker.controller.state})`
       : 'null';
+    if (typeof window.matchMedia === 'function') {
+      this.debugDisplayMode = window.matchMedia('(display-mode: standalone)').matches
+        ? 'standalone (PWA)'
+        : window.matchMedia('(display-mode: browser)').matches
+          ? 'browser (onglet normal)'
+          : 'inconnu';
+    }
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.getRegistration('/').then((reg) => {
         if (reg) {
@@ -359,6 +366,44 @@ export class StatsComponent implements OnInit {
     } catch (e: any) {
       this.debugSwRegistration = `Échec: ${e.message}`;
     }
+  }
+
+  // ── Debug PWA / Manifest (temporaire) ───────────────────────────────────
+
+  debugDisplayMode = '';
+  debugManifestLink = '';
+  debugManifestIcons: Array<{ src: string; sizes: string; purpose: string; status: string }> = [];
+
+  debugCheckManifest(): void {
+    const link = document.querySelector('link[rel="manifest"]');
+    this.debugManifestLink = link ? link.getAttribute('href') || 'pas de href' : 'Aucun <link rel="manifest">';
+
+    this.refreshDebugInfo();
+
+    const manifestUrl = link?.getAttribute('href');
+    if (!manifestUrl) return;
+
+    fetch(manifestUrl)
+      .then((res) => {
+        if (!res.ok) {
+          this.debugManifestLink += ` — HTTP ${res.status}`;
+          return null;
+        }
+        return res.json();
+      })
+      .then((manifest) => {
+        if (!manifest) return;
+        this.debugManifestLink += ` — OK (${manifest.icons?.length ?? 0} icônes)`;
+        this.debugManifestIcons = (manifest.icons || []).map((icon: any) => ({
+          src: icon.src,
+          sizes: icon.sizes,
+          purpose: icon.purpose || 'any',
+          status: 'chargement...',
+        }));
+      })
+      .catch((e) => {
+        this.debugManifestLink += ` — Erreur fetch: ${e.message}`;
+      });
   }
 
   // ── Auth ──────────────────────────────────────────────────────────────────
