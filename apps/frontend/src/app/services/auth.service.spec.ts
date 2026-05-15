@@ -234,6 +234,23 @@ describe('AuthService', () => {
     });
   });
 
+  describe('getUserFromStorage (corrupted localStorage)', () => {
+    it('should return null and clean up when localStorage contains invalid JSON', () => {
+      localStorage.setItem('current_user', '{corrupted-json');
+
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        imports: [HttpClientTestingModule],
+        providers: [AuthService],
+      });
+
+      const freshService = TestBed.inject(AuthService);
+
+      expect(freshService.getCurrentUser()).toBeNull();
+      expect(localStorage.getItem('current_user')).toBeNull();
+    });
+  });
+
   describe('resetUserPassword', () => {
     it('should call admin endpoint with userId and new password', async () => {
       const userId = 'user123';
