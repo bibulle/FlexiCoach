@@ -91,10 +91,12 @@ self.addEventListener('push', (event) => {
 
 // Stratégie de cache: Network First, fallback to cache
 self.addEventListener('fetch', (event) => {
+  // Cache API only supports GET requests
+  if (event.request.method !== 'GET') return;
+
   event.respondWith(
     fetch(event.request)
       .then((response) => {
-        // Si la requête réussit, on met à jour le cache
         if (response && response.status === 200) {
           const responseToCache = response.clone();
           caches.open(CACHE_NAME).then((cache) => {
@@ -104,12 +106,10 @@ self.addEventListener('fetch', (event) => {
         return response;
       })
       .catch(() => {
-        // Si le réseau est indisponible, on utilise le cache
-        return caches.match(event.request).then((response) => {
-          if (response) {
-            return response;
+        return caches.match(event.request).then((cached) => {
+          if (cached) {
+            return cached;
           }
-          // Si la ressource n'est pas en cache, on retourne une réponse par défaut pour les requêtes API
           if (event.request.url.includes('/api/')) {
             return new Response(
               JSON.stringify({ error: 'Offline - No cached data available' }),
@@ -122,6 +122,7 @@ self.addEventListener('fetch', (event) => {
               }
             );
           }
+          return new Response('Offline', { status: 503, statusText: 'Service Unavailable' });
         });
       })
   );
