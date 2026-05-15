@@ -79,7 +79,6 @@ export class StatsComponent implements OnInit {
     this.loadFromStorage();
     this.loadSummary();
     this.loadVoices();
-    this.refreshDebugInfo();
   }
 
   private voiceQuality(v: SpeechSynthesisVoice): number {
@@ -310,100 +309,10 @@ export class StatsComponent implements OnInit {
 
   async enableNotifications(): Promise<void> {
     await this.notifService.requestPermission();
-    this.refreshDebugInfo();
   }
 
   testNotification(): void {
     this.notifService.testNotification();
-  }
-
-  // ── Debug (temporaire) ──────────────────────────────────────────────────
-
-  debugHasServiceWorker = 'serviceWorker' in navigator ? 'Oui' : 'Non';
-  debugSwController = '';
-  debugSwRegistration = '';
-  debugUserAgent = navigator.userAgent;
-
-  refreshDebugInfo(): void {
-    this.debugHasServiceWorker = 'serviceWorker' in navigator ? 'Oui' : 'Non';
-    this.debugSwController = ('serviceWorker' in navigator && navigator.serviceWorker.controller)
-      ? `Actif (${navigator.serviceWorker.controller.state})`
-      : 'null';
-    if (typeof window.matchMedia === 'function') {
-      this.debugDisplayMode = window.matchMedia('(display-mode: standalone)').matches
-        ? 'standalone (PWA)'
-        : window.matchMedia('(display-mode: browser)').matches
-          ? 'browser (onglet normal)'
-          : 'inconnu';
-    }
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.getRegistration('/').then((reg) => {
-        if (reg) {
-          const sw = reg.active || reg.waiting || reg.installing;
-          this.debugSwRegistration = sw
-            ? `${sw.state} (scope: ${reg.scope})`
-            : `Enregistré mais pas de worker (scope: ${reg.scope})`;
-        } else {
-          this.debugSwRegistration = 'Aucun enregistrement';
-        }
-      }).catch((e) => {
-        this.debugSwRegistration = `Erreur: ${e.message}`;
-      });
-    } else {
-      this.debugSwRegistration = 'SW non supporté';
-    }
-  }
-
-  async debugRegisterSW(): Promise<void> {
-    if (!('serviceWorker' in navigator)) {
-      this.debugSwRegistration = 'SW non supporté';
-      return;
-    }
-    try {
-      const reg = await navigator.serviceWorker.register('/sw.js');
-      this.debugSwRegistration = `Enregistré! state: ${reg.active?.state ?? reg.installing?.state ?? 'pending'}, scope: ${reg.scope}`;
-      this.refreshDebugInfo();
-    } catch (e: any) {
-      this.debugSwRegistration = `Échec: ${e.message}`;
-    }
-  }
-
-  // ── Debug PWA / Manifest (temporaire) ───────────────────────────────────
-
-  debugDisplayMode = '';
-  debugManifestLink = '';
-  debugManifestIcons: Array<{ src: string; sizes: string; purpose: string; status: string }> = [];
-
-  debugCheckManifest(): void {
-    const link = document.querySelector('link[rel="manifest"]');
-    this.debugManifestLink = link ? link.getAttribute('href') || 'pas de href' : 'Aucun <link rel="manifest">';
-
-    this.refreshDebugInfo();
-
-    const manifestUrl = link?.getAttribute('href');
-    if (!manifestUrl) return;
-
-    fetch(manifestUrl)
-      .then((res) => {
-        if (!res.ok) {
-          this.debugManifestLink += ` — HTTP ${res.status}`;
-          return null;
-        }
-        return res.json();
-      })
-      .then((manifest) => {
-        if (!manifest) return;
-        this.debugManifestLink += ` — OK (${manifest.icons?.length ?? 0} icônes)`;
-        this.debugManifestIcons = (manifest.icons || []).map((icon: any) => ({
-          src: icon.src,
-          sizes: icon.sizes,
-          purpose: icon.purpose || 'any',
-          status: 'chargement...',
-        }));
-      })
-      .catch((e) => {
-        this.debugManifestLink += ` — Erreur fetch: ${e.message}`;
-      });
   }
 
   // ── Auth ──────────────────────────────────────────────────────────────────
