@@ -1,21 +1,9 @@
 const CACHE_NAME = 'flexicoach-v1';
-const urlsToCache = [
-  '/',
-  '/styles.css',
-  '/main.js',
-  '/polyfills.js',
-];
 
 // Installation du service worker
 self.addEventListener('install', (event) => {
   console.log('[SW] Installing service worker...');
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      console.log('[SW] Caching app shell');
-      return cache.addAll(urlsToCache);
-    })
-  );
-  // Ne pas activer automatiquement, attendre le message SKIP_WAITING
+  self.skipWaiting();
 });
 
 // Stockage des rappels synchronisés depuis l'app
@@ -24,10 +12,6 @@ let reminderTimerId = null;
 
 // Écouter les messages de l'application
 self.addEventListener('message', (event) => {
-  if (event.data && event.data.type === 'SKIP_WAITING') {
-    console.log('[SW] SKIP_WAITING reçu, activation immédiate');
-    self.skipWaiting();
-  }
   if (event.data && event.data.type === 'SYNC_REMINDERS') {
     cachedReminders = event.data.reminders || [];
     console.log('[SW] Reminders synchronisés :', cachedReminders.length);
