@@ -21,14 +21,12 @@ describe('ReminderNotificationService', () => {
       ),
     });
 
-    sessionStorage.clear();
     localStorage.clear();
   });
 
   afterEach(() => {
     service.stop();
     vi.restoreAllMocks();
-    sessionStorage.clear();
     localStorage.clear();
   });
 
@@ -120,6 +118,122 @@ describe('ReminderNotificationService', () => {
     localStorage.setItem('reminders', JSON.stringify(reminders));
     service.checkReminders();
     expect(window.Notification).not.toHaveBeenCalled();
+  });
+
+  describe('Deduplication via localStorage (issue #114)', () => {
+    it('should use localStorage instead of sessionStorage for deduplication', () => {
+      const now = new Date();
+      const hhmm = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+      const day = (now.getDay() + 6) % 7;
+      const reminders = [{ time: hhmm, days: [day], enabled: true }];
+      localStorage.setItem('reminders', JSON.stringify(reminders));
+      service.checkReminders();
+
+      const keys = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (k?.startsWith('notif-sent:')) keys.push(k);
+      }
+      expect(keys.length).toBe(1);
+    });
+
+    it('should clean old deduplication keys', () => {
+      localStorage.setItem('notif-sent:08:00:01234:Mon Jan 01 2024', '1');
+      localStorage.setItem(
+        `notif-sent:08:00:01234:${new Date().toDateString()}`,
+        '1',
+      );
+
+      service.checkReminders();
+
+      expect(
+        localStorage.getItem('notif-sent:08:00:01234:Mon Jan 01 2024'),
+      ).toBeNull();
+      expect(
+        localStorage.getItem(
+          `notif-sent:08:00:01234:${new Date().toDateString()}`,
+        ),
+      ).toBe('1');
+    });
+  });
+
+  describe('Visibility change re-check (issue #114)', () => {
+    it('should check reminders when page becomes visible', () => {
+      const checkSpy = vi.spyOn(service, 'checkReminders');
+      service.start();
+      checkSpy.mockClear();
+
+      Object.defineProperty(document, 'visibilityState', {
+        value: 'visible',
+        configurable: true,
+        writable: true,
+      });
+      document.dispatchEvent(new Event('visibilitychange'));
+
+      expect(checkSpy).toHaveBeenCalled();
+    });
+
+    it('should not check reminders when page is hidden', () => {
+      const checkSpy = vi.spyOn(service, 'checkReminders');
+      service.start();
+      checkSpy.mockClear();
+
+      Object.defineProperty(document, 'visibilityState', {
+        value: 'hidden',
+        configurable: true,
+        writable: true,
+      });
+      document.dispatchEvent(new Event('visibilitychange'));
+
+      expect(checkSpy).not.toHaveBeenCalled();
+    });
+
+    it('should remove visibilitychange listener on stop', () => {
+      const removeSpy = vi.spyOn(document, 'removeEventListener');
+      service.start();
+      service.stop();
+
+      expect(removeSpy).toHaveBeenCalledWith(
+        'visibilitychange',
+        expect.any(Function),
+      );
+    });
+  });
+
+  describe('SW sync (issue #114)', () => {
+    it('should send reminders to SW controller via postMessage', () => {
+      const mockPostMessage = vi.fn();
+      Object.defineProperty(navigator, 'serviceWorker', {
+        value: {
+          controller: { postMessage: mockPostMessage },
+          ready: Promise.resolve({ showNotification: vi.fn() }),
+        },
+        configurable: true,
+        writable: true,
+      });
+
+      const reminders = [
+        { time: '08:00', days: [0, 1, 2], enabled: true },
+      ];
+      localStorage.setItem('reminders', JSON.stringify(reminders));
+
+      service.syncRemindersToSW();
+
+      expect(mockPostMessage).toHaveBeenCalledWith({
+        type: 'SYNC_REMINDERS',
+        reminders,
+      });
+    });
+
+    it('should not fail when no SW controller', () => {
+      Object.defineProperty(navigator, 'serviceWorker', {
+        value: { controller: null },
+        configurable: true,
+        writable: true,
+      });
+
+      expect(() => service.syncRemindersToSW()).not.toThrow();
+    });
   });
 
   describe('SW-based notifications (issue #105)', () => {

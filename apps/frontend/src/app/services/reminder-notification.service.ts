@@ -12,7 +12,6 @@ export class ReminderNotificationService {
 
   readonly isSupported = 'Notification' in window;
 
-  // Signal so Angular templates react to permission changes
   readonly permission = signal<NotificationPermission>(
     this.isSupported ? Notification.permission : 'denied',
   );
@@ -27,8 +26,10 @@ export class ReminderNotificationService {
 
   start(): void {
     if (this.intervalId !== null) return;
+    this.syncRemindersToSW();
     this.checkReminders();
     this.intervalId = setInterval(() => this.checkReminders(), 30_000);
+    document.addEventListener('visibilitychange', this.onVisibilityChange);
   }
 
   stop(): void {
@@ -36,26 +37,35 @@ export class ReminderNotificationService {
       clearInterval(this.intervalId);
       this.intervalId = null;
     }
+    document.removeEventListener('visibilitychange', this.onVisibilityChange);
   }
+
+  private onVisibilityChange = (): void => {
+    if (document.visibilityState === 'visible') {
+      this.checkReminders();
+    }
+  };
 
   checkReminders(): void {
     if (this.permission() !== 'granted') return;
     const reminders = this.loadReminders();
     const now = new Date();
     const hhmm = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-    const dayIndex = (now.getDay() + 6) % 7; // JS: 0=Sun → app: 0=Mon
+    const dayIndex = (now.getDay() + 6) % 7;
 
     for (const reminder of reminders) {
       if (!reminder.enabled) continue;
       if (reminder.time !== hhmm) continue;
       if (!reminder.days.includes(dayIndex)) continue;
 
-      const key = `notif:${reminder.time}:${reminder.days.join('')}:${now.toDateString()}:${hhmm}`;
-      if (sessionStorage.getItem(key)) continue; // déjà envoyée cette minute
+      const key = `notif-sent:${reminder.time}:${reminder.days.join('')}:${now.toDateString()}`;
+      if (localStorage.getItem(key)) continue;
 
-      sessionStorage.setItem(key, '1');
+      localStorage.setItem(key, '1');
       this.showNotification(reminder.time);
     }
+
+    this.cleanOldDeduplicationKeys();
   }
 
   testNotification(): void {
@@ -63,6 +73,15 @@ export class ReminderNotificationService {
     this.sendNotification({
       body: 'Test — Les notifications fonctionnent !',
       tag: 'reminder-test',
+    });
+  }
+
+  syncRemindersToSW(): void {
+    if (!('serviceWorker' in navigator) || !navigator.serviceWorker.controller) return;
+    const reminders = this.loadReminders();
+    navigator.serviceWorker.controller.postMessage({
+      type: 'SYNC_REMINDERS',
+      reminders,
     });
   }
 
@@ -107,6 +126,16 @@ export class ReminderNotificationService {
       return raw ? JSON.parse(raw) : [];
     } catch {
       return [];
+    }
+  }
+
+  private cleanOldDeduplicationKeys(): void {
+    const today = new Date().toDateString();
+    for (let i = localStorage.length - 1; i >= 0; i--) {
+      const key = localStorage.key(i);
+      if (key?.startsWith('notif-sent:') && !key.endsWith(today)) {
+        localStorage.removeItem(key);
+      }
     }
   }
 }

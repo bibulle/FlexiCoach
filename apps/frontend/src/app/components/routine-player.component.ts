@@ -27,6 +27,7 @@ export class RoutinePlayerComponent implements OnInit, OnDestroy {
   private audioContext: AudioContext | null = null;
   private voicesLoaded = false;
   private wakeLock: WakeLockSentinel | null = null;
+  private visibilityHandler: (() => void) | null = null;
 
   readonly REST_SECONDS = 10;
 
@@ -165,6 +166,7 @@ export class RoutinePlayerComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.stop();
+    this.removeVisibilityHandler();
   }
 
   loadRoutine(slug: string) {
@@ -534,15 +536,34 @@ export class RoutinePlayerComponent implements OnInit, OnDestroy {
       this.wakeLock.addEventListener('release', () => {
         this.wakeLock = null;
       });
+      this.addVisibilityHandler();
     } catch {
       // Wake Lock request can fail (e.g. low battery, background tab)
     }
   }
 
   private async releaseWakeLock(): Promise<void> {
+    this.removeVisibilityHandler();
     if (this.wakeLock) {
       await this.wakeLock.release();
       this.wakeLock = null;
+    }
+  }
+
+  private addVisibilityHandler(): void {
+    if (this.visibilityHandler) return;
+    this.visibilityHandler = () => {
+      if (document.visibilityState === 'visible' && this.isPlaying) {
+        this.acquireWakeLock();
+      }
+    };
+    document.addEventListener('visibilitychange', this.visibilityHandler);
+  }
+
+  private removeVisibilityHandler(): void {
+    if (this.visibilityHandler) {
+      document.removeEventListener('visibilitychange', this.visibilityHandler);
+      this.visibilityHandler = null;
     }
   }
 }
