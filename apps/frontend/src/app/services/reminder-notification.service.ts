@@ -41,7 +41,7 @@ export class ReminderNotificationService {
 
   start(): void {
     if (this.intervalId !== null) return;
-    this.syncRemindersToSW();
+    this.ensureServiceWorker().then(() => this.syncRemindersToSW());
     this.checkReminders();
     this.intervalId = setInterval(() => this.checkReminders(), 30_000);
     document.addEventListener('visibilitychange', this.onVisibilityChange);
@@ -83,8 +83,9 @@ export class ReminderNotificationService {
     this.cleanOldDeduplicationKeys();
   }
 
-  testNotification(): void {
+  async testNotification(): Promise<void> {
     if (this.permission() !== 'granted') return;
+    await this.ensureServiceWorker();
     this.sendNotification({
       body: 'Test — Les notifications fonctionnent !',
       tag: 'reminder-test',
@@ -118,7 +119,10 @@ export class ReminderNotificationService {
     };
 
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.ready
+      const timeout = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('SW ready timeout')), 3000),
+      );
+      Promise.race([navigator.serviceWorker.ready, timeout])
         .then((reg) => reg.showNotification('FlexiCoach 💪', notifOptions))
         .catch((e) => {
           console.error('[Notifications] SW échec, fallback navigateur :', e);

@@ -175,6 +175,36 @@
           }
         }
 
+        <!-- Debug panel (temporaire) -->
+        <div class="settings-debug-panel" style="margin-top: 16px; padding: 12px; background: var(--surface-2, #f3f4f6); border-radius: 8px; font-size: 12px; font-family: monospace; line-height: 1.8;">
+          <strong style="font-size: 13px;">Debug notifications / PWA</strong>
+          <div>Notification API: {{ notifService.isSupported ? 'OK' : 'Non supporté' }}</div>
+          <div>Permission: <strong>{{ notifService.permission() }}</strong></div>
+          <div>SW dans navigator: {{ debugHasServiceWorker }}</div>
+          <div>SW controller: {{ debugSwController }}</div>
+          <div>SW registration: {{ debugSwRegistration }}</div>
+          <div>App version: {{ appVersion }}</div>
+          <div>User Agent: <span style="word-break: break-all; font-size: 10px;">{{ debugUserAgent }}</span></div>
+          <div style="margin-top: 8px;">
+            <button type="button" class="btn btn-ghost" style="font-size: 11px;" (click)="refreshDebugInfo()">Rafraîchir</button>
+            <button type="button" class="btn btn-ghost" style="font-size: 11px; margin-left: 8px;" (click)="debugRegisterSW()">Forcer enregistrement SW</button>
+          </div>
+          <hr style="margin: 10px 0; border-color: var(--ink-1, #ddd);" />
+          <strong style="font-size: 13px;">Debug PWA / Manifest</strong>
+          <div>Mode affichage: <strong>{{ debugDisplayMode }}</strong></div>
+          <div>Manifest link: {{ debugManifestLink }}</div>
+          <div style="margin-top: 4px;">Icônes manifest:</div>
+          @for (icon of debugManifestIcons; track icon.src) {
+            <div style="display: flex; align-items: center; gap: 6px; margin: 2px 0;">
+              <img [src]="icon.src" width="20" height="20" style="border: 1px solid #ccc; border-radius: 2px;" (error)="icon.status = 'ERREUR 404'" (load)="icon.status = 'OK'" />
+              <span>{{ icon.sizes }} ({{ icon.purpose }}): <strong [style.color]="icon.status === 'OK' ? 'green' : 'red'">{{ icon.status }}</strong></span>
+            </div>
+          }
+          <div style="margin-top: 8px;">
+            <button type="button" class="btn btn-ghost" style="font-size: 11px;" (click)="debugCheckManifest()">Vérifier manifest</button>
+          </div>
+        </div>
+
         @for (
           reminder of reminders;
           track $index;
