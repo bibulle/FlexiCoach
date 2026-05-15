@@ -272,6 +272,98 @@ describe('RoutinePlayerComponent', () => {
 
       expect(() => component.start()).not.toThrow();
     });
+
+    it('should re-acquire wake lock on visibilitychange when playing (issue #115)', async () => {
+      const mockRelease = vi.fn().mockResolvedValue(undefined);
+      const mockRequest = vi.fn().mockResolvedValue({
+        release: mockRelease,
+        addEventListener: vi.fn(),
+      });
+      Object.defineProperty(navigator, 'wakeLock', {
+        value: { request: mockRequest },
+        configurable: true,
+        writable: true,
+      });
+
+      fixture.detectChanges();
+      component.start();
+
+      await vi.waitFor(() => {
+        expect(mockRequest).toHaveBeenCalledTimes(1);
+      });
+
+      mockRequest.mockClear();
+
+      Object.defineProperty(document, 'visibilityState', {
+        value: 'visible',
+        configurable: true,
+        writable: true,
+      });
+      document.dispatchEvent(new Event('visibilitychange'));
+
+      await vi.waitFor(() => {
+        expect(mockRequest).toHaveBeenCalledWith('screen');
+      });
+    });
+
+    it('should not re-acquire wake lock on visibilitychange when paused', async () => {
+      const mockRequest = vi.fn().mockResolvedValue({
+        release: vi.fn().mockResolvedValue(undefined),
+        addEventListener: vi.fn(),
+      });
+      Object.defineProperty(navigator, 'wakeLock', {
+        value: { request: mockRequest },
+        configurable: true,
+        writable: true,
+      });
+
+      fixture.detectChanges();
+      component.start();
+
+      await vi.waitFor(() => {
+        expect(mockRequest).toHaveBeenCalledTimes(1);
+      });
+
+      component.pause();
+      mockRequest.mockClear();
+
+      Object.defineProperty(document, 'visibilityState', {
+        value: 'visible',
+        configurable: true,
+        writable: true,
+      });
+      document.dispatchEvent(new Event('visibilitychange'));
+
+      await new Promise((r) => setTimeout(r, 50));
+      expect(mockRequest).not.toHaveBeenCalled();
+    });
+
+    it('should clean up visibilitychange listener on destroy', async () => {
+      const removeSpy = vi.spyOn(document, 'removeEventListener');
+      const mockRequest = vi.fn().mockResolvedValue({
+        release: vi.fn().mockResolvedValue(undefined),
+        addEventListener: vi.fn(),
+      });
+      Object.defineProperty(navigator, 'wakeLock', {
+        value: { request: mockRequest },
+        configurable: true,
+        writable: true,
+      });
+
+      fixture.detectChanges();
+      component.start();
+
+      await vi.waitFor(() => {
+        expect(mockRequest).toHaveBeenCalled();
+      });
+
+      component.ngOnDestroy();
+
+      expect(removeSpy).toHaveBeenCalledWith(
+        'visibilitychange',
+        expect.any(Function),
+      );
+    });
   });
 
   describe('Admin actions on routine page', () => {

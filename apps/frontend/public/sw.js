@@ -18,13 +18,49 @@ self.addEventListener('install', (event) => {
   // Ne pas activer automatiquement, attendre le message SKIP_WAITING
 });
 
+// Stockage des rappels synchronisés depuis l'app
+let cachedReminders = [];
+let reminderTimerId = null;
+
 // Écouter les messages de l'application
 self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'SKIP_WAITING') {
     console.log('[SW] SKIP_WAITING reçu, activation immédiate');
     self.skipWaiting();
   }
+  if (event.data && event.data.type === 'SYNC_REMINDERS') {
+    cachedReminders = event.data.reminders || [];
+    console.log('[SW] Reminders synchronisés :', cachedReminders.length);
+    scheduleNextReminder();
+  }
 });
+
+function scheduleNextReminder() {
+  if (reminderTimerId) clearTimeout(reminderTimerId);
+  reminderTimerId = setTimeout(() => checkAndNotify(), 30000);
+}
+
+function checkAndNotify() {
+  const now = new Date();
+  const hhmm = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
+  const dayIndex = (now.getDay() + 6) % 7;
+
+  for (const reminder of cachedReminders) {
+    if (!reminder.enabled) continue;
+    if (reminder.time !== hhmm) continue;
+    if (!reminder.days.includes(dayIndex)) continue;
+
+    const tag = 'reminder-' + reminder.time;
+    self.registration.showNotification('FlexiCoach 💪', {
+      body: reminder.time + " — C'est l'heure de ta séance !",
+      icon: '/favicon.svg',
+      badge: '/favicon.svg',
+      tag: tag,
+    });
+  }
+
+  scheduleNextReminder();
+}
 
 // Activation du service worker
 self.addEventListener('activate', (event) => {
