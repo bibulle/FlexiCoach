@@ -201,12 +201,15 @@ describe('ReminderNotificationService', () => {
   });
 
   describe('SW sync (issue #114)', () => {
-    it('should send reminders to SW controller via postMessage', () => {
+    it('should send reminders to SW active worker via postMessage', async () => {
       const mockPostMessage = vi.fn();
       Object.defineProperty(navigator, 'serviceWorker', {
         value: {
-          controller: { postMessage: mockPostMessage },
-          ready: Promise.resolve({ showNotification: vi.fn() }),
+          controller: {},
+          ready: Promise.resolve({
+            active: { postMessage: mockPostMessage },
+            showNotification: vi.fn(),
+          }),
         },
         configurable: true,
         writable: true,
@@ -219,20 +222,76 @@ describe('ReminderNotificationService', () => {
 
       service.syncRemindersToSW();
 
-      expect(mockPostMessage).toHaveBeenCalledWith({
-        type: 'SYNC_REMINDERS',
-        reminders,
+      await vi.waitFor(() => {
+        expect(mockPostMessage).toHaveBeenCalledWith({
+          type: 'SYNC_REMINDERS',
+          reminders,
+        });
       });
     });
 
-    it('should not fail when no SW controller', () => {
+    it('should not fail when no SW available', () => {
+      const original = navigator.serviceWorker;
+      delete (navigator as any).serviceWorker;
+
+      try {
+        expect(() => service.syncRemindersToSW()).not.toThrow();
+      } finally {
+        Object.defineProperty(navigator, 'serviceWorker', {
+          value: original,
+          configurable: true,
+          writable: true,
+        });
+      }
+    });
+  });
+
+  describe('ensureServiceWorker (issue #114)', () => {
+    it('should register SW if not already registered', async () => {
+      const mockRegister = vi.fn().mockResolvedValue({});
+      const mockGetRegistration = vi.fn().mockResolvedValue(undefined);
       Object.defineProperty(navigator, 'serviceWorker', {
-        value: { controller: null },
+        value: {
+          register: mockRegister,
+          getRegistration: mockGetRegistration,
+          controller: null,
+          ready: Promise.resolve({
+            active: null,
+            showNotification: vi.fn(),
+          }),
+        },
         configurable: true,
         writable: true,
       });
 
-      expect(() => service.syncRemindersToSW()).not.toThrow();
+      await service.requestPermission();
+
+      await vi.waitFor(() => {
+        expect(mockRegister).toHaveBeenCalledWith('/sw.js');
+      });
+    });
+
+    it('should not re-register SW if already registered', async () => {
+      const mockRegister = vi.fn();
+      const mockGetRegistration = vi.fn().mockResolvedValue({ active: {} });
+      Object.defineProperty(navigator, 'serviceWorker', {
+        value: {
+          register: mockRegister,
+          getRegistration: mockGetRegistration,
+          controller: {},
+          ready: Promise.resolve({
+            active: {},
+            showNotification: vi.fn(),
+          }),
+        },
+        configurable: true,
+        writable: true,
+      });
+
+      await service.requestPermission();
+
+      await new Promise((r) => setTimeout(r, 50));
+      expect(mockRegister).not.toHaveBeenCalled();
     });
   });
 
@@ -274,15 +333,22 @@ describe('ReminderNotificationService', () => {
       });
     });
 
-    it('should fall back to browser Notification when no SW controller', () => {
+    it('should fall back to browser Notification when SW showNotification fails', async () => {
       Object.defineProperty(navigator, 'serviceWorker', {
-        value: { controller: null, ready: Promise.resolve({}) },
+        value: {
+          controller: {},
+          ready: Promise.resolve({
+            showNotification: vi.fn().mockRejectedValue(new Error('SW error')),
+          }),
+        },
         configurable: true,
         writable: true,
       });
 
       service.testNotification();
-      expect(window.Notification).toHaveBeenCalled();
+      await vi.waitFor(() => {
+        expect(window.Notification).toHaveBeenCalled();
+      });
     });
 
     it('should use SW for reminder notifications', async () => {

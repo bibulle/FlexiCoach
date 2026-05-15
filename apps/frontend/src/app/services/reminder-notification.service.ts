@@ -20,8 +20,23 @@ export class ReminderNotificationService {
     if (!this.isSupported) return 'denied';
     const result = await Notification.requestPermission();
     this.permission.set(result);
-    if (result === 'granted') this.start();
+    if (result === 'granted') {
+      await this.ensureServiceWorker();
+      this.start();
+    }
     return result;
+  }
+
+  private async ensureServiceWorker(): Promise<void> {
+    if (!('serviceWorker' in navigator)) return;
+    try {
+      const reg = await navigator.serviceWorker.getRegistration('/');
+      if (!reg) {
+        await navigator.serviceWorker.register('/sw.js');
+      }
+    } catch (e) {
+      console.error('[Notifications] SW registration failed:', e);
+    }
   }
 
   start(): void {
@@ -77,12 +92,14 @@ export class ReminderNotificationService {
   }
 
   syncRemindersToSW(): void {
-    if (!('serviceWorker' in navigator) || !navigator.serviceWorker.controller) return;
+    if (!('serviceWorker' in navigator)) return;
     const reminders = this.loadReminders();
-    navigator.serviceWorker.controller.postMessage({
-      type: 'SYNC_REMINDERS',
-      reminders,
-    });
+    navigator.serviceWorker.ready.then((reg) => {
+      reg.active?.postMessage({
+        type: 'SYNC_REMINDERS',
+        reminders,
+      });
+    }).catch(() => {});
   }
 
   private showNotification(time: string): void {
@@ -100,7 +117,7 @@ export class ReminderNotificationService {
       tag: options.tag,
     };
 
-    if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+    if ('serviceWorker' in navigator) {
       navigator.serviceWorker.ready
         .then((reg) => reg.showNotification('FlexiCoach 💪', notifOptions))
         .catch((e) => {
