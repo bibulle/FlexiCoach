@@ -79,6 +79,7 @@ export class StatsComponent implements OnInit {
     this.loadFromStorage();
     this.loadSummary();
     this.loadVoices();
+    this.refreshDebugInfo();
   }
 
   private voiceQuality(v: SpeechSynthesisVoice): number {
@@ -309,10 +310,55 @@ export class StatsComponent implements OnInit {
 
   async enableNotifications(): Promise<void> {
     await this.notifService.requestPermission();
+    this.refreshDebugInfo();
   }
 
   testNotification(): void {
     this.notifService.testNotification();
+  }
+
+  // ── Debug (temporaire) ──────────────────────────────────────────────────
+
+  debugHasServiceWorker = 'serviceWorker' in navigator ? 'Oui' : 'Non';
+  debugSwController = '';
+  debugSwRegistration = '';
+  debugUserAgent = navigator.userAgent;
+
+  refreshDebugInfo(): void {
+    this.debugHasServiceWorker = 'serviceWorker' in navigator ? 'Oui' : 'Non';
+    this.debugSwController = ('serviceWorker' in navigator && navigator.serviceWorker.controller)
+      ? `Actif (${navigator.serviceWorker.controller.state})`
+      : 'null';
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistration('/').then((reg) => {
+        if (reg) {
+          const sw = reg.active || reg.waiting || reg.installing;
+          this.debugSwRegistration = sw
+            ? `${sw.state} (scope: ${reg.scope})`
+            : `Enregistré mais pas de worker (scope: ${reg.scope})`;
+        } else {
+          this.debugSwRegistration = 'Aucun enregistrement';
+        }
+      }).catch((e) => {
+        this.debugSwRegistration = `Erreur: ${e.message}`;
+      });
+    } else {
+      this.debugSwRegistration = 'SW non supporté';
+    }
+  }
+
+  async debugRegisterSW(): Promise<void> {
+    if (!('serviceWorker' in navigator)) {
+      this.debugSwRegistration = 'SW non supporté';
+      return;
+    }
+    try {
+      const reg = await navigator.serviceWorker.register('/sw.js');
+      this.debugSwRegistration = `Enregistré! state: ${reg.active?.state ?? reg.installing?.state ?? 'pending'}, scope: ${reg.scope}`;
+      this.refreshDebugInfo();
+    } catch (e: any) {
+      this.debugSwRegistration = `Échec: ${e.message}`;
+    }
   }
 
   // ── Auth ──────────────────────────────────────────────────────────────────
