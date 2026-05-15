@@ -28,7 +28,7 @@ import { AuthService } from '../services/auth.service';
             <h2>Garde ton dos en mouvement.</h2>
             <p>
               Routines guidées de 5 à 15 minutes, séries quotidiennes, suivi
-              visuel sur l'année. Construit avec un kiné.
+              visuel sur l'année. Construit sans kiné.
             </p>
             <div class="brand-stats">
               <div class="brand-stat">
