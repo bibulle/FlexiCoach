@@ -13,17 +13,22 @@ import {
   ForbiddenException,
   NotFoundException,
 } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
 import { RoutinesService } from './routines.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CurrentUser } from '../auth/current-user.decorator';
-import { User } from '../schemas/user.schema';
+import { User, UserDocument } from '../schemas/user.schema';
 import { CreateRoutineDto } from './dto/create-routine.dto';
 import { UpdateRoutineDto } from './dto/update-routine.dto';
 import { ImportRoutineDto } from './dto/import-routine.dto';
 
 @Controller('routines')
 export class RoutinesController {
-  constructor(private readonly routinesService: RoutinesService) {}
+  constructor(
+    private readonly routinesService: RoutinesService,
+    @InjectModel(User.name) private userModel: Model<UserDocument>,
+  ) {}
 
   @Post()
   @UseGuards(JwtAuthGuard)
@@ -53,7 +58,13 @@ export class RoutinesController {
   @Get()
   @UseGuards(JwtAuthGuard)
   async findAll(@CurrentUser() user: User) {
-    return this.routinesService.findAllForUser(user._id);
+    const routines = await this.routinesService.findAllForUser(user._id);
+    const userDoc = await this.userModel.findById(user._id).exec();
+    const favorites = userDoc?.favoriteRoutines ?? [];
+    return routines.map((r: any) => ({
+      ...(r.toJSON ? r.toJSON() : r),
+      isFavorite: favorites.includes(r.id),
+    }));
   }
 
   @Get(':id')
@@ -112,6 +123,30 @@ export class RoutinesController {
     }
 
     return this.routinesService.update(id, updateRoutineDto);
+  }
+
+  @Post(':id/favorite')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  async addFavorite(@Param('id') id: string, @CurrentUser() user: User) {
+    const routine = await this.routinesService.findOne(id);
+    if (!routine) {
+      throw new NotFoundException('Routine not found');
+    }
+    await this.userModel.findByIdAndUpdate(user._id, {
+      $addToSet: { favoriteRoutines: id },
+    });
+    return { success: true };
+  }
+
+  @Delete(':id/favorite')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  async removeFavorite(@Param('id') id: string, @CurrentUser() user: User) {
+    await this.userModel.findByIdAndUpdate(user._id, {
+      $pull: { favoriteRoutines: id },
+    });
+    return { success: true };
   }
 
   @Delete(':id')

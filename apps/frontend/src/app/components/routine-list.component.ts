@@ -6,7 +6,7 @@ import { RoutineService } from '../services/routine.service';
 import { AuthService } from '../services/auth.service';
 import { StatsComponent } from './stats.component';
 
-type FilterKey = 'Tout' | 'Quotidien' | 'Bureau' | 'Sport' | 'Mes routines';
+type FilterKey = 'Tout' | 'Quotidien' | 'Bureau' | 'Sport' | 'Favoris';
 
 @Component({
   selector: 'app-routine-list',
@@ -25,12 +25,12 @@ export class RoutineListComponent implements OnInit {
     'Quotidien',
     'Bureau',
     'Sport',
-    'Mes routines',
+    'Favoris',
   ];
   activeFilter = signal<FilterKey>('Tout');
 
-  get userRoutinesCount(): number {
-    return this.routines.filter((r) => r.visibility === 'user').length;
+  get favoritesCount(): number {
+    return this.routines.filter((r) => r.isFavorite).length;
   }
 
   private readonly FILTER_TAGS: Record<string, string[]> = {
@@ -78,8 +78,8 @@ export class RoutineListComponent implements OnInit {
 
   filteredRoutines = computed(() => {
     const f = this.activeFilter();
-    if (f === 'Mes routines')
-      return this.routines.filter((r) => r.visibility === 'user');
+    if (f === 'Favoris')
+      return this.routines.filter((r) => r.isFavorite);
     const tags = this.FILTER_TAGS[f];
     if (!tags) return this.routines;
     const keywords = this.FILTER_KEYWORDS[f] ?? [];
@@ -125,6 +125,22 @@ export class RoutineListComponent implements OnInit {
 
   setFilter(f: FilterKey) {
     this.activeFilter.set(f);
+  }
+
+  toggleFavorite(event: Event, routine: Routine) {
+    event.stopPropagation();
+    const wasFavorite = routine.isFavorite;
+    routine.isFavorite = !wasFavorite;
+
+    const obs = wasFavorite
+      ? this.routineService.removeFavorite(routine.id)
+      : this.routineService.addFavorite(routine.id);
+
+    obs.subscribe({
+      error: () => {
+        routine.isFavorite = wasFavorite;
+      },
+    });
   }
 
   getRoutineColor(routine: Routine): string {

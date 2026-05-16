@@ -34,4 +34,17 @@ export class RoutineService {
   delete(id: string): Observable<Routine> {
     return this.http.delete<Routine>(`${this.apiUrl}/${id}`);
   }
+
+  addFavorite(id: string): Observable<{ success: boolean }> {
+    return this.http.post<{ success: boolean }>(
+      `${this.apiUrl}/${id}/favorite`,
+      {},
+    );
+  }
+
+  removeFavorite(id: string): Observable<{ success: boolean }> {
+    return this.http.delete<{ success: boolean }>(
+      `${this.apiUrl}/${id}/favorite`,
+    );
+  }
 }

@@ -30,6 +30,7 @@ export interface Routine {
   visibility?: 'builtIn' | 'user';
   ownerId?: string;
   tag?: RoutineTag | string;
+  isFavorite?: boolean;
 }
 
 export interface UserSettings {

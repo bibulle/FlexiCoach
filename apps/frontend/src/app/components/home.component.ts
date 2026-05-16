@@ -42,11 +42,29 @@ export class HomeComponent implements OnInit {
     });
     this.routineService.getAll().subscribe({
       next: (r) => {
-        this.routines = r.slice(0, 4);
+        const favorites = r.filter((routine) => routine.isFavorite);
+        this.routines =
+          favorites.length > 0 ? favorites.slice(0, 4) : r.slice(0, 4);
         this.loading = false;
       },
       error: () => {
         this.loading = false;
+      },
+    });
+  }
+
+  toggleFavorite(event: Event, routine: Routine) {
+    event.stopPropagation();
+    const wasFavorite = routine.isFavorite;
+    routine.isFavorite = !wasFavorite;
+
+    const obs = wasFavorite
+      ? this.routineService.removeFavorite(routine.id)
+      : this.routineService.addFavorite(routine.id);
+
+    obs.subscribe({
+      error: () => {
+        routine.isFavorite = wasFavorite;
       },
     });
   }
