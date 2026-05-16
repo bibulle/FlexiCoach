@@ -3,12 +3,14 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { of } from 'rxjs';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { CompletionComponent } from './completion.component';
+import { SessionService } from '../services/session.service';
 
 describe('CompletionComponent', () => {
   let component: CompletionComponent;
   let fixture: ComponentFixture<CompletionComponent>;
   let mockRouter: any;
   let mockActivatedRoute: any;
+  let mockSessionService: any;
 
   beforeEach(async () => {
     mockRouter = {
@@ -19,7 +21,12 @@ describe('CompletionComponent', () => {
       queryParams: of({
         routineName: 'Test Routine',
         duration: '125',
+        sessionId: 'session-123',
       }),
+    };
+
+    mockSessionService = {
+      update: vi.fn().mockReturnValue(of({})),
     };
 
     await TestBed.configureTestingModule({
@@ -27,6 +34,7 @@ describe('CompletionComponent', () => {
       providers: [
         { provide: Router, useValue: mockRouter },
         { provide: ActivatedRoute, useValue: mockActivatedRoute },
+        { provide: SessionService, useValue: mockSessionService },
       ],
     }).compileComponents();
 
@@ -55,8 +63,21 @@ describe('CompletionComponent', () => {
     expect(component.selectedFeeling).toBe(4);
   });
 
-  it('should navigate to home on finish', () => {
+  it('should navigate to home on finish without feeling', () => {
+    component.sessionId = '';
+    component.selectedFeeling = null;
     component.finish();
+    expect(mockRouter.navigate).toHaveBeenCalledWith(['/']);
+    expect(mockSessionService.update).not.toHaveBeenCalled();
+  });
+
+  it('should save feeling and navigate on finish with sessionId', () => {
+    component.sessionId = 'session-123';
+    component.selectedFeeling = 4;
+    component.finish();
+    expect(mockSessionService.update).toHaveBeenCalledWith('session-123', {
+      feeling: 4,
+    });
     expect(mockRouter.navigate).toHaveBeenCalledWith(['/']);
   });
 
