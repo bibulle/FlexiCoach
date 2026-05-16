@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { getModelToken } from '@nestjs/mongoose';
 import { RoutinesController } from './routines.controller';
 import { RoutinesService } from './routines.service';
 import { User } from '../schemas/user.schema';
@@ -7,6 +8,7 @@ import { ForbiddenException, NotFoundException } from '@nestjs/common';
 describe('RoutinesController', () => {
   let controller: RoutinesController;
   let service: jest.Mocked<RoutinesService>;
+  let userModel: any;
 
   const mockUser = {
     _id: 'user-123',
@@ -32,6 +34,9 @@ describe('RoutinesController', () => {
     totalSeconds: 600,
     visibility: 'user',
     ownerId: 'user-123',
+    toJSON() {
+      return { ...this };
+    },
   } as any;
 
   beforeEach(async () => {
@@ -45,12 +50,23 @@ describe('RoutinesController', () => {
       remove: jest.fn(),
     };
 
+    userModel = {
+      findById: jest.fn().mockReturnValue({
+        exec: jest.fn().mockResolvedValue({ favoriteRoutines: [] }),
+      }),
+      findByIdAndUpdate: jest.fn().mockResolvedValue({}),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       controllers: [RoutinesController],
       providers: [
         {
           provide: RoutinesService,
           useValue: mockService,
+        },
+        {
+          provide: getModelToken(User.name),
+          useValue: userModel,
         },
       ],
     }).compile();
@@ -117,14 +133,29 @@ describe('RoutinesController', () => {
   });
 
   describe('findAll', () => {
-    it('should return routines for authenticated user', async () => {
+    it('should return routines with isFavorite flag', async () => {
       const routines = [mockRoutine];
       service.findAllForUser.mockResolvedValue(routines);
+      userModel.findById.mockReturnValue({
+        exec: jest.fn().mockResolvedValue({ favoriteRoutines: ['test-routine'] }),
+      });
 
       const result = await controller.findAll(mockUser);
 
-      expect(result).toEqual(routines);
+      expect(result[0].isFavorite).toBe(true);
       expect(service.findAllForUser).toHaveBeenCalledWith(mockUser._id);
+    });
+
+    it('should return isFavorite false when not in favorites', async () => {
+      const routines = [mockRoutine];
+      service.findAllForUser.mockResolvedValue(routines);
+      userModel.findById.mockReturnValue({
+        exec: jest.fn().mockResolvedValue({ favoriteRoutines: [] }),
+      });
+
+      const result = await controller.findAll(mockUser);
+
+      expect(result[0].isFavorite).toBe(false);
     });
   });
 
@@ -256,6 +287,38 @@ describe('RoutinesController', () => {
       await expect(controller.remove('test-routine', mockUser)).rejects.toThrow(
         ForbiddenException,
       );
+    });
+  });
+
+  describe('addFavorite', () => {
+    it('should add routine to favorites', async () => {
+      service.findOne.mockResolvedValue(mockRoutine);
+
+      const result = await controller.addFavorite('test-routine', mockUser);
+
+      expect(result).toEqual({ success: true });
+      expect(userModel.findByIdAndUpdate).toHaveBeenCalledWith(mockUser._id, {
+        $addToSet: { favoriteRoutines: 'test-routine' },
+      });
+    });
+
+    it('should throw NotFoundException if routine not found', async () => {
+      service.findOne.mockResolvedValue(null);
+
+      await expect(
+        controller.addFavorite('non-existent', mockUser),
+      ).rejects.toThrow(NotFoundException);
+    });
+  });
+
+  describe('removeFavorite', () => {
+    it('should remove routine from favorites', async () => {
+      const result = await controller.removeFavorite('test-routine', mockUser);
+
+      expect(result).toEqual({ success: true });
+      expect(userModel.findByIdAndUpdate).toHaveBeenCalledWith(mockUser._id, {
+        $pull: { favoriteRoutines: 'test-routine' },
+      });
     });
   });
 });

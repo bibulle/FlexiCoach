@@ -43,6 +43,9 @@ export class User {
     }>;
     favoriteRoutine?: string;
   };
+
+  @Prop({ type: [String], default: [] })
+  favoriteRoutines?: string[];
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

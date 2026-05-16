@@ -209,9 +209,31 @@
 
 .mini-card-header {
   display: flex;
+  justify-content: space-between;
+  align-items: center;
   gap: 6px;
   flex-wrap: wrap;
   margin-bottom: 8px;
+}
+
+.btn-favorite {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 50%;
+  color: var(--ink-3);
+  transition: color 0.15s, transform 0.15s;
+  line-height: 0;
+
+  &:hover {
+    color: var(--warn);
+    transform: scale(1.15);
+  }
+
+  &--active {
+    color: var(--warn);
+  }
 }
 
 .mini-card-name {
