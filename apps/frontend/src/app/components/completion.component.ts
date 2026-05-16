@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
+import { SessionService } from '../services/session.service';
 
 @Component({
   selector: 'app-completion',
@@ -13,6 +14,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 export class CompletionComponent implements OnInit {
   routineName = '';
   duration = 0;
+  sessionId = '';
   selectedFeeling: number | null = null;
   note = '';
 
@@ -27,12 +29,14 @@ export class CompletionComponent implements OnInit {
   constructor(
     private router: Router,
     private route: ActivatedRoute,
+    private sessionService: SessionService,
   ) {}
 
   ngOnInit() {
     this.route.queryParams.subscribe((params) => {
       this.routineName = params['routineName'] || '';
       this.duration = parseInt(params['duration'] || '0', 10);
+      this.sessionId = params['sessionId'] || '';
     });
   }
 
@@ -41,7 +45,16 @@ export class CompletionComponent implements OnInit {
   }
 
   finish() {
-    this.router.navigate(['/']);
+    if (this.sessionId && this.selectedFeeling !== null) {
+      this.sessionService
+        .update(this.sessionId, { feeling: this.selectedFeeling })
+        .subscribe({
+          next: () => this.router.navigate(['/']),
+          error: () => this.router.navigate(['/']),
+        });
+    } else {
+      this.router.navigate(['/']);
+    }
   }
 
   navigateToCalendar() {

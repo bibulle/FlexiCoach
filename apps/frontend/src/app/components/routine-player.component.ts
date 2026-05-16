@@ -386,18 +386,17 @@ export class RoutinePlayerComponent implements OnInit, OnDestroy {
         progress: 1,
       })
       .subscribe({
-        next: () => {
-          // Navigate to completion screen
+        next: (session) => {
           this.router.navigate(['/completion'], {
             queryParams: {
               routineName: this.routine?.name,
               duration: durationSec,
+              sessionId: session._id,
             },
           });
         },
         error: (err) => {
           console.error('Error saving session:', err);
-          // Still navigate even if save fails
           this.router.navigate(['/completion'], {
             queryParams: {
               routineName: this.routine?.name,
