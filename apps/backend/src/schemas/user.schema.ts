@@ -34,6 +34,7 @@ export class User {
     voiceRate?: number;
     voicePitch?: number;
     voiceVolume?: number;
+    voiceName?: string;
     sound?: boolean;
     notifications?: boolean;
     reminders?: Array<{

@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 import { StatsService, StatsSummary } from '../services/stats.service';
+import { SettingsService } from '../services/settings.service';
 import { ReminderNotificationService } from '../services/reminder-notification.service';
 import { APP_VERSION } from '../version';
 
@@ -28,6 +29,7 @@ const DEFAULT_REMINDERS: Reminder[] = [
 })
 export class StatsComponent implements OnInit {
   private statsService = inject(StatsService);
+  private settingsService = inject(SettingsService);
   private router = inject(Router);
   authService = inject(AuthService);
   notifService = inject(ReminderNotificationService);
@@ -76,9 +78,17 @@ export class StatsComponent implements OnInit {
   ];
 
   ngOnInit(): void {
-    this.loadFromStorage();
+    this.settingsService.load().subscribe({
+      next: () => {
+        this.loadFromStorage();
+        this.loadVoices();
+      },
+      error: () => {
+        this.loadFromStorage();
+        this.loadVoices();
+      },
+    });
     this.loadSummary();
-    this.loadVoices();
   }
 
   private voiceQuality(v: SpeechSynthesisVoice): number {
@@ -190,6 +200,9 @@ export class StatsComponent implements OnInit {
     this.selectedTheme.set(theme);
     localStorage.setItem('theme', theme);
     this.applyTheme(theme);
+    if (theme !== 'auto') {
+      this.settingsService.save({ theme }).subscribe();
+    }
   }
 
   private applyTheme(theme: 'light' | 'dark' | 'auto'): void {
@@ -251,6 +264,7 @@ export class StatsComponent implements OnInit {
 
   private saveReminders(): void {
     localStorage.setItem('reminders', JSON.stringify(this.reminders));
+    this.settingsService.save({ reminders: this.reminders }).subscribe();
   }
 
   // ── Voice ─────────────────────────────────────────────────────────────────
@@ -265,6 +279,14 @@ export class StatsComponent implements OnInit {
         voiceName: this.selectedVoiceName,
       }),
     );
+    this.settingsService
+      .save({
+        voiceRate: this.voiceSpeed,
+        voiceVolume: this.voiceVolume,
+        voiceName: this.selectedVoiceName,
+        sound: this.bipsEnabled,
+      })
+      .subscribe();
   }
 
   toggleBips(): void {
