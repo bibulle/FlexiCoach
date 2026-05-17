@@ -4,19 +4,30 @@ import {
   HttpTestingController,
 } from '@angular/common/http/testing';
 import { AuthService, AuthResponse } from './auth.service';
-import { firstValueFrom } from 'rxjs';
+import { SettingsService } from './settings.service';
+import { firstValueFrom, of } from 'rxjs';
+import { vi } from 'vitest';
 
 describe('AuthService', () => {
   let service: AuthService;
   let httpMock: HttpTestingController;
+  let mockSettingsService: any;
 
   beforeEach(() => {
     // Clear localStorage BEFORE creating the service
     localStorage.clear();
 
+    mockSettingsService = {
+      load: vi.fn().mockReturnValue(of(null)),
+      save: vi.fn().mockReturnValue(of(null)),
+    };
+
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
-      providers: [AuthService],
+      providers: [
+        AuthService,
+        { provide: SettingsService, useValue: mockSettingsService },
+      ],
     });
 
     service = TestBed.inject(AuthService);
@@ -96,6 +107,48 @@ describe('AuthService', () => {
       expect(response).toEqual(mockResponse);
       expect(localStorage.getItem('auth_token')).toBe('mock-token');
       expect(service.isAuthenticated()).toBe(true);
+    });
+  });
+
+  describe('settings sync after login', () => {
+    it('should call settingsService.load() after login', async () => {
+      const mockResponse: AuthResponse = {
+        access_token: 'mock-token',
+        user: { _id: '123', email: 'test@example.com' },
+      };
+
+      const responsePromise = firstValueFrom(
+        service.login({ email: 'test@example.com', password: 'pass' }),
+      );
+
+      const req = httpMock.expectOne('/api/auth/login');
+      req.flush(mockResponse);
+
+      const adminReq = httpMock.expectOne('/api/auth/is-admin');
+      adminReq.flush({ isAdmin: false });
+
+      await responsePromise;
+      expect(mockSettingsService.load).toHaveBeenCalled();
+    });
+
+    it('should call settingsService.load() after OAuth exchange', async () => {
+      const mockResponse: AuthResponse = {
+        access_token: 'oauth-token',
+        user: { _id: '456', email: 'oauth@example.com' },
+      };
+
+      const responsePromise = firstValueFrom(
+        service.exchangeOAuthCode('code-123'),
+      );
+
+      const req = httpMock.expectOne('/api/auth/exchange');
+      req.flush(mockResponse);
+
+      const adminReq = httpMock.expectOne('/api/auth/is-admin');
+      adminReq.flush({ isAdmin: false });
+
+      await responsePromise;
+      expect(mockSettingsService.load).toHaveBeenCalled();
     });
   });
 
@@ -241,7 +294,10 @@ describe('AuthService', () => {
       TestBed.resetTestingModule();
       TestBed.configureTestingModule({
         imports: [HttpClientTestingModule],
-        providers: [AuthService],
+        providers: [
+          AuthService,
+          { provide: SettingsService, useValue: mockSettingsService },
+        ],
       });
 
       const freshService = TestBed.inject(AuthService);

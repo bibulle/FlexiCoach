@@ -265,7 +265,7 @@ describe('UsersService', () => {
       expect(result?.settings?.sound).toBe(true);
       expect(mockUserModel.findByIdAndUpdate).toHaveBeenCalledWith(
         'user-mongo-id',
-        { $set: { settings } },
+        { $set: { 'settings.theme': 'dark', 'settings.voiceRate': 1.2, 'settings.sound': true } },
         { new: true },
       );
     });
@@ -281,7 +281,7 @@ describe('UsersService', () => {
 
       expect(mockUserModel.findByIdAndUpdate).toHaveBeenCalledWith(
         'user-mongo-id',
-        { $set: { settings: partialSettings } },
+        { $set: { 'settings.theme': 'dark' } },
         { new: true },
       );
     });

@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { StatsComponent } from './stats.component';
 import { StatsService, StatsSummary } from '../services/stats.service';
+import { SettingsService } from '../services/settings.service';
 import { AuthService } from '../services/auth.service';
 import { Router } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
@@ -12,6 +13,7 @@ describe('StatsComponent', () => {
   let component: StatsComponent;
   let fixture: ComponentFixture<StatsComponent>;
   let mockStatsService: any;
+  let mockSettingsService: any;
   let mockAuthService: any;
   let mockNotifService: any;
 
@@ -29,6 +31,10 @@ describe('StatsComponent', () => {
     (window.speechSynthesis as any).getVoices = () => [];
 
     mockStatsService = { getSummary: vi.fn() };
+    mockSettingsService = {
+      load: vi.fn().mockReturnValue(of(null)),
+      save: vi.fn().mockReturnValue(of(null)),
+    };
     mockAuthService = {
       currentUser$: of(null),
       isAuthenticated: vi.fn(() => false),
@@ -46,6 +52,7 @@ describe('StatsComponent', () => {
       imports: [StatsComponent, RouterTestingModule],
       providers: [
         { provide: StatsService, useValue: mockStatsService },
+        { provide: SettingsService, useValue: mockSettingsService },
         { provide: AuthService, useValue: mockAuthService },
         { provide: ReminderNotificationService, useValue: mockNotifService },
       ],

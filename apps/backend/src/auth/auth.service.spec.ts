@@ -20,6 +20,7 @@ describe('AuthService', () => {
             findByEmail: jest.fn(),
             findByEmailWithPassword: jest.fn(),
             create: jest.fn(),
+            update: jest.fn(),
           },
         },
         {
@@ -228,6 +229,67 @@ describe('AuthService', () => {
       const result = await service.validateUser(email, password);
 
       expect(result).toBeNull();
+    });
+  });
+
+  describe('validateOAuthUser', () => {
+    const oauthData = {
+      email: 'oauth@example.com',
+      displayName: 'OAuth User',
+      avatar: 'https://photo.url/avatar.jpg',
+      provider: 'google',
+      providerId: 'google-123',
+    };
+
+    it('should create a new user if not found', async () => {
+      const createdUser = { _id: 'new-user', ...oauthData };
+      usersService.findByEmail.mockResolvedValue(null);
+      usersService.create.mockResolvedValue(createdUser as any);
+
+      const result = await service.validateOAuthUser(oauthData);
+
+      expect(usersService.findByEmail).toHaveBeenCalledWith(oauthData.email);
+      expect(usersService.create).toHaveBeenCalledWith(oauthData);
+      expect(result).toEqual(createdUser);
+    });
+
+    it('should update existing user and link Google account', async () => {
+      const existingUser = {
+        _id: 'existing-user',
+        email: oauthData.email,
+        provider: 'local',
+        providerId: undefined,
+      };
+      const updatedUser = { ...existingUser, ...oauthData };
+      usersService.findByEmail.mockResolvedValue(existingUser as any);
+      usersService.update.mockResolvedValue(updatedUser as any);
+
+      const result = await service.validateOAuthUser(oauthData);
+
+      expect(usersService.update).toHaveBeenCalledWith(existingUser._id, {
+        avatar: oauthData.avatar,
+        provider: oauthData.provider,
+        providerId: oauthData.providerId,
+      });
+      expect(result).toEqual(updatedUser);
+    });
+
+    it('should not overwrite existing providerId', async () => {
+      const existingUser = {
+        _id: 'existing-user',
+        email: oauthData.email,
+        provider: 'google',
+        providerId: 'already-linked',
+      };
+      const updatedUser = { ...existingUser, avatar: oauthData.avatar };
+      usersService.findByEmail.mockResolvedValue(existingUser as any);
+      usersService.update.mockResolvedValue(updatedUser as any);
+
+      await service.validateOAuthUser(oauthData);
+
+      expect(usersService.update).toHaveBeenCalledWith(existingUser._id, {
+        avatar: oauthData.avatar,
+      });
     });
   });
 });

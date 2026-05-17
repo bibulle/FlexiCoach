@@ -37,8 +37,19 @@ export class UsersService {
     id: string,
     settings: Partial<User['settings']>,
   ): Promise<User | null> {
+    // Build $set with dot notation to merge individual keys
+    // instead of replacing the entire settings object
+    const setObj: Record<string, any> = {};
+    for (const [key, value] of Object.entries(settings)) {
+      if (value !== undefined) {
+        setObj[`settings.${key}`] = value;
+      }
+    }
+    if (Object.keys(setObj).length === 0) {
+      return this.userModel.findById(id).exec();
+    }
     return this.userModel
-      .findByIdAndUpdate(id, { $set: { settings } }, { new: true })
+      .findByIdAndUpdate(id, { $set: setObj }, { new: true })
       .exec();
   }
 
