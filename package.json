@@ -1,6 +1,6 @@
 {
   "name": "@flexicoach/source",
-  "version": "0.8.3",
+  "version": "0.8.4",
   "license": "MIT",
   "scripts": {
     "version": "node scripts/update-version.js && git add apps/frontend/src/app/version.ts",
