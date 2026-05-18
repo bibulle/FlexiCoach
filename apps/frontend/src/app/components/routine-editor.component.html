@@ -214,8 +214,17 @@
                 [style.background]="getModeColor(step.get('mode')?.value)"
               ></span>
               <div class="step-info">
-                <div class="step-name">
-                  {{ step.get('name')?.value || '—' }}
+                <div class="step-name-row">
+                  <span class="step-name">{{ step.get('name')?.value || '—' }}</span>
+                  @if (step.get('imageUrl')?.value) {
+                    <span class="step-image-indicator" title="Avec image">
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="5" width="18" height="14" rx="2" />
+                        <circle cx="9" cy="10" r="1.5" fill="currentColor" />
+                        <polyline points="21 16 16 11 5 19" />
+                      </svg>
+                    </span>
+                  }
                 </div>
                 <div class="type-caption">
                   {{ getModeLabel(step.get('mode')?.value) }}
@@ -269,8 +278,8 @@
 
     <!-- Right panel: selected step detail (desktop only) -->
     <aside class="editor-panel">
-      @if (selectedStepIndex !== null && selectedStep) {
-        <div class="card editor-panel-card">
+      @if (selectedStepIndex !== null && selectedStep && selectedStepFormGroup) {
+        <div class="card editor-panel-card" [formGroup]="selectedStepFormGroup">
           <span
             class="type-label editor-panel-mode-label"
             [style.color]="getModeColor(selectedStep.mode)"
@@ -279,57 +288,129 @@
           </span>
           <h3 class="type-h2 editor-panel-title">{{ selectedStep.name }}</h3>
 
-          <div class="editor-panel-row">
-            <div class="editor-panel-field">
-              <div class="type-label">Durée</div>
-              <div class="type-mono editor-panel-value">
-                {{ formatSeconds(selectedStep.seconds) }}
-              </div>
+          <!-- Nom -->
+          <div class="editor-field">
+            <label class="type-label">Nom</label>
+            <input class="input" formControlName="name" />
+          </div>
+
+          <!-- Durée + Mode -->
+          <div class="editor-field-row">
+            <div class="editor-field">
+              <label class="type-label">Durée (s)</label>
+              <input class="input type-mono" type="number" formControlName="seconds" min="5" />
             </div>
-            <div class="editor-panel-field">
-              <div class="type-label">Mode</div>
-              <div class="editor-panel-value">
-                {{ getModeLabel(selectedStep.mode) }}
-              </div>
+            <div class="editor-field">
+              <label class="type-label">Mode</label>
+              <select class="input" formControlName="mode">
+                <option value="respiration">Respiration</option>
+                <option value="mouvement">Mouvement</option>
+                <option value="statique">Statique</option>
+              </select>
             </div>
           </div>
 
-          @if (selectedStep.text) {
-            <div class="editor-panel-field">
-              <div class="type-label">Consigne</div>
-              <div class="editor-panel-text">{{ selectedStep.text }}</div>
-            </div>
-          }
+          <!-- Consigne -->
+          <div class="editor-field">
+            <label class="type-label">Consigne</label>
+            <textarea class="input" formControlName="text" rows="3"></textarea>
+          </div>
 
-          @if (selectedStep.cues?.length) {
-            <div class="editor-panel-field">
-              <div class="type-label">Annonces vocales</div>
+          <!-- Image — facultatif -->
+          <div class="editor-image-section">
+            <div class="editor-image-header">
+              <label class="type-label">Image <span class="editor-image-optional">· facultatif</span></label>
+              @if (selectedStep.imageUrl) {
+                <button
+                  type="button"
+                  class="btn btn-ghost editor-image-remove-btn"
+                  (click)="removeStepImage(selectedStepIndex!)"
+                >
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                  </svg>
+                  Retirer
+                </button>
+              }
+            </div>
+            @if (selectedStep.imageUrl) {
+              <div class="editor-image-card">
+                <div class="editor-image-thumb">
+                  <img [src]="selectedStep.imageUrl" alt="Position" />
+                </div>
+                <div class="editor-image-meta">
+                  <div>
+                    <div class="editor-image-filename">{{ selectedStep.imageName || 'image' }}</div>
+                    <div class="type-caption">{{ formatFileSize(selectedStep.imageSize) }}@if (selectedStep.imageUploadedAt) { · ajoutée {{ formatUploadDate(selectedStep.imageUploadedAt) }}}</div>
+                  </div>
+                  <label class="btn btn-secondary editor-image-replace-btn">
+                    Remplacer
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      (change)="onStepImageUpload($event, selectedStepIndex!)"
+                      style="display: none"
+                    />
+                  </label>
+                </div>
+              </div>
+            } @else {
+              <label class="editor-image-dropzone">
+                @if (uploadingStepIndex === selectedStepIndex) {
+                  <span class="type-body-sm">Upload en cours…</span>
+                } @else {
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--ink-4)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="5" width="18" height="14" rx="2" />
+                    <circle cx="9" cy="10" r="1.5" fill="var(--ink-4)" />
+                    <polyline points="21 16 16 11 5 19" />
+                  </svg>
+                  <span class="type-body-sm">Cliquez pour ajouter une image</span>
+                  <span class="type-caption">JPEG, PNG ou WebP · max 5 Mo</span>
+                }
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  (change)="onStepImageUpload($event, selectedStepIndex!)"
+                  style="display: none"
+                />
+              </label>
+            }
+            <p class="type-caption editor-image-tip">
+              Une illustration aide l'utilisateur à visualiser la posture sans regarder l'écran tout du long.
+            </p>
+          </div>
+
+          <!-- Annonces vocales -->
+          <div class="editor-cues-section">
+            <div class="editor-cues-header">
+              <label class="type-label">Annonces vocales</label>
+              <button type="button" class="btn btn-ghost editor-cues-add-btn" (click)="openStepModal(selectedStepIndex)">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
+                </svg>
+                Ajouter
+              </button>
+            </div>
+            @if (selectedStep.cues?.length) {
               @for (cue of selectedStep.cues; track cue.at) {
                 <div class="editor-cue">
                   <span class="type-mono editor-cue-time">+{{ cue.at }}s</span>
                   <span class="editor-cue-text">{{ cue.say }}</span>
                 </div>
               }
-            </div>
-          }
-
-          <div class="editor-panel-actions">
-            <button
-              type="button"
-              class="btn btn-primary"
-              style="flex: 1; justify-content: center"
-              (click)="openStepModal(selectedStepIndex)"
-            >
-              Modifier
-            </button>
-            <button
-              type="button"
-              class="btn btn-ghost editor-delete-btn"
-              (click)="deleteStep(selectedStepIndex!)"
-            >
-              Supprimer
-            </button>
+            }
           </div>
+
+          <button
+            type="button"
+            class="btn btn-secondary editor-delete-step-btn"
+            (click)="deleteStep(selectedStepIndex!)"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+            Supprimer cette étape
+          </button>
         </div>
       } @else {
         <div class="card editor-panel-empty">

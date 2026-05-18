@@ -40,6 +40,22 @@ class StepDto {
   text!: string;
 
   @IsOptional()
+  @IsString()
+  imageUrl?: string;
+
+  @IsOptional()
+  @IsString()
+  imageName?: string;
+
+  @IsOptional()
+  @IsNumber()
+  imageSize?: number;
+
+  @IsOptional()
+  @IsString()
+  imageUploadedAt?: string;
+
+  @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => CueDto)
