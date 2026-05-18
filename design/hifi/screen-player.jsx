@@ -3,13 +3,38 @@
 const ROUTINE = [
   { name: 'Respiration', dur: 60, mode: 'resp', desc: 'Inspirations 4s / expirations 6s. Détend les épaules.' },
   { name: 'Cervicales', dur: 60, mode: 'mvt', desc: 'Rotations lentes droite/gauche, puis flexion/extension.' },
-  { name: 'Mobilité thoracique', dur: 60, mode: 'mvt', desc: 'Bras croisés. Rotations contrôlées du buste droite/gauche.' },
-  { name: 'Étirement ischios', dur: 60, mode: 'stat', desc: 'Talon au sol, jambe tendue. Tiens 30s par jambe.' },
-  { name: 'Planche', dur: 45, mode: 'stat', desc: 'Gainage. Bassin aligné, regard vers le sol.' },
+  { name: 'Mobilité thoracique', dur: 60, mode: 'mvt', desc: 'Bras croisés. Rotations contrôlées du buste droite/gauche.', image: true },
+  { name: 'Étirement ischios', dur: 60, mode: 'stat', desc: 'Talon au sol, jambe tendue. Tiens 30s par jambe.', image: true },
+  { name: 'Planche', dur: 45, mode: 'stat', desc: 'Gainage. Bassin aligné, regard vers le sol.', image: true },
   { name: 'Hanches', dur: 60, mode: 'mvt', desc: 'Cercles larges, debout. Ouvre la hanche au maximum.' },
-  { name: 'Mollets', dur: 60, mode: 'stat', desc: 'Étirement contre mur, jambe arrière tendue.' },
+  { name: 'Mollets', dur: 60, mode: 'stat', desc: 'Étirement contre mur, jambe arrière tendue.', image: true },
   { name: 'Retour au calme', dur: 30, mode: 'resp', desc: 'Trois grandes respirations. Bravo.' },
 ];
+
+// Placeholder visual for steps with an image (figure stylisée en mode du mouvement)
+const StepImage = ({ mode, size = 160 }) => {
+  const color = MODE_COLOR[mode];
+  return (
+    <svg width={size} height={size * 0.75} viewBox="0 0 160 120" style={{ display: 'block' }}>
+      <defs>
+        <linearGradient id={`si-${mode}`} x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor={color} stopOpacity="0.12" />
+          <stop offset="100%" stopColor={color} stopOpacity="0.04" />
+        </linearGradient>
+      </defs>
+      <rect width="160" height="120" fill={`url(#si-${mode})`} />
+      {/* simple stick figure */}
+      <g stroke={color} strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="80" cy="34" r="10" />
+        <line x1="80" y1="44" x2="80" y2="78" />
+        <path d="M 80 56 L 56 50" />
+        <path d="M 80 56 L 104 50" />
+        <path d="M 80 78 L 68 102" />
+        <path d="M 80 78 L 92 102" />
+      </g>
+    </svg>
+  );
+};
 
 const MODE_COLOR = {
   resp: 'var(--mode-resp)',
@@ -154,6 +179,31 @@ const PlayerHiFi = ({ mobile }) => {
         <p className="type-body" style={{ color: 'var(--ink-3)', margin: 0, maxWidth: 480 }}>
           {ROUTINE[cur].desc}
         </p>
+
+        {/* Optional image — passive visual aid, always visible when present */}
+        {ROUTINE[cur].image && (
+          <figure style={{
+            marginTop: mobile ? 22 : 32,
+            margin: `${mobile ? 22 : 32}px 0 0`,
+            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
+          }}>
+            <div style={{
+              width: mobile ? 180 : 240,
+              height: mobile ? 135 : 180,
+              borderRadius: 'var(--radius)',
+              overflow: 'hidden',
+              background: 'var(--surface)',
+              border: '1px solid var(--line)',
+              boxShadow: 'var(--shadow-sm)',
+              display: 'grid', placeItems: 'center',
+            }}>
+              <StepImage mode={ROUTINE[cur].mode} size={mobile ? 180 : 240} />
+            </div>
+            <figcaption className="type-caption" style={{ fontSize: 11, letterSpacing: '0.04em' }}>
+              Aide visuelle
+            </figcaption>
+          </figure>
+        )}
       </section>
 
       {/* Up next + controls */}

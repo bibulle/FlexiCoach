@@ -146,6 +146,7 @@ Layout (haut → bas) :
    - Titre étape `font-display 38px bold`
    - Chrono **JetBrains Mono 168px desktop / 110px mobile**, `font-variant-numeric: tabular-nums`, `letter-spacing: -0.05em`, `line-height: 0.9`
    - Description sous le chrono, max 480 px, color `--ink-3`
+   - **Image optionnelle** (si `step.image`) : affichée passivement sous la description, **toujours visible**, jamais cliquable (l'utilisateur a souvent les mains prises). Taille 240×180 desktop / 180×135 mobile, `object-fit: contain`, fond `--surface`, border `--line`, shadow-sm. Petit caption « Aide visuelle » dessous.
 4. **Footer** : carte « À suivre » (couleur du mode à gauche, nom + durée à droite) + 3 boutons ronds (prev 60 px / play-pause 88 px primary / next 60 px). Fond `--surface`, border-top.
 
 **Comportements à conserver** (déjà dans `routine-player.component.ts`) :
@@ -220,6 +221,7 @@ Layout 2 colonnes (desktop) / 1 (mobile) :
   - Étape sélectionnée : `border: 2px solid <mode-color>`, fond couleur 10 %
 - **Droite (desktop seulement)** : panneau d'édition d'étape, sticky
   - Champs : nom, durée (mono), mode (select), consigne (textarea)
+  - **Image** (facultative) : carte avec thumbnail 88×66 + nom de fichier + bouton « Remplacer » + bouton « Retirer ». Drop zone si vide. Indicateur visuel (mini-icône image) sur la ligne de l'étape dans la liste de gauche.
   - Liste des cues (`{ at: number, say: string }`) avec bouton +
   - Bouton Supprimer rouge
 
@@ -310,6 +312,39 @@ Pour chaque écran à porter :
 - Le bloc humeur en fin de séance : opt-in ou obligatoire ?
 - Mode sombre : on l'expose en V1 ou plus tard ?
 - Pour la voix : on permet de choisir parmi les voix du navigateur ou on en force une ?
+
+---
+
+## 9) Schéma — évolutions à prévoir
+
+### Image facultative par étape (v0.8)
+
+Le brief original n'inclut pas d'image par étape, mais les maquettes hi-fi en montrent une (optionnelle, hébergée côté backend).
+
+**Modèle à étendre** : `Step`
+```ts
+Step {
+  name: string;
+  seconds: number;
+  mode: 'mouvement' | 'statique' | 'respiration';
+  text: string;
+  image?: {              // ← NOUVEAU, optionnel
+    url: string;         // CDN ou /uploads/<id>.webp
+    width: number;
+    height: number;
+    alt?: string;
+  };
+  cues?: { at: number; say: string }[];
+}
+```
+
+**API additionnelle** :
+- `POST /routines/:id/steps/:idx/image` (multipart) → upload + return `{ url, width, height }`
+- `DELETE /routines/:id/steps/:idx/image`
+- Storage : commence local (`/uploads/...`) servi par Nest. Cible : S3-compatible.
+- Format conseillé : WebP, max 1200×900, 200 ko, ratio libre (le composant `object-fit: contain` gère tout).
+
+**À valider PO** : on autorise quels formats (jpg/png/webp/gif) ? Taille max ? Modération ?
 
 ---
 

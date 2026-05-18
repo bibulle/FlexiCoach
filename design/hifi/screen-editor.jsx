@@ -2,12 +2,12 @@
 
 const EDITOR_STEPS = [
   { name: 'Respiration', dur: 60, mode: 'resp' },
-  { name: 'Cervicales', dur: 60, mode: 'mvt' },
-  { name: 'Mobilité thoracique', dur: 60, mode: 'mvt' },
-  { name: 'Étirement ischios', dur: 60, mode: 'stat' },
-  { name: 'Planche', dur: 45, mode: 'stat' },
+  { name: 'Cervicales', dur: 60, mode: 'mvt', image: true },
+  { name: 'Mobilité thoracique', dur: 60, mode: 'mvt', image: true },
+  { name: 'Étirement ischios', dur: 60, mode: 'stat', image: true },
+  { name: 'Planche', dur: 45, mode: 'stat', image: true },
   { name: 'Hanches', dur: 60, mode: 'mvt' },
-  { name: 'Mollets', dur: 60, mode: 'stat' },
+  { name: 'Mollets', dur: 60, mode: 'stat', image: true },
   { name: 'Retour au calme', dur: 30, mode: 'resp' },
 ];
 const EDITOR_MODE_COLORS = {
@@ -102,7 +102,22 @@ const RoutineEditorShell = ({ mobile }) => {
                     width: 8, height: 30, borderRadius: 4, background: m.c, flexShrink: 0
                   }} />
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontWeight: 600, color: 'var(--ink)', fontSize: 15 }}>{s.name}</div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <span style={{ fontWeight: 600, color: 'var(--ink)', fontSize: 15 }}>{s.name}</span>
+                      {s.image && (
+                        <span title="Avec image" style={{
+                          width: 16, height: 16, borderRadius: 4,
+                          background: 'var(--surface-2)', color: 'var(--ink-4)',
+                          display: 'grid', placeItems: 'center', flexShrink: 0,
+                        }}>
+                          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                            <rect x="3" y="5" width="18" height="14" rx="2" />
+                            <circle cx="9" cy="10" r="1.5" fill="currentColor" />
+                            <polyline points="21 16 16 11 5 19" />
+                          </svg>
+                        </span>
+                      )}
+                    </div>
                     <div className="type-caption" style={{ marginTop: 2 }}>{m.label}</div>
                   </div>
                   <div className="type-mono" style={{
@@ -139,6 +154,53 @@ const RoutineEditorShell = ({ mobile }) => {
               </div>
 
               <EditorField label="Consigne" multiline defaultValue="Bras croisés. Rotations contrôlées du buste droite/gauche." />
+
+              {/* Image — facultative */}
+              <div style={{ marginTop: 6, marginBottom: 14 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 6 }}>
+                  <label className="type-label">Image <span style={{ textTransform: 'none', letterSpacing: 0, color: 'var(--ink-5)', fontWeight: 400 }}>· facultatif</span></label>
+                  <button className="btn btn-ghost" style={{ fontSize: 12 }}>
+                    <Icon name="x" size={12} stroke={2.4} /> Retirer
+                  </button>
+                </div>
+                <div style={{
+                  display: 'flex', gap: 10, alignItems: 'stretch',
+                  background: 'var(--surface-2)',
+                  border: '1px solid var(--line)',
+                  borderRadius: 'var(--radius)',
+                  padding: 8,
+                }}>
+                  <div style={{
+                    width: 88, height: 66, borderRadius: 8, overflow: 'hidden',
+                    background: 'white', flexShrink: 0,
+                    display: 'grid', placeItems: 'center',
+                  }}>
+                    <svg width="88" height="66" viewBox="0 0 88 66">
+                      <rect width="88" height="66" fill={EDITOR_MODE_COLORS.mvt.bg} />
+                      <g stroke={EDITOR_MODE_COLORS.mvt.c} strokeWidth="1.8" fill="none" strokeLinecap="round">
+                        <circle cx="44" cy="22" r="6" />
+                        <line x1="44" y1="28" x2="44" y2="46" />
+                        <path d="M 44 34 L 32 31" />
+                        <path d="M 44 34 L 56 31" />
+                        <path d="M 44 46 L 38 58" />
+                        <path d="M 44 46 L 50 58" />
+                      </g>
+                    </svg>
+                  </div>
+                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minWidth: 0 }}>
+                    <div>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--ink-2)' }}>thoracique-rotation.png</div>
+                      <div className="type-caption">88 ko · ajoutée 12 avril</div>
+                    </div>
+                    <button className="btn btn-secondary" style={{ height: 30, padding: '0 10px', fontSize: 12, alignSelf: 'flex-start' }}>
+                      Remplacer
+                    </button>
+                  </div>
+                </div>
+                <p className="type-caption" style={{ marginTop: 6 }}>
+                  Astuce : une illustration aide l'utilisateur à visualiser la posture sans regarder l'écran tout du long.
+                </p>
+              </div>
 
               <div style={{ marginTop: 14 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8 }}>
