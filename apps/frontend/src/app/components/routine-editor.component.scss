@@ -280,7 +280,7 @@
   padding: 22px;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 0;
   position: sticky;
   top: 72px;
 }
@@ -290,45 +290,74 @@
 }
 
 .editor-panel-title {
-  margin: 0;
+  margin: 6px 0 18px;
 }
 
-.editor-panel-row {
+/* Inline editable fields */
+.editor-field {
+  margin-bottom: 12px;
+
+  label {
+    display: block;
+    margin-bottom: 6px;
+  }
+
+  .input {
+    width: 100%;
+  }
+
+  textarea.input {
+    min-height: 70px;
+    padding: 12px;
+    font-family: var(--font-sans);
+    resize: vertical;
+  }
+}
+
+.editor-field-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px;
+  margin-bottom: 14px;
+
+  .editor-field {
+    margin-bottom: 0;
+  }
 }
 
+/* Cues section */
+.editor-cues-section {
+  margin-top: 14px;
+}
+
+.editor-cues-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 8px;
+}
+
+.editor-cues-add-btn {
+  font-size: 12px;
+  gap: 4px;
+}
+
+/* Legacy read-only (kept for compat) */
 .editor-panel-field {
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
 
-.editor-panel-value {
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--ink);
-}
-
-.editor-panel-text {
-  font-size: 13px;
-  color: var(--ink-2);
-  line-height: 1.5;
-}
-
-.editor-panel-actions {
-  display: flex;
-  gap: 8px;
-  margin-top: 4px;
-}
-
-.editor-delete-btn {
-  color: var(--error);
-  border-color: rgba(239, 68, 68, 0.2);
+.editor-delete-step-btn {
+  margin-top: 16px;
+  width: 100%;
+  justify-content: center;
+  color: #dc2626;
+  border-color: rgba(220, 38, 38, 0.2);
 
   &:hover {
-    background: rgba(239, 68, 68, 0.06);
+    background: rgba(220, 38, 38, 0.06);
   }
 }
 
@@ -385,4 +414,125 @@
   .editor-meta-card {
     padding: 22px;
   }
+}
+
+/* === Step Image Indicator (in step list) === */
+.step-name-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.step-image-indicator {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  background: var(--surface-2, #f8fafc);
+  color: var(--ink-4, #64748b);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+/* === Step Image Section (detail panel) === */
+.editor-image-section {
+  margin-top: 6px;
+  margin-bottom: 14px;
+}
+
+.editor-image-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 6px;
+}
+
+.editor-image-optional {
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--ink-5, #94a3b8);
+  font-weight: 400;
+}
+
+.editor-image-remove-btn {
+  font-size: 12px;
+  color: var(--ink-3, #475569);
+  gap: 4px;
+}
+
+.editor-image-card {
+  display: flex;
+  gap: 10px;
+  align-items: stretch;
+  background: var(--surface-2, #f8fafc);
+  border: 1px solid var(--line, #e2e8f0);
+  border-radius: var(--radius, 12px);
+  padding: 8px;
+}
+
+.editor-image-thumb {
+  width: 88px;
+  height: 66px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: white;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+}
+
+.editor-image-meta {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-width: 0;
+}
+
+.editor-image-filename {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-2, #1e293b);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.editor-image-replace-btn {
+  height: 30px;
+  padding: 0 10px;
+  font-size: 12px;
+  align-self: flex-start;
+  cursor: pointer;
+}
+
+.editor-image-dropzone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 20px;
+  background: var(--surface-2, #f8fafc);
+  border: 2px dashed var(--line, #e2e8f0);
+  border-radius: var(--radius, 12px);
+  cursor: pointer;
+  text-align: center;
+  transition: border-color 0.15s, background 0.15s;
+
+  &:hover {
+    border-color: var(--primary-300, #93c5fd);
+    background: var(--primary-50, #eff6ff);
+  }
+}
+
+.editor-image-tip {
+  margin-top: 6px;
+  color: var(--ink-4, #64748b);
 }

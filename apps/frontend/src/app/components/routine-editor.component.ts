@@ -15,6 +15,7 @@ import {
 } from '@angular/cdk/drag-drop';
 import { Routine, Step } from '@flexicoach/shared';
 import { RoutineService } from '../services/routine.service';
+import { UploadService } from '../services/upload.service';
 import { StepEditorModalComponent } from './step-editor-modal.component';
 
 const MODE_META: Record<string, { color: string; bg: string; label: string }> =
@@ -65,9 +66,12 @@ export class RoutineEditorComponent implements OnInit {
   currentStepIndex: number | null = null;
   selectedStepIndex: number | null = null;
 
+  uploadingStepIndex: number | null = null;
+
   constructor(
     private fb: FormBuilder,
     private routineService: RoutineService,
+    private uploadService: UploadService,
     private router: Router,
     private route: ActivatedRoute,
   ) {
@@ -120,7 +124,19 @@ export class RoutineEditorComponent implements OnInit {
         // Clear existing steps and add routine steps
         this.steps.clear();
         routine.steps.forEach((step) => {
-          this.steps.push(this.createStepFormGroup(step));
+          // Strip any MongoDB _id fields that would be rejected by backend validation
+          const cleanStep = {
+            name: step.name,
+            seconds: step.seconds,
+            mode: step.mode,
+            text: step.text,
+            imageUrl: step.imageUrl,
+            imageName: (step as any).imageName,
+            imageSize: (step as any).imageSize,
+            imageUploadedAt: (step as any).imageUploadedAt,
+            cues: step.cues?.map((c: any) => ({ at: c.at, say: c.say })),
+          };
+          this.steps.push(this.createStepFormGroup(cleanStep));
         });
 
         this.loading = false;
@@ -142,6 +158,10 @@ export class RoutineEditorComponent implements OnInit {
       seconds: [step?.seconds || 30, [Validators.required, Validators.min(5)]],
       mode: [step?.mode || 'mouvement', Validators.required],
       text: [step?.text || '', [Validators.required, Validators.minLength(1)]],
+      imageUrl: [step?.imageUrl || ''],
+      imageName: [step?.imageName || ''],
+      imageSize: [step?.imageSize || 0],
+      imageUploadedAt: [step?.imageUploadedAt || ''],
       cues: [step?.cues || []],
     });
   }
@@ -354,6 +374,46 @@ export class RoutineEditorComponent implements OnInit {
     }
   }
 
+  onStepImageUpload(event: Event, stepIndex: number): void {
+    const input = event.target as HTMLInputElement;
+    if (!input.files || input.files.length === 0) return;
+
+    const file = input.files[0];
+    if (file.size > 5 * 1024 * 1024) {
+      this.error = 'Image trop volumineuse (max 5 MB)';
+      return;
+    }
+    if (!file.type.match(/^image\/(jpeg|png|webp)$/)) {
+      this.error = 'Format non supporté. Utilisez JPEG, PNG ou WebP';
+      return;
+    }
+
+    this.uploadingStepIndex = stepIndex;
+    this.uploadService.uploadImage(file).subscribe({
+      next: (result) => {
+        this.steps.at(stepIndex).patchValue({
+          imageUrl: result.imageUrl,
+          imageName: result.originalName,
+          imageSize: result.size,
+          imageUploadedAt: new Date().toISOString(),
+        });
+        this.uploadingStepIndex = null;
+        this.error = '';
+      },
+      error: () => {
+        this.error = "Erreur lors de l'upload de l'image";
+        this.uploadingStepIndex = null;
+      },
+    });
+
+    // Reset input so the same file can be re-selected
+    input.value = '';
+  }
+
+  removeStepImage(stepIndex: number): void {
+    this.steps.at(stepIndex).patchValue({ imageUrl: '', imageName: '', imageSize: 0, imageUploadedAt: '' });
+  }
+
   selectStep(index: number): void {
     this.selectedStepIndex = this.selectedStepIndex === index ? null : index;
   }
@@ -388,5 +448,29 @@ export class RoutineEditorComponent implements OnInit {
   get selectedStep() {
     if (this.selectedStepIndex === null) return null;
     return this.steps.at(this.selectedStepIndex)?.value ?? null;
+  }
+
+  get selectedStepFormGroup(): FormGroup | null {
+    if (this.selectedStepIndex === null) return null;
+    return this.steps.at(this.selectedStepIndex) as FormGroup ?? null;
+  }
+
+  /** Format upload date in short form (e.g. "12 avril") */
+  formatUploadDate(isoDate: string): string {
+    if (!isoDate) return '';
+    const d = new Date(isoDate);
+    if (isNaN(d.getTime())) return '';
+    const months = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+    return `${d.getDate()} ${months[d.getMonth()]}`;
+  }
+
+  /** Format file size in human-readable form */
+  formatFileSize(bytes: number): string {
+    if (!bytes) return '';
+    if (bytes < 1024) return `${bytes} o`;
+    const ko = Math.round(bytes / 1024);
+    if (ko < 1024) return `${ko} ko`;
+    const mo = (bytes / (1024 * 1024)).toFixed(1);
+    return `${mo} Mo`;
   }
 }

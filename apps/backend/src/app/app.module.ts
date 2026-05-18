@@ -11,6 +11,7 @@ import { SessionsModule } from '../sessions/sessions.module';
 import { UsersModule } from '../users/users.module';
 import { AuthModule } from '../auth/auth.module';
 import { AdminModule } from '../admin/admin.module';
+import { UploadsModule } from '../uploads/uploads.module';
 import { ApiThrottlerGuard } from '../common/guards/api-throttler.guard';
 import { HttpLoggerMiddleware } from '../common/middleware/http-logger.middleware';
 import { winstonConfig } from '../config/logger.config';
@@ -36,6 +37,7 @@ import { winstonConfig } from '../config/logger.config';
     RoutinesModule,
     SessionsModule,
     UsersModule,
+    UploadsModule,
   ],
   controllers: [AppController],
   providers: [
