@@ -231,6 +231,28 @@ describe('RoutinesService', () => {
       expect(result.slug).toBe('morning-routine-1');
     });
 
+    it('should persist the tag provided at creation', async () => {
+      mockRoutineModel.findOne().exec.mockResolvedValue(null);
+
+      const result = await service.create(
+        {
+          name: 'Tagged Routine',
+          tag: 'bureau',
+          steps: [
+            {
+              name: 'Step',
+              seconds: 30,
+              mode: 'mouvement' as const,
+              text: 'Test',
+            },
+          ],
+        },
+        testUserId,
+      );
+
+      expect(result.tag).toBe('bureau');
+    });
+
     it('should calculate totalSeconds correctly', async () => {
       mockRoutineModel.findOne().exec.mockResolvedValue(null);
 
