@@ -24,10 +24,10 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: '24'
           cache: 'npm'
@@ -56,12 +56,12 @@ jobs:
     # steps to perform in job
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           path: ${{env.APP_PATH}}
 
       - name: Checkout gitops
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         if: ${{ env.actions_token != '' }}
         with:
           repository: bibulle/myKubernetesConfig
