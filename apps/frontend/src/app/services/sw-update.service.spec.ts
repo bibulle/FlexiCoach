@@ -84,6 +84,64 @@ describe('SwUpdateService', () => {
     );
   });
 
+  const controllerChangeHandler = (): (() => void) =>
+    (navigator.serviceWorker.addEventListener as any).mock.calls.find(
+      ([event]: [string]) => event === 'controllerchange',
+    )[1];
+
+  it('should reload the page when an updated service worker takes control', () => {
+    const reload = vi
+      .spyOn(service as any, 'reloadPage')
+      .mockImplementation(() => undefined);
+    service.checkForUpdates();
+
+    (navigator.serviceWorker as any).controller = { state: 'activated' };
+    controllerChangeHandler()();
+
+    expect(reload).toHaveBeenCalledTimes(1);
+  });
+
+  it('should reload only once even if controllerchange fires again', () => {
+    const reload = vi
+      .spyOn(service as any, 'reloadPage')
+      .mockImplementation(() => undefined);
+    service.checkForUpdates();
+
+    controllerChangeHandler()();
+    controllerChangeHandler()();
+
+    expect(reload).toHaveBeenCalledTimes(1);
+  });
+
+  it('should not reload on the first install (page had no controller)', () => {
+    (navigator.serviceWorker as any).controller = null;
+    const reload = vi
+      .spyOn(service as any, 'reloadPage')
+      .mockImplementation(() => undefined);
+    service.checkForUpdates();
+
+    // First SW claims the page (clients.claim) → controllerchange
+    (navigator.serviceWorker as any).controller = { state: 'activated' };
+    controllerChangeHandler()();
+
+    expect(reload).not.toHaveBeenCalled();
+  });
+
+  it('should reload on a later update after a first install', () => {
+    (navigator.serviceWorker as any).controller = null;
+    const reload = vi
+      .spyOn(service as any, 'reloadPage')
+      .mockImplementation(() => undefined);
+    service.checkForUpdates();
+
+    (navigator.serviceWorker as any).controller = { state: 'activated' };
+    controllerChangeHandler()(); // first install: no reload
+    (navigator.serviceWorker as any).controller = { state: 'activated' };
+    controllerChangeHandler()(); // update: reload
+
+    expect(reload).toHaveBeenCalledTimes(1);
+  });
+
   it('should emit true when new service worker is installed', async () => {
     const newWorker = {
       state: 'installing',

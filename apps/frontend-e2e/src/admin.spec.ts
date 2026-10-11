@@ -1,217 +1,184 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, Page } from '@playwright/test';
+import {
+  ADMIN_EMAIL,
+  API_URL,
+  AuthSession,
+  adminSession,
+  enableAdminMode,
+  loginAs,
+  navLink,
+  openUserMenu,
+  registerViaApi,
+  routineCard,
+} from './support/helpers';
+
+/** Card of a user in the administration list. */
+function userCard(page: Page, email: string) {
+  return page.locator('.user-card').filter({ hasText: email });
+}
 
 test.describe('Admin Panel Flow', () => {
-  const adminEmail = 'admin@flexicoach.com';
-  const adminPassword = 'Admin123!';
-  const testEmail = `test-user-${Date.now()}@example.com`;
-  const testPassword = 'TestPassword123!';
+  let user: AuthSession;
 
-  test.beforeEach(async ({ page }) => {
-    // Login as admin before each test
-    await page.goto('/login');
-    await page.fill('input[id="email"]', adminEmail);
-    await page.fill('input[id="password"]', adminPassword);
-    await page.click('button[type="submit"]');
-    await page.waitForURL('/');
+  test.beforeEach(async ({ page, request }) => {
+    user = await registerViaApi(request, 'admin-target', 'Utilisateur Cible');
+    await loginAs(page, await adminSession(request));
+    await enableAdminMode(page);
+    await navLink(page, 'Admin').click();
+    await expect(page).toHaveURL('/admin');
   });
 
   test('should access admin panel with admin account', async ({ page }) => {
-    // Navigate to admin page
-    await page.goto('/admin');
-
-    // Should be able to access admin page
-    await expect(page).toHaveURL('/admin');
-
-    // Should display admin panel title
-    const adminTitle = page.locator(
-      'h1:has-text("Admin"), h2:has-text("Admin"), h1:has-text("Administration")',
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText(
+      'Administration',
     );
-    await expect(adminTitle).toBeVisible({ timeout: 5000 });
+    await expect(page.getByText('Gestion des utilisateurs')).toBeVisible();
+    await expect(page.locator('.breadcrumbs')).toContainText('Administration');
   });
 
   test('should display list of users', async ({ page }) => {
-    await page.goto('/admin');
-
-    // Should display user list
-    const userList = page.locator('.user-list, table, [class*="user"]').first();
-    await expect(userList).toBeVisible({ timeout: 5000 });
-
-    // Should have at least the admin user
-    const userRows = page.locator('.user-item, tr, [class*="user-row"]');
-    await expect(userRows.first()).toBeVisible({ timeout: 3000 });
+    await expect(userCard(page, ADMIN_EMAIL)).toBeVisible();
+    await expect(userCard(page, user.user.email)).toBeVisible();
   });
 
   test('should display user information columns', async ({ page }) => {
-    await page.goto('/admin');
-
-    // Should display email addresses
-    const emailPattern = page.locator(
-      'text=/[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}/',
-    );
-    await expect(emailPattern.first()).toBeVisible({ timeout: 5000 });
+    const card = userCard(page, user.user.email);
+    await expect(card.locator('strong')).toHaveText('Utilisateur Cible');
+    await expect(card.locator('.user-email')).toHaveText(user.user.email);
   });
 
   test('should show reset password button for users', async ({ page }) => {
-    await page.goto('/admin');
-    await page.waitForSelector('.user-list, table, [class*="user"]', {
-      timeout: 5000,
-    });
-
-    // Should have reset password button
-    const resetButton = page
-      .locator(
-        'button:has-text("Reset"), button:has-text("Réinitialiser"), button[aria-label*="reset"]',
-      )
-      .first();
-    const hasResetButton = await resetButton.isVisible({ timeout: 3000 });
-
-    expect(hasResetButton).toBe(true);
+    await expect(
+      userCard(page, user.user.email).getByRole('button', {
+        name: 'Réinitialiser le mot de passe',
+      }),
+    ).toBeEnabled();
   });
 
   test('should show confirmation dialog for password reset', async ({
     page,
+    request,
   }) => {
-    await page.goto('/admin');
-    await page.waitForSelector('.user-list, table, [class*="user"]', {
-      timeout: 5000,
+    await userCard(page, user.user.email)
+      .getByRole('button', { name: 'Réinitialiser le mot de passe' })
+      .click();
+
+    const modal = page.locator('.modal');
+    await expect(modal.getByRole('heading')).toHaveText(
+      'Réinitialiser le mot de passe',
+    );
+    await expect(modal).toContainText('Utilisateur Cible');
+    const confirm = modal.getByRole('button', { name: 'Confirmer' });
+    await expect(confirm).toBeDisabled();
+
+    // Cancel closes the dialog without changing anything
+    await modal.getByRole('button', { name: 'Annuler' }).click();
+    await expect(modal).toHaveCount(0);
+
+    // Confirm with a new password
+    await userCard(page, user.user.email)
+      .getByRole('button', { name: 'Réinitialiser le mot de passe' })
+      .click();
+    await page.locator('#newPassword').fill('ResetPassword789');
+    await page.locator('.modal').getByRole('button', { name: 'Confirmer' }).click();
+    await expect(page.locator('.success-message')).toBeVisible();
+    await expect(page.locator('.modal')).toHaveCount(0);
+
+    // The user can now log in with the new password only
+    const login = await request.post(`${API_URL}/api/auth/login`, {
+      data: { email: user.user.email, password: 'ResetPassword789' },
     });
-
-    // Click first reset password button
-    const resetButton = page
-      .locator(
-        'button:has-text("Reset"), button:has-text("Réinitialiser"), button[aria-label*="reset"]',
-      )
-      .first();
-    if (await resetButton.isVisible({ timeout: 3000 })) {
-      await resetButton.click();
-
-      // Should show confirmation dialog
-      const confirmDialog = page
-        .locator('dialog, [role="dialog"], .dialog, .modal')
-        .first();
-      const hasDialog = await confirmDialog.isVisible({ timeout: 2000 });
-
-      if (hasDialog) {
-        // Cancel the dialog
-        const cancelButton = page
-          .locator('button:has-text("Annuler"), button:has-text("Cancel")')
-          .first();
-        if (await cancelButton.isVisible({ timeout: 1000 })) {
-          await cancelButton.click();
-        }
-      }
-
-      expect(hasDialog || true).toBeTruthy(); // Some implementations may not have dialog
-    }
+    expect(login.status()).toBe(200);
+    const oldLogin = await request.post(`${API_URL}/api/auth/login`, {
+      data: { email: user.user.email, password: user.password },
+    });
+    expect(oldLogin.status()).toBe(401);
   });
 
-  test('should not allow non-admin to access admin panel', async ({ page }) => {
-    // Logout first
-    await page.goto('/');
-    const logoutButton = page.locator(
-      'button:has-text("Déconnexion"), button:has-text("Logout"), a:has-text("Déconnexion")',
-    );
-    if (await logoutButton.isVisible({ timeout: 3000 })) {
-      await logoutButton.click();
-    }
+  test('should not allow non-admin to access admin panel', async ({
+    page,
+    request,
+  }) => {
+    const regular = await registerViaApi(request, 'not-admin');
+    await loginAs(page, regular);
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
 
-    // Register and login as regular user
-    await page.goto('/signup');
-    await page.fill('input[id="displayName"]', 'Regular User');
-    await page.fill('input[id="email"]', testEmail);
-    await page.fill('input[id="password"]', testPassword);
-    await page.fill('input[id="confirmPassword"]', testPassword);
-    await page.click('button[type="submit"]');
-    await page.waitForURL('/');
+    await openUserMenu(page);
+    await expect(
+      page.getByRole('button', { name: /Mode administration/ }),
+    ).toHaveCount(0);
+    await expect(navLink(page, 'Admin')).toHaveCount(0);
 
-    // Try to access admin page
     await page.goto('/admin');
-
-    // Should be redirected or show error
-    await page.waitForTimeout(2000);
-    const currentUrl = page.url();
-
-    // Should not stay on admin page OR should show access denied message
-    const isRedirected = !currentUrl.includes('/admin');
-    const accessDenied = page.locator(
-      'text=/accès refusé|access denied|non autorisé|forbidden/i',
-    );
-    const hasAccessDenied = await accessDenied
-      .isVisible({ timeout: 1000 })
-      .catch(() => false);
-
-    expect(isRedirected || hasAccessDenied).toBe(true);
+    await expect(page).toHaveURL('/');
   });
 
-  test('should filter or search users', async ({ page }) => {
-    await page.goto('/admin');
-    await page.waitForSelector('.user-list, table, [class*="user"]', {
-      timeout: 5000,
-    });
+  test('should list a newly registered user', async ({ page, request }) => {
+    // Replaces the former "filter or search users" test: the panel has no
+    // search field, it lists every account — new ones included.
+    const newcomer = await registerViaApi(request, 'newcomer', 'Nouvel Arrivant');
 
-    // Look for search or filter input
-    const searchInput = page
-      .locator(
-        'input[type="search"], input[placeholder*="Rechercher"], input[placeholder*="Search"]',
-      )
-      .first();
-    const hasSearch = await searchInput
-      .isVisible({ timeout: 2000 })
-      .catch(() => false);
+    await page.reload();
+    await enableAdminMode(page);
+    await navLink(page, 'Admin').click();
 
-    if (hasSearch) {
-      await searchInput.fill(adminEmail);
-      await page.waitForTimeout(500);
-
-      // Should filter results
-      const userRows = page.locator('.user-item, tr, [class*="user-row"]');
-      const count = await userRows.count();
-      expect(count).toBeGreaterThanOrEqual(1);
-    } else {
-      // Search might not be implemented yet, that's okay
-      expect(true).toBe(true);
-    }
+    await expect(userCard(page, newcomer.user.email)).toContainText(
+      'Nouvel Arrivant',
+    );
   });
 
   test('should display user registration dates or metadata', async ({
     page,
   }) => {
-    await page.goto('/admin');
-    await page.waitForSelector('.user-list, table, [class*="user"]', {
-      timeout: 5000,
-    });
-
-    // Should show some metadata (dates, counts, etc.)
-    const metadata = page
-      .locator(
-        'text=/\\d{4}-\\d{2}-\\d{2}|\\d{2}\\/\\d{2}\\/\\d{4}|il y a|ago/i',
-      )
-      .first();
-    const hasMetadata = await metadata
-      .isVisible({ timeout: 3000 })
-      .catch(() => false);
-
-    // Metadata display is optional but good to have
-    expect(hasMetadata || true).toBeTruthy();
+    // No registration date is displayed: every card shows the display name
+    // (or the e-mail when there is none) and the e-mail.
+    const cards = page.locator('.user-card');
+    await expect(cards.first()).toBeVisible();
+    const count = await cards.count();
+    for (let i = 0; i < Math.min(count, 10); i++) {
+      await expect(cards.nth(i).locator('strong')).not.toBeEmpty();
+      await expect(cards.nth(i).locator('.user-email')).toHaveText(/@/);
+    }
   });
 
-  test('should navigate back to main app from admin panel', async ({
+  test('should navigate back to main app from admin panel', async ({ page }) => {
+    await navLink(page, 'Accueil').click();
+
+    await expect(page).toHaveURL('/');
+    await expect(page.getByRole('heading', { name: 'Tes routines' })).toBeVisible();
+  });
+
+  test('Issue #35: should show admin-only buttons in admin mode and create a routine', async ({
     page,
+    request,
   }) => {
-    await page.goto('/admin');
+    await navLink(page, 'Routines').click();
+    await page.getByRole('link', { name: 'Nouvelle routine' }).click();
+    await expect(page).toHaveURL('/routines/new');
 
-    // Look for navigation back to home/routines
-    const homeLink = page
-      .locator(
-        'a[href="/"], a:has-text("Accueil"), a:has-text("Home"), a:has-text("Routines")',
-      )
-      .first();
-    if (await homeLink.isVisible({ timeout: 3000 })) {
-      await homeLink.click();
+    const name = `Routine admin ${Date.now()}`;
+    await page.getByRole('textbox', { name: 'Nom de la routine' }).fill(name);
+    await page.locator('.editor-add-btn').click();
+    await page.locator('#step-name').fill('Gainage');
+    await page.locator('#step-seconds').fill('45');
+    await page.locator('#step-mode').selectOption('statique');
+    await page.locator('#step-text').fill('Corps aligné');
+    await page.locator('.btn-save').click();
 
-      // Should navigate away from admin
-      await page.waitForURL(/^((?!\/admin).)*$/);
-      expect(page.url()).not.toContain('/admin');
-    }
+    await page.getByRole('button', { name: 'Enregistrer' }).click();
+    await expect(page.locator('.editor-alert--success')).toBeVisible();
+    await expect(page).toHaveURL('/routines');
+    await expect(routineCard(page, name)).toBeVisible();
+
+    // Clean up so that the admin catalogue does not grow run after run
+    const admin = await adminSession(request);
+    const list = await request.get(`${API_URL}/api/routines`, {
+      headers: { Authorization: `Bearer ${admin.access_token}` },
+    });
+    const created = (await list.json()).find((r: any) => r.name === name);
+    const del = await request.delete(`${API_URL}/api/routines/${created.id}`, {
+      headers: { Authorization: `Bearer ${admin.access_token}` },
+    });
+    expect(del.status()).toBe(204);
   });
 });

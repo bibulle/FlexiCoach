@@ -1,155 +1,134 @@
 import { test, expect } from '@playwright/test';
+import {
+  AuthSession,
+  loginAs,
+  navLink,
+  openUserMenu,
+  registerViaApi,
+  routineCard,
+} from './support/helpers';
 
 test.describe('Navigation and Header', () => {
-  const testEmail = `navtest-${Date.now()}@example.com`;
-  const testPassword = 'TestPassword123!';
-  const testName = 'Nav Test User';
+  let session: AuthSession;
 
-  test.beforeEach(async ({ page }) => {
-    // Register and login before each test
-    await page.goto('/signup');
-    await page.fill('input[id="displayName"]', testName);
-    await page.fill('input[id="email"]', testEmail);
-    await page.fill('input[id="password"]', testPassword);
-    await page.fill('input[id="confirmPassword"]', testPassword);
-    await page.click('button[type="submit"]');
-    await page.waitForURL('/');
+  test.beforeEach(async ({ page, request }) => {
+    session = await registerViaApi(request, 'nav', 'Marie Curie');
+    await loginAs(page, session);
+    await expect(page.getByRole('heading', { level: 1 })).toContainText('Marie');
   });
 
   test.describe('Header and Logo', () => {
     test('should display header on all authenticated pages', async ({
       page,
     }) => {
-      // Check on home page
-      await expect(page.locator('.app-header')).toBeVisible();
-      await expect(page.locator('.logo-text')).toContainText('FlexiCoach');
-
-      // Navigate to calendar
-      await page.goto('/calendar');
-      await expect(page.locator('.app-header')).toBeVisible();
-      await expect(page.locator('.logo-text')).toContainText('FlexiCoach');
+      for (const path of ['/', '/routines', '/calendar', '/settings']) {
+        await page.goto(path);
+        await expect(page.getByRole('banner')).toBeVisible();
+        await expect(page.locator('app-user-menu')).toBeVisible();
+      }
     });
 
     test('should redirect to home when logo is clicked', async ({ page }) => {
-      // Navigate to calendar
       await page.goto('/calendar');
-      await expect(page).toHaveURL('/calendar');
+      await page.getByRole('banner').getByRole('link', { name: /FlexiCoach/ }).click();
 
-      // Click logo
-      await page.click('.logo');
-      await page.waitForURL('/');
       await expect(page).toHaveURL('/');
+      await expect(page.getByRole('heading', { name: 'Tes routines' })).toBeVisible();
     });
 
     test('should display navigation links', async ({ page }) => {
-      const routinesLink = page.locator('.nav-link', { hasText: 'Routines' });
-      await expect(routinesLink).toBeVisible();
+      const pages: Array<[string, string, RegExp]> = [
+        ['Routines', '/routines', /Routines\./],
+        ['Calendrier', '/calendar', /séances?\./],
+        ['Paramètres', '/settings', /Tes 30 derniers jours\./],
+        ['Accueil', '/', /Marie/],
+      ];
+
+      for (const [label, url, heading] of pages) {
+        await navLink(page, label).click();
+        await expect(page).toHaveURL(url);
+        await expect(page.getByRole('heading', { level: 1 })).toHaveText(heading);
+      }
     });
   });
 
   test.describe('User Menu', () => {
     test('should display user name in header', async ({ page }) => {
-      const userMenu = page.locator('.user-menu');
-      await expect(userMenu).toBeVisible();
-
-      // Should display the user name or email
-      const userName = page.locator('.user-name');
-      await expect(userName).toBeVisible();
-      const userNameText = await userName.textContent();
-      expect(userNameText).toBeTruthy();
+      await expect(page.locator('app-user-menu')).toContainText('Marie Curie');
     });
 
     test('should display user initials in avatar', async ({ page }) => {
-      const avatar = page.locator('.user-avatar');
-      await expect(avatar).toBeVisible();
-
-      const avatarText = await avatar.textContent();
-      expect(avatarText?.length).toBeGreaterThan(0);
+      await expect(page.locator('app-user-menu .user-avatar')).toHaveText('MC');
     });
 
     test('should open menu dropdown on click', async ({ page }) => {
-      // Initially, dropdown should not be visible
-      await expect(page.locator('.user-menu-dropdown')).not.toBeVisible();
+      await expect(page.getByRole('button', { name: 'Déconnexion' })).toHaveCount(0);
 
-      // Click user menu trigger
-      await page.click('.user-menu-trigger');
+      await openUserMenu(page);
 
-      // Dropdown should now be visible
-      await expect(page.locator('.user-menu-dropdown')).toBeVisible();
-      await expect(page.locator('.user-email')).toBeVisible();
-      await expect(page.locator('.menu-item')).toContainText('Déconnexion');
+      await expect(page.locator('app-user-menu')).toContainText(session.user.email);
+      await expect(page.getByRole('button', { name: 'Déconnexion' })).toBeVisible();
+      // Regular users have no admin mode
+      await expect(
+        page.getByRole('button', { name: /Mode administration/ }),
+      ).toHaveCount(0);
     });
 
     test('should logout when clicking logout button', async ({ page }) => {
-      // Open user menu
-      await page.click('.user-menu-trigger');
+      await openUserMenu(page);
+      await page.getByRole('button', { name: 'Déconnexion' }).click();
 
-      // Click logout
-      await page.click('.menu-item:has-text("Déconnexion")');
-
-      // Should redirect to login page
-      await page.waitForURL('/login');
       await expect(page).toHaveURL('/login');
+      await expect(page.locator('app-user-menu')).toHaveCount(0);
     });
   });
 
   test.describe('Breadcrumbs', () => {
     test('should not display breadcrumbs on home page', async ({ page }) => {
-      await page.goto('/');
-      await expect(page.locator('.breadcrumbs')).not.toBeVisible();
+      await expect(page.locator('.breadcrumbs')).toHaveCount(0);
     });
 
     test('should display breadcrumbs on calendar page', async ({ page }) => {
+      // Top-level pages (calendar, settings) have no breadcrumbs, sub-pages do
       await page.goto('/calendar');
+      await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+      await expect(page.locator('.breadcrumbs')).toHaveCount(0);
 
-      const breadcrumbs = page.locator('.breadcrumbs');
-      await expect(breadcrumbs).toBeVisible();
-
-      // Should have "Routines" link
-      const routinesLink = breadcrumbs.locator(
-        '.breadcrumb-link:has-text("Routines")',
-      );
-      await expect(routinesLink).toBeVisible();
-
-      // Should have current page indicator
-      const current = breadcrumbs.locator('.current:has-text("Calendrier")');
-      await expect(current).toBeVisible();
-
-      // Should have separator
-      await expect(breadcrumbs.locator('.separator')).toBeVisible();
+      await page.goto('/routine/douce-10min');
+      await expect(page.locator('.breadcrumbs')).toContainText('Routines');
+      await expect(page.locator('.breadcrumbs')).toContainText('Routine');
     });
 
     test('should navigate via breadcrumbs', async ({ page }) => {
-      await page.goto('/calendar');
-      await expect(page).toHaveURL('/calendar');
+      await page.goto('/routine/douce-10min');
+      await expect(
+        page.getByRole('heading', { name: 'Respiration profonde' }),
+      ).toBeVisible();
 
-      // Click "Routines" breadcrumb
-      await page.click('.breadcrumb-link:has-text("Routines")');
-      await page.waitForURL('/');
-      await expect(page).toHaveURL('/');
+      await page.locator('.breadcrumbs').getByRole('link', { name: 'Routines' }).click();
+
+      await expect(page).not.toHaveURL(/\/routine\//);
+      await expect(routineCard(page, 'Routine douce')).toBeVisible();
     });
   });
 
   test.describe('Navigation Consistency', () => {
     test('should maintain header across all pages', async ({ page }) => {
-      const pages = ['/', '/calendar'];
-
-      for (const url of pages) {
-        await page.goto(url);
-        await expect(page.locator('.app-header')).toBeVisible();
-        await expect(page.locator('.logo-text')).toContainText('FlexiCoach');
-        await expect(page.locator('.user-menu')).toBeVisible();
+      for (const label of ['Routines', 'Calendrier', 'Paramètres', 'Accueil']) {
+        await navLink(page, label).click();
+        for (const link of ['Accueil', 'Routines', 'Calendrier', 'Paramètres']) {
+          await expect(navLink(page, link)).toBeVisible();
+        }
       }
     });
 
     test('should not display user menu on login page', async ({ page }) => {
-      // Logout first
-      await page.click('.user-menu-trigger');
-      await page.click('.menu-item:has-text("Déconnexion")');
-      await page.waitForURL('/login');
+      await openUserMenu(page);
+      await page.getByRole('button', { name: 'Déconnexion' }).click();
+      await expect(page).toHaveURL('/login');
 
-      // User menu should not be visible
-      await expect(page.locator('.user-menu')).not.toBeVisible();
+      await expect(page.locator('app-user-menu')).toHaveCount(0);
+      await expect(navLink(page, 'Routines')).toHaveCount(0);
     });
   });
 });

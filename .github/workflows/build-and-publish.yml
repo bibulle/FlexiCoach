@@ -41,9 +41,9 @@ jobs:
       - name: Run frontend unit tests
         run: npx nx test frontend
 
-  # Backend end-to-end tests against a real MongoDB
-  e2e-backend:
-    name: Run backend e2e tests
+  # End-to-end tests (backend API + frontend UI) against a real MongoDB
+  e2e:
+    name: Run e2e tests
     runs-on: ubuntu-latest
 
     services:
@@ -91,6 +91,21 @@ jobs:
       - name: Run backend e2e tests
         run: npx nx e2e-dev backend-e2e
 
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Run frontend e2e tests
+        # Playwright starts the Angular dev server itself (webServer in playwright.config.ts)
+        run: npx nx e2e frontend-e2e -- --project=chromium
+
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: dist/.playwright/apps/frontend-e2e
+          retention-days: 7
+
       - name: Backend logs
         if: failure()
         run: cat backend.log
@@ -98,7 +113,7 @@ jobs:
   # Build and publish docker image (only after tests pass)
   build-and-push-docker-image:
     name: Build Docker image and push to repositories
-    needs: [test, e2e-backend]
+    needs: [test, e2e]
     # run only when code is compiling and tests are passing
     runs-on: ubuntu-latest
 

@@ -85,14 +85,20 @@ npx nx test frontend --watch
 npx nx test frontend --run
 ```
 
-### Tests e2e backend (développement)
+### Tests e2e (backend API + frontend Playwright)
 
-**Exécution unique:**
+Prérequis : MongoDB démarré et backend lancé **avec `THROTTLE_DISABLED=true`** (l'inscription est limitée à 3/h).
+`admin@example.com` doit figurer dans `ADMIN_EMAILS` pour les tests admin.
+
 ```bash
-npx nx run backend-e2e:e2e
+npx nx build backend && THROTTLE_DISABLED=true node dist/apps/backend/main.js   # terminal 1
+
+npm run test:e2e:backend                                                       # terminal 2
+MONGODB_URI=mongodb://localhost:27017/flexicoach npm run test:e2e:frontend     # démarre le frontend
 ```
 
-> ⚠️ **Important**: Le backend doit être lancé (`npx nx serve backend`) avant de lancer les tests e2e.
+Détails (prérequis, bonnes pratiques, CI) : voir [TESTING.md](./TESTING.md). Les deux suites tournent en CI
+(job `e2e`, avec un service `mongo:8`) et conditionnent la publication de l'image Docker.
 
 ### Tests e2e complets (production)
 
