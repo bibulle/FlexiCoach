@@ -148,7 +148,7 @@ routines/              # Données JSON des routines
 - **Écran de complétion** avec évaluation du ressenti (1-5 étoiles)
 - **Enregistrement des sessions** en base de données
 - **Authentification utilisateur** (JWT) avec login/inscription
-- **Administration** : gestion des utilisateurs, reset de mot de passe
+- **Administration** : gestion des utilisateurs, reset de mot de passe ; la page `/admin` s'ouvre directement par son URL et le mode administration est conservé au rechargement (par onglet)
 - **Statistiques complètes**:
   - Compteur de série actuelle et record
   - Temps total d'entraînement

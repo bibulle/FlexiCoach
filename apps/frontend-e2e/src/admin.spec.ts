@@ -35,6 +35,61 @@ test.describe('Admin Panel Flow', () => {
     await expect(page.locator('.breadcrumbs')).toContainText('Administration');
   });
 
+  test('Issue #149: should stay on /admin after a page reload', async ({
+    page,
+  }) => {
+    await page.reload();
+
+    await expect(page).toHaveURL('/admin');
+    await expect(pageTitle(page, 'Administration')).toBeVisible();
+    await expect(userCard(page, user.user.email)).toBeVisible();
+    // The admin mode survives the reload: the header link is still there
+    await expect(navLink(page, 'Admin')).toBeVisible();
+    await openUserMenu(page);
+    await expect(
+      page.getByRole('button', { name: /Mode administration/ }),
+    ).toContainText('ON');
+  });
+
+  test('Issue #149: should open /admin directly from its URL', async ({
+    page,
+  }) => {
+    // Leave the admin panel, then come back through the address bar
+    await navLink(page, 'Accueil').click();
+    await expect(page).toHaveURL('/');
+
+    await page.goto('/admin');
+
+    await expect(page).toHaveURL('/admin');
+    await expect(pageTitle(page, 'Administration')).toBeVisible();
+    await expect(userCard(page, ADMIN_EMAIL)).toBeVisible();
+  });
+
+  test('Issue #149: should open /admin directly even with the admin mode off', async ({
+    page,
+    request,
+  }) => {
+    // Same as a brand new tab: the admin mode is off
+    await page.evaluate(() => sessionStorage.clear());
+    await loginAs(page, await adminSession(request), '/admin');
+
+    await expect(page).toHaveURL('/admin');
+    await expect(pageTitle(page, 'Administration')).toBeVisible();
+    await expect(navLink(page, 'Admin')).toHaveCount(0);
+  });
+
+  test('Issue #149: should drop the admin mode on logout', async ({ page }) => {
+    await openUserMenu(page);
+    await page.getByRole('button', { name: 'Déconnexion' }).click();
+    await expect(page).toHaveURL('/login');
+
+    expect(
+      await page.evaluate(() => sessionStorage.getItem('admin_mode')),
+    ).toBeNull();
+    await page.goto('/admin');
+    await expect(page).toHaveURL('/login');
+  });
+
   test('should display list of users', async ({ page }) => {
     await expect(userCard(page, ADMIN_EMAIL)).toBeVisible();
     await expect(userCard(page, user.user.email)).toBeVisible();
@@ -162,9 +217,9 @@ test.describe('Admin Panel Flow', () => {
     // search field, it lists every account — new ones included.
     const newcomer = await registerViaApi(request, 'newcomer', 'Nouvel Arrivant');
 
+    // The reload keeps the administrator on /admin (issue #149)
     await page.reload();
-    await enableAdminMode(page);
-    await navLink(page, 'Admin').click();
+    await expect(page).toHaveURL('/admin');
 
     await expect(userCard(page, newcomer.user.email)).toContainText(
       'Nouvel Arrivant',
