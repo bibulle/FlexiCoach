@@ -150,6 +150,14 @@
     }
     <div class="player-timer">{{ formatTime(timeLeft) }}</div>
     <p class="type-body player-step-desc">{{ currentInstruction }}</p>
+    @if (!isResting && currentStep?.imageUrl) {
+      <figure class="player-step-figure">
+        <div class="player-step-image-frame">
+          <img [src]="currentStep!.imageUrl" alt="Position" class="player-step-image" />
+        </div>
+        <figcaption class="type-caption player-step-figcaption">Aide visuelle</figcaption>
+      </figure>
+    }
   </section>
 
   <!-- Footer: up next + controls -->

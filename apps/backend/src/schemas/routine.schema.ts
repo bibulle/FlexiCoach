@@ -3,7 +3,7 @@ import { Document } from 'mongoose';
 
 export type RoutineDocument = Routine & Document;
 
-@Schema({ timestamps: true })
+@Schema({ _id: false })
 export class Step {
   @Prop({ required: true })
   name!: string;
@@ -16,6 +16,18 @@ export class Step {
 
   @Prop({ required: true })
   text!: string;
+
+  @Prop()
+  imageUrl?: string;
+
+  @Prop()
+  imageName?: string;
+
+  @Prop()
+  imageSize?: number;
+
+  @Prop()
+  imageUploadedAt?: string;
 
   @Prop({ type: [{ at: Number, say: String }], default: [] })
   cues?: Array<{

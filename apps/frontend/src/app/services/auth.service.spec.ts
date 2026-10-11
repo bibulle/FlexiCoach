@@ -128,6 +128,8 @@ describe('AuthService', () => {
       adminReq.flush({ isAdmin: false });
 
       await responsePromise;
+      // Wait for dynamic import to resolve
+      await new Promise((resolve) => setTimeout(resolve, 50));
       expect(mockSettingsService.load).toHaveBeenCalled();
     });
 
@@ -148,6 +150,8 @@ describe('AuthService', () => {
       adminReq.flush({ isAdmin: false });
 
       await responsePromise;
+      // Wait for dynamic import to resolve
+      await new Promise((resolve) => setTimeout(resolve, 50));
       expect(mockSettingsService.load).toHaveBeenCalled();
     });
   });
@@ -294,10 +298,7 @@ describe('AuthService', () => {
       TestBed.resetTestingModule();
       TestBed.configureTestingModule({
         imports: [HttpClientTestingModule],
-        providers: [
-          AuthService,
-          { provide: SettingsService, useValue: mockSettingsService },
-        ],
+        providers: [AuthService],
       });
 
       const freshService = TestBed.inject(AuthService);

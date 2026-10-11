@@ -58,6 +58,11 @@ async function bootstrap() {
     allowedHeaders: ['Content-Type', 'Authorization'],
   });
 
+  // Serve uploaded files statically (before global prefix)
+  app.useStaticAssets(join(process.cwd(), 'uploads'), {
+    prefix: '/uploads/',
+  });
+
   const globalPrefix = 'api';
   app.setGlobalPrefix(globalPrefix);
 

@@ -1,7 +1,6 @@
-import { Injectable, inject, signal } from '@angular/core';
+import { Injectable, Injector, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, BehaviorSubject, tap } from 'rxjs';
-import { SettingsService } from './settings.service';
 
 export interface AuthResponse {
   access_token: string;
@@ -41,7 +40,7 @@ export class AuthService {
   public isAdmin = signal<boolean>(false);
   public isAdminMode = signal<boolean>(false);
 
-  private settingsService = inject(SettingsService);
+  private injector = inject(Injector);
 
   constructor(private http: HttpClient) {
     // Admin status will be checked after DI resolution to avoid circular dependency
@@ -101,7 +100,12 @@ export class AuthService {
     this.isAuthenticated.set(true);
     this.checkAdminStatus();
     // Sync settings from backend to localStorage right after login
-    this.settingsService.load().subscribe();
+    // Use injector to lazily resolve SettingsService and avoid circular dependency
+    // (HttpClient → authInterceptor → AuthService → SettingsService → HttpClient)
+    import('./settings.service').then((m) => {
+      const settingsService = this.injector.get(m.SettingsService);
+      settingsService.load().subscribe();
+    });
   }
 
   toggleAdminMode(): void {

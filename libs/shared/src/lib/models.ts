@@ -3,6 +3,10 @@ export interface Step {
   seconds: number;
   mode: 'mouvement' | 'statique' | 'respiration';
   text: string;
+  imageUrl?: string;
+  imageName?: string;
+  imageSize?: number;
+  imageUploadedAt?: string;
   cues?: Array<{
     at: number;
     say: string;
