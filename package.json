@@ -1,6 +1,6 @@
 {
   "name": "@flexicoach/source",
-  "version": "0.8.13",
+  "version": "0.8.14",
   "license": "MIT",
   "scripts": {
     "test": "nx run-many -t test --all",
