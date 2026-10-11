@@ -5,6 +5,14 @@ Ce fichier est maintenu automatiquement par [release-please](https://github.com/
 ne pas l'éditer à la main. Les releases sont publiées sur
 [GitHub Releases](https://github.com/bibulle/FlexiCoach/releases).
 
+## [0.8.8](https://github.com/bibulle/FlexiCoach/compare/v0.8.7...v0.8.8) (2026-10-11)
+
+
+### CI
+
+* versions automatiques (release-please) + ménage des anciennes pratiques ([#131](https://github.com/bibulle/FlexiCoach/issues/131)) ([5aff57e](https://github.com/bibulle/FlexiCoach/commit/5aff57e3a2e5fd8160dc1d1357b69e0ff31a23c4))
+* versions automatiques avec release-please et images Docker par release ([#131](https://github.com/bibulle/FlexiCoach/issues/131)) ([77d2f80](https://github.com/bibulle/FlexiCoach/commit/77d2f80ab9f7ed3b205d8df5ebc2b07cf1036eba))
+
 ## 0.7.4 → 0.8.7 (2026-01-19 → 2026-10-11) — rattrapage
 
 Versions montées à la main (`npm version patch`) pendant cette période, sans tag ni changelog :
