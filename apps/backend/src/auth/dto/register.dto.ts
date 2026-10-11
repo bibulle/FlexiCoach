@@ -1,23 +1,11 @@
-import {
-  IsEmail,
-  IsString,
-  MinLength,
-  Matches,
-  IsOptional,
-} from 'class-validator';
+import { IsEmail, IsString, IsOptional } from 'class-validator';
+import { IsValidPassword } from '../../common/validators/is-valid-password.decorator';
 
 export class RegisterDto {
   @IsEmail({}, { message: 'Email invalide' })
   email!: string;
 
-  @IsString()
-  @MinLength(8, {
-    message: 'Le mot de passe doit contenir au moins 8 caractères',
-  })
-  @Matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, {
-    message:
-      'Le mot de passe doit contenir au moins une majuscule, une minuscule et un chiffre',
-  })
+  @IsValidPassword()
   password!: string;
 
   @IsOptional()

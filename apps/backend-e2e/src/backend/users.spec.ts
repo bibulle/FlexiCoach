@@ -112,6 +112,30 @@ describe('Users API (/api/users/me)', () => {
       ).rejects.toMatchObject({ response: { status: 400 } });
     });
 
+    it.each([
+      ['6 characters (former rule)', 'Abc123'],
+      ['no uppercase', 'motdepasse1'],
+      ['no digit', 'MotDePasse'],
+    ])(
+      'should reject a new password breaking the shared policy: %s',
+      async (_label, newPassword) => {
+        await expect(
+          axios.patch(
+            `${API_URL}/api/users/me/password`,
+            { currentPassword: user.password, newPassword },
+            authHeaders(user),
+          ),
+        ).rejects.toMatchObject({ response: { status: 400 } });
+
+        // The password is unchanged: the user can still log in with it
+        const login = await axios.post(`${API_URL}/api/auth/login`, {
+          email: user.email,
+          password: user.password,
+        });
+        expect(login.status).toBe(200);
+      },
+    );
+
     it('should change the password and allow login with the new one', async () => {
       const res = await axios.patch(
         `${API_URL}/api/users/me/password`,

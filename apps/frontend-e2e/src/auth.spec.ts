@@ -98,6 +98,70 @@ test.describe('Authentication Flow', () => {
     ).toBeDisabled();
   });
 
+  test('should refuse a weak password on signup before calling the API', async ({
+    page,
+  }) => {
+    let registerCalls = 0;
+    await page.route('**/api/auth/register', (route) => {
+      registerCalls += 1;
+      return route.continue();
+    });
+
+    await page.goto('/signup');
+    await expect(pageTitle(page, 'Crée ton compte.')).toBeVisible();
+    // The rule is announced before any input
+    await expect(
+      page
+        .getByText(
+          '8 caractères minimum, avec une majuscule, une minuscule et un chiffre',
+        )
+        .filter({ visible: true }),
+    ).toBeVisible();
+
+    await field(page, 'displayName').fill('Camille');
+    await field(page, 'email').fill(uniqueEmail('weak-signup'));
+    await page.getByRole('checkbox').check();
+    const submit = page.getByRole('button', { name: 'Créer mon compte' });
+
+    // 6 characters: accepted by the former frontend rule, refused by the API
+    await field(page, 'password').fill('abc123');
+    await field(page, 'confirmPassword').fill('abc123');
+    await field(page, 'confirmPassword').blur();
+    await expect(
+      page
+        .getByText('Le mot de passe doit contenir au moins 8 caractères')
+        .filter({ visible: true }),
+    ).toBeVisible();
+    await expect(submit).toBeDisabled();
+
+    // Long enough but without uppercase nor digit
+    await field(page, 'password').fill('motdepasse');
+    await field(page, 'confirmPassword').fill('motdepasse');
+    await field(page, 'confirmPassword').blur();
+    await expect(
+      page
+        .getByText(
+          'Le mot de passe doit contenir au moins une majuscule, une minuscule et un chiffre',
+        )
+        .filter({ visible: true }),
+    ).toBeVisible();
+    await expect(
+      page
+        .getByText('Le mot de passe doit contenir au moins 8 caractères')
+        .filter({ visible: true }),
+    ).toHaveCount(0);
+    await expect(submit).toBeDisabled();
+    expect(registerCalls).toBe(0);
+
+    // A compliant password unlocks the form
+    await field(page, 'password').fill(TEST_PASSWORD);
+    await field(page, 'confirmPassword').fill(TEST_PASSWORD);
+    await expect(submit).toBeEnabled();
+    await submit.click();
+    await expect(page).toHaveURL('/');
+    expect(registerCalls).toBe(1);
+  });
+
   test('should logout successfully', async ({ page, request }) => {
     const session = await registerViaApi(request, 'logout');
     await loginAs(page, session);

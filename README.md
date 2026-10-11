@@ -224,6 +224,7 @@ npx nx build backend
 - Le frontend utilise un proxy (`proxy.conf.json`) pour rediriger `/api` et `/uploads` vers `localhost:3000`
 - Les schémas MongoDB sont dans `apps/backend/src/schemas/`
 - Les modèles partagés sont dans `libs/shared/src/lib/models.ts`
+- La règle de mot de passe partagée (front + back) est dans `libs/shared/src/lib/password-policy.ts`
 
 ### Mises à jour des dépendances (Dependabot)
 
@@ -296,15 +297,28 @@ et déclenchent le déploiement GitOps. Les PR ne font qu'un build (rien n'est p
 
 ### Utilisateurs
 - `GET /api/users/:id` - Profil utilisateur
+- `PATCH /api/users/me/password` - Changer son mot de passe (`currentPassword`, `newPassword`) - **Protégé JWT**
 
 ### Authentification
-- `POST /api/auth/register` - Inscription
+- `POST /api/auth/register` - Inscription (`email`, `password`, `displayName` optionnel)
 - `POST /api/auth/login` - Connexion (retourne JWT)
 - `GET /api/auth/is-admin` - Vérifier si admin
 
 ### Administration
 - `GET /api/admin/users` - Liste des utilisateurs (admin)
-- `PATCH /api/admin/password` - Reset mot de passe (admin)
+- `PATCH /api/admin/users/:userId/password` - Reset du mot de passe d'un utilisateur (`newPassword`) (admin)
+
+#### Règle de mot de passe
+
+Une seule règle, définie dans `libs/shared/src/lib/password-policy.ts` et appliquée partout
+(inscription, changement de mot de passe, réinitialisation par un administrateur) :
+**8 caractères minimum, avec au moins une majuscule, une minuscule et un chiffre**.
+
+- Frontend : `passwordPolicyValidator` (formulaire d'inscription) et la modale de reset admin
+  affichent la règle et bloquent l'envoi tant qu'elle n'est pas respectée.
+- Backend : décorateur `@IsValidPassword()` sur `RegisterDto`, `UpdatePasswordDto` et `ResetPasswordDto`.
+  Un mot de passe non conforme renvoie `400` avec un tableau `message` listant les règles non respectées
+  (le frontend les affiche une par ligne).
 
 ## 📄 Licence
 

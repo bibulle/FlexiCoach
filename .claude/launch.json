@@ -11,7 +11,7 @@
     {
       "name": "backend",
       "runtimeExecutable": "bash",
-      "runtimeArgs": ["-c", "npx tsc -p apps/backend/tsconfig.app.json --outDir dist/apps/backend && node dist/apps/backend/main.js"],
+      "runtimeArgs": ["-c", "npx nx build backend --configuration=development && node dist/apps/backend/main.js"],
       "port": 3000
     }
   ]

@@ -4,10 +4,10 @@
 
 | Suite | Outil | Tests | Lancée en CI |
 |---|---|---|---|
-| Unitaires backend | Jest | 198 | ✅ job `test` |
-| Unitaires frontend | Vitest | 385 | ✅ job `test` |
-| E2E backend (API) | Jest + axios | 73 | ✅ job `e2e` |
-| E2E frontend (UI) | Playwright (Chromium) | 50 | ✅ job `e2e` |
+| Unitaires backend | Jest | 224 | ✅ job `test` |
+| Unitaires frontend | Vitest | 424 | ✅ job `test` |
+| E2E backend (API) | Jest + axios | 77 | ✅ job `e2e` |
+| E2E frontend (UI) | Playwright (Chromium) | 52 | ✅ job `e2e` |
 
 Aucun test n'est ignoré (`skip`, `xit`, `fixme`…).
 
