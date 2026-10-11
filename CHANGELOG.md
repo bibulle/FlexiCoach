@@ -5,6 +5,14 @@ Ce fichier est maintenu automatiquement par [release-please](https://github.com/
 ne pas l'éditer à la main. Les releases sont publiées sur
 [GitHub Releases](https://github.com/bibulle/FlexiCoach/releases).
 
+## [0.8.11](https://github.com/bibulle/FlexiCoach/compare/v0.8.10...v0.8.11) (2026-10-11)
+
+
+### CI
+
+* une seule image Docker au merge de la Release PR ([5dccb78](https://github.com/bibulle/FlexiCoach/commit/5dccb789234c8fd9196abd1d702947804b4d9904))
+* une seule image Docker au merge de la Release PR ([f413977](https://github.com/bibulle/FlexiCoach/commit/f413977f196f00db52fe30a4569e1e7c32570fd0))
+
 ## [0.8.10](https://github.com/bibulle/FlexiCoach/compare/v0.8.9...v0.8.10) (2026-10-11)
 
 
