@@ -37,9 +37,10 @@ jobs:
   # End-to-end tests (backend API + frontend UI) against a real MongoDB
   e2e:
     name: Run e2e tests
-    # Skipped on the release-please PR: it only bumps version files and the changelog,
-    # and its code was already tested on main (unit tests still run, see job "test").
-    if: ${{ !startsWith(github.head_ref, 'release-please--') }}
+    # Skipped on the release-please PR and on its merge into main: it only bumps version
+    # files and the changelog, and its code was already tested on main (unit tests still
+    # run, see job "test"). The merge commit message contains the branch name.
+    if: ${{ !startsWith(github.head_ref, 'release-please--') && !contains(github.event.head_commit.message, 'release-please--') }}
     runs-on: ubuntu-latest
 
     services:
@@ -112,8 +113,9 @@ jobs:
   docker:
     name: Docker image
     needs: [test, e2e]
-    # Not built on the release-please PR: the release image is built from the tag
-    if: ${{ !startsWith(github.head_ref, 'release-please--') }}
+    # Not built on the release-please PR nor on its merge into main: the release image
+    # (":latest" + ":VX.Y.Z") is built once, from the tag, by release-please.yml
+    if: ${{ !startsWith(github.head_ref, 'release-please--') && !contains(github.event.head_commit.message, 'release-please--') }}
     uses: ./.github/workflows/docker.yml
     with:
       push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
