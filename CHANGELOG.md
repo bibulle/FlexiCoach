@@ -10,6 +10,8 @@ ne pas l'éditer à la main. Les releases sont publiées sur
 
 ### Corrections
 
+* **editor:** un seul mode d'édition des étapes, dans le panneau de détail ([#146](https://github.com/bibulle/FlexiCoach/issues/146)) ([4709406](https://github.com/bibulle/FlexiCoach/commit/470940613eafc820b56e6c9eea81ef3f80a1c6a5))
+* **editor:** un seul mode d'édition des étapes, dans le panneau de détail ([#146](https://github.com/bibulle/FlexiCoach/issues/146)) ([14c6b0f](https://github.com/bibulle/FlexiCoach/commit/14c6b0fe7b17e8700e673389cc76b652471c2bdf))
 * **nav:** « Routines » et « Retour aux routines » mènent au catalogue ([#150](https://github.com/bibulle/FlexiCoach/issues/150)) ([abca075](https://github.com/bibulle/FlexiCoach/commit/abca0758d1b0f8540678e17149b8178d29711a46))
 * **nav:** « Routines » et « Retour aux routines » mènent au catalogue ([#150](https://github.com/bibulle/FlexiCoach/issues/150)) ([6a683e9](https://github.com/bibulle/FlexiCoach/commit/6a683e9610cc6d77ac0fe7f39b4b53e356e075c9))
 
