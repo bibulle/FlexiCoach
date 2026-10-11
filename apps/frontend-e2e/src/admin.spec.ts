@@ -165,7 +165,9 @@ test.describe('Admin Panel Flow', () => {
     await page.locator('.btn-save').click();
 
     await page.getByRole('button', { name: 'Enregistrer' }).click();
-    await expect(page.locator('.editor-alert--success')).toBeVisible();
+    await expect(page.locator('.editor-alert--success')).toHaveText(
+      'Routine créée avec succès',
+    );
     await expect(page).toHaveURL('/routines');
     await expect(routineCard(page, name)).toBeVisible();
 

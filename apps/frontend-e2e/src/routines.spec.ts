@@ -253,19 +253,38 @@ test.describe('Issue #34: Import/Export with MongoDB _id fields', () => {
       page.getByRole('textbox', { name: 'Nom de la routine' }),
     ).toHaveValue('Routine exportée');
 
+    // The import already shows a success alert ("Routine importée…"): wait for
+    // the save's own confirmation, then for the redirect to the list.
     await page.getByRole('button', { name: 'Enregistrer' }).click();
-    await expect(page.locator('.editor-alert--success')).toBeVisible();
-    await expect(page.locator('.editor-alert--error')).toHaveCount(0);
-
-    // The imported routine (and its cues) is stored for this user
-    const res = await request.get(`${API_URL}/api/routines`, {
-      headers: { Authorization: `Bearer ${session.access_token}` },
-    });
-    const mine = (await res.json()).filter(
-      (r: any) => r.name === 'Routine exportée',
+    await expect(page.locator('.editor-alert--success')).toHaveText(
+      'Routine créée avec succès',
     );
-    expect(mine).toHaveLength(1);
-    expect(mine[0].steps[0].cues.map((c: any) => c.say)).toEqual([
+    await expect(page.locator('.editor-alert--error')).toHaveCount(0);
+    await expect(page).toHaveURL('/routines');
+
+    // The imported routine (and its cues) is stored for this user.
+    // Polled: a replicated MongoDB may not expose the write to the next read
+    // immediately. On failure the message lists what the API returned.
+    let ownRoutines: any[] = [];
+    await expect
+      .poll(
+        async () => {
+          const res = await request.get(`${API_URL}/api/routines`, {
+            headers: { Authorization: `Bearer ${session.access_token}` },
+          });
+          expect(res.status()).toBe(200);
+          ownRoutines = (await res.json()).filter(
+            (r: any) => r.ownerId === session.user._id,
+          );
+          return ownRoutines.map((r: any) => r.name);
+        },
+        {
+          message: `routines of ${session.user.email} returned by ${API_URL}`,
+          timeout: 10_000,
+        },
+      )
+      .toEqual(['Routine exportée']);
+    expect(ownRoutines[0].steps[0].cues.map((c: any) => c.say)).toEqual([
       'Mi-parcours',
       'Presque fini',
     ]);
