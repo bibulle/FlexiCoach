@@ -159,7 +159,9 @@ routines/              # Données JSON des routines
 - **Éditeur de routines personnalisées** avec:
   - Création et modification de routines
   - Drag & drop pour réorganiser les étapes
-  - Modal d'édition d'étapes avec cues audio
+  - Édition d'une étape dans un panneau unique (clic sur l'étape) : nom, durée, mode, consigne, image
+    et annonces vocales. Colonne de droite sur ordinateur, panneau plein écran sur mobile
+  - « Ajouter » crée une étape vide, signalée « À compléter » tant que son nom et sa consigne manquent
   - Export de routines en JSON (`.routine.json`)
   - Import de routines depuis JSON
   - Validation complète (durées, champs obligatoires)

@@ -262,7 +262,6 @@ test.describe('Admin Panel Flow', () => {
     await page.locator('#step-seconds').fill('45');
     await page.locator('#step-mode').selectOption('statique');
     await page.locator('#step-text').fill('Corps aligné');
-    await page.locator('.btn-save').click();
 
     await page.getByRole('button', { name: 'Enregistrer' }).click();
     await expect(page.locator('.editor-alert--success')).toHaveText(

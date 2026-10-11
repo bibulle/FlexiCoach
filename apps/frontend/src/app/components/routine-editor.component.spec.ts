@@ -5,9 +5,13 @@ import { RouterTestingModule } from '@angular/router/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { of, throwError } from 'rxjs';
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { RoutineEditorComponent } from './routine-editor.component';
+import {
+  RoutineEditorComponent,
+  stepCuesValidator,
+} from './routine-editor.component';
 import { RoutineService } from '../services/routine.service';
 import { Routine } from '@flexicoach/shared';
+import { safeDetectChanges } from '../../test-utils';
 
 describe('RoutineEditorComponent', () => {
   let component: RoutineEditorComponent;
@@ -423,6 +427,535 @@ describe('RoutineEditorComponent', () => {
       expect(component.getLevelLabel('beginner')).toBe('Débutant');
       expect(component.getLevelLabel('intermediate')).toBe('Intermédiaire');
       expect(component.getLevelLabel('advanced')).toBe('Avancé');
+    });
+  });
+
+  describe('Issue #146: a single way to edit a step (detail panel)', () => {
+    const el = () => fixture.nativeElement as HTMLElement;
+    const input = (selector: string) =>
+      el().querySelector(selector) as HTMLInputElement;
+    const type = (selector: string, value: string, index = 0) => {
+      const field = el().querySelectorAll(selector)[index] as HTMLInputElement;
+      field.value = value;
+      field.dispatchEvent(new Event('input'));
+      safeDetectChanges(fixture);
+    };
+    const addValidStep = (
+      name = 'Chat-vache',
+      seconds = 30,
+      cues: any[] = [],
+    ) =>
+      component.steps.push(
+        component.createStepFormGroup({
+          name,
+          seconds,
+          mode: 'mouvement',
+          text: 'Consigne',
+          cues,
+        }),
+      );
+
+    beforeEach(() => {
+      safeDetectChanges(fixture);
+    });
+
+    describe('entry points', () => {
+      it('should not render the legacy step modal nor its "…" button', () => {
+        addValidStep();
+        safeDetectChanges(fixture);
+
+        expect(el().querySelector('app-step-editor-modal')).toBeNull();
+        expect(el().querySelector('.modal-overlay')).toBeNull();
+        expect(
+          el().querySelector('.editor-step button[aria-label="Éditer"]'),
+        ).toBeNull();
+        // The only buttons left in a step card would open another editor
+        expect(el().querySelectorAll('.editor-step button').length).toBe(0);
+        expect((component as any).openStepModal).toBeUndefined();
+      });
+
+      it('should open the panel when a step card is clicked', () => {
+        addValidStep('Planche');
+        safeDetectChanges(fixture);
+        expect(el().querySelector('.editor-panel-empty')).toBeTruthy();
+
+        (el().querySelector('.editor-step') as HTMLElement).click();
+        safeDetectChanges(fixture);
+
+        expect(component.selectedStepIndex).toBe(0);
+        expect(input('#step-name').value).toBe('Planche');
+        expect(
+          el()
+            .querySelector('.editor-panel')
+            ?.classList.contains('editor-panel--open'),
+        ).toBe(true);
+      });
+
+      it('should make step cards usable with the keyboard', () => {
+        addValidStep('Planche');
+        safeDetectChanges(fixture);
+        const card = el().querySelector('.editor-step') as HTMLElement;
+
+        expect(card.getAttribute('tabindex')).toBe('0');
+        expect(card.getAttribute('role')).toBe('button');
+        expect(card.getAttribute('aria-label')).toContain('Planche');
+
+        card.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' }));
+        safeDetectChanges(fixture);
+        expect(component.selectedStepIndex).toBe(0);
+        expect(card.getAttribute('aria-pressed')).toBe('true');
+      });
+
+      it('should close the panel with the "Terminé" button (mobile sheet)', () => {
+        addValidStep();
+        component.selectStep(0);
+        safeDetectChanges(fixture);
+
+        (el().querySelector('.editor-panel-close') as HTMLElement).click();
+        safeDetectChanges(fixture);
+
+        expect(component.selectedStepIndex).toBeNull();
+        expect(
+          el()
+            .querySelector('.editor-panel')
+            ?.classList.contains('editor-panel--open'),
+        ).toBe(false);
+        // The step itself is kept
+        expect(component.steps.length).toBe(1);
+      });
+    });
+
+    describe('adding a step', () => {
+      it('should add an empty step and select it in the panel', () => {
+        (el().querySelector('.editor-add-btn') as HTMLElement).click();
+        safeDetectChanges(fixture);
+
+        expect(component.steps.length).toBe(1);
+        expect(component.selectedStepIndex).toBe(0);
+        expect(component.steps.at(0).value).toMatchObject({
+          name: '',
+          seconds: 30,
+          mode: 'mouvement',
+          text: '',
+          cues: [],
+        });
+        expect(input('#step-name')).toBeTruthy();
+        expect(
+          el().querySelector('.editor-panel-title')?.textContent,
+        ).toContain('Nouvelle étape');
+      });
+
+      it('should select the new step even when another one was selected', () => {
+        addValidStep('A');
+        component.selectStep(0);
+
+        component.addStep();
+
+        expect(component.steps.length).toBe(2);
+        expect(component.selectedStepIndex).toBe(1);
+      });
+
+      it('should flag the new step as incomplete until name and instruction are filled', () => {
+        component.addStep();
+        safeDetectChanges(fixture);
+
+        expect(component.routineForm.invalid).toBe(true);
+        expect(
+          el()
+            .querySelector('.editor-step')
+            ?.classList.contains('editor-step--invalid'),
+        ).toBe(true);
+        expect(el().querySelector('.step-incomplete')?.textContent).toContain(
+          'À compléter',
+        );
+
+        type('#step-name', 'Gainage');
+        type('#step-text', 'Corps aligné');
+
+        expect(component.steps.at(0).valid).toBe(true);
+        expect(el().querySelector('.step-incomplete')).toBeNull();
+        expect(el().querySelector('.step-name')?.textContent).toContain(
+          'Gainage',
+        );
+      });
+
+      it('should show field errors once the required fields were visited', () => {
+        component.addStep();
+        safeDetectChanges(fixture);
+        expect(
+          el().querySelectorAll('.editor-panel .editor-field-error').length,
+        ).toBe(0);
+
+        component.steps.at(0).get('name')?.markAsTouched();
+        component.steps.at(0).get('text')?.markAsTouched();
+        component.steps.at(0).get('seconds')?.setValue(2);
+        safeDetectChanges(fixture);
+
+        const errors = Array.from(
+          el().querySelectorAll('.editor-panel .editor-field-error'),
+        ).map((e) => e.textContent?.trim());
+        expect(errors).toEqual([
+          'Le nom est requis (100 caractères maximum)',
+          "La durée doit être d'au moins 5 secondes",
+          'La consigne est requise',
+        ]);
+      });
+    });
+
+    describe('selection kept consistent', () => {
+      beforeEach(() => {
+        addValidStep('A');
+        addValidStep('B');
+        addValidStep('C');
+        vi.spyOn(window, 'confirm').mockReturnValue(true);
+      });
+
+      it('should clear the selection when the selected step is deleted', () => {
+        component.selectStep(1);
+        component.deleteStep(1);
+
+        expect(component.steps.length).toBe(2);
+        expect(component.selectedStepIndex).toBeNull();
+      });
+
+      it('should keep the same step selected when a previous one is deleted', () => {
+        component.selectStep(2);
+        component.deleteStep(0);
+
+        expect(component.selectedStepIndex).toBe(1);
+        expect(component.selectedStep?.name).toBe('C');
+      });
+
+      it('should not touch the selection when a later step is deleted', () => {
+        component.selectStep(0);
+        component.deleteStep(2);
+
+        expect(component.selectedStepIndex).toBe(0);
+        expect(component.selectedStep?.name).toBe('A');
+      });
+
+      it('should keep everything when the deletion is not confirmed', () => {
+        (window.confirm as any).mockReturnValue(false);
+        component.selectStep(1);
+        component.deleteStep(1);
+
+        expect(component.steps.length).toBe(3);
+        expect(component.selectedStepIndex).toBe(1);
+      });
+
+      it('should follow the selected step when steps are reordered', () => {
+        component.selectStep(0);
+        component.onDrop({ previousIndex: 0, currentIndex: 2 } as any);
+
+        expect(component.steps.value.map((s: any) => s.name)).toEqual([
+          'B',
+          'C',
+          'A',
+        ]);
+        expect(component.selectedStepIndex).toBe(2);
+        expect(component.selectedStep?.name).toBe('A');
+      });
+
+      it('should reorder without selection', () => {
+        component.onDrop({ previousIndex: 2, currentIndex: 0 } as any);
+
+        expect(component.steps.value.map((s: any) => s.name)).toEqual([
+          'C',
+          'A',
+          'B',
+        ]);
+        expect(component.selectedStepIndex).toBeNull();
+      });
+    });
+
+    describe('voice cues edited in the panel', () => {
+      beforeEach(() => {
+        addValidStep('Planche', 30);
+        component.selectStep(0);
+        safeDetectChanges(fixture);
+      });
+
+      it('should show a hint when the step has no cue', () => {
+        expect(el().querySelector('.editor-cues-empty')).toBeTruthy();
+        expect(el().querySelectorAll('.editor-cue').length).toBe(0);
+      });
+
+      it('should add a cue from the panel', () => {
+        (el().querySelector('.editor-cues-add-btn') as HTMLElement).click();
+        safeDetectChanges(fixture);
+
+        expect(component.steps.at(0).value.cues).toEqual([{ at: 0, say: '' }]);
+        expect(el().querySelectorAll('.editor-cue').length).toBe(1);
+        expect(el().querySelector('.editor-cues-empty')).toBeNull();
+        expect(component.steps.at(0).get('cues')?.dirty).toBe(true);
+      });
+
+      it('should edit the moment and the text of a cue', () => {
+        component.addCue(0);
+        safeDetectChanges(fixture);
+
+        type('.editor-cue-at', '15');
+        type('.editor-cue-say', 'Mi-parcours');
+
+        expect(component.steps.at(0).value.cues).toEqual([
+          { at: 15, say: 'Mi-parcours' },
+        ]);
+        expect(component.steps.at(0).valid).toBe(true);
+      });
+
+      it('should edit the right cue when there are several', () => {
+        component.addCue(0);
+        component.addCue(0);
+        safeDetectChanges(fixture);
+
+        type('.editor-cue-say', 'Deuxième', 1);
+        type('.editor-cue-at', '20', 1);
+
+        expect(component.steps.at(0).value.cues).toEqual([
+          { at: 0, say: '' },
+          { at: 20, say: 'Deuxième' },
+        ]);
+      });
+
+      it('should remove a cue', () => {
+        component.steps.at(0).patchValue({
+          cues: [
+            { at: 5, say: 'Un' },
+            { at: 10, say: 'Deux' },
+          ],
+        });
+        safeDetectChanges(fixture);
+
+        (el().querySelectorAll('.editor-cue-remove')[0] as HTMLElement).click();
+        safeDetectChanges(fixture);
+
+        expect(component.steps.at(0).value.cues).toEqual([
+          { at: 10, say: 'Deux' },
+        ]);
+        expect(el().querySelectorAll('.editor-cue').length).toBe(1);
+      });
+
+      it('should reject a cue without text', () => {
+        component.addCue(0);
+        safeDetectChanges(fixture);
+
+        expect(component.steps.at(0).hasError('cueTextRequired')).toBe(true);
+        expect(component.routineForm.invalid).toBe(true);
+        expect(
+          el().querySelector('.editor-cues-section')?.textContent,
+        ).toContain('Chaque annonce doit avoir un texte');
+      });
+
+      it('should reject a cue after the end of the step', () => {
+        component.addCue(0);
+        safeDetectChanges(fixture);
+        type('.editor-cue-say', 'Trop tard');
+        type('.editor-cue-at', '31');
+
+        expect(component.steps.at(0).hasError('cueOutOfRange')).toBe(true);
+        expect(
+          el().querySelector('.editor-cues-section')?.textContent,
+        ).toContain('(30 s)');
+
+        type('.editor-cue-at', '30');
+        expect(component.steps.at(0).valid).toBe(true);
+      });
+
+      it('should reject an empty or negative moment', () => {
+        component.addCue(0);
+        safeDetectChanges(fixture);
+        type('.editor-cue-say', 'Go');
+
+        type('.editor-cue-at', '');
+        expect(component.steps.at(0).value.cues[0].at).toBeNull();
+        expect(component.steps.at(0).hasError('cueOutOfRange')).toBe(true);
+
+        type('.editor-cue-at', '-1');
+        expect(component.steps.at(0).hasError('cueOutOfRange')).toBe(true);
+      });
+
+      it('should invalidate existing cues when the step gets shorter', () => {
+        component.steps.at(0).patchValue({ cues: [{ at: 25, say: 'Fin' }] });
+        expect(component.steps.at(0).valid).toBe(true);
+
+        component.steps.at(0).patchValue({ seconds: 20 });
+
+        expect(component.steps.at(0).hasError('cueOutOfRange')).toBe(true);
+      });
+
+      it('should handle many cues (issue #33)', () => {
+        for (let i = 0; i < 12; i++) component.addCue(0);
+        safeDetectChanges(fixture);
+
+        expect(el().querySelectorAll('.editor-cue').length).toBe(12);
+        expect(el().querySelectorAll('.editor-cue-say').length).toBe(12);
+      });
+    });
+
+    describe('stepCuesValidator', () => {
+      const validate = (seconds: number, cues: any[]) =>
+        stepCuesValidator(
+          component.createStepFormGroup({
+            name: 'A',
+            seconds,
+            mode: 'mouvement',
+            text: 'x',
+            cues,
+          }),
+        );
+
+      it('should accept a step without cues', () => {
+        expect(validate(30, [])).toBeNull();
+      });
+
+      it('should accept cues at the very start and the very end', () => {
+        expect(
+          validate(30, [
+            { at: 0, say: 'Début' },
+            { at: 30, say: 'Fin' },
+          ]),
+        ).toBeNull();
+      });
+
+      it('should report a blank text', () => {
+        expect(validate(30, [{ at: 5, say: '   ' }])).toEqual({
+          cueTextRequired: true,
+        });
+      });
+
+      it('should report both problems at once', () => {
+        expect(validate(30, [{ at: 99, say: '' }])).toEqual({
+          cueTextRequired: true,
+          cueOutOfRange: true,
+        });
+      });
+    });
+
+    describe('saving', () => {
+      beforeEach(() => {
+        component.routineForm.patchValue({ name: 'Ma routine' });
+        mockRoutineService.create.mockReturnValue(of({} as Routine));
+      });
+
+      it('should save a step created and filled in the panel', () => {
+        component.addStep();
+        safeDetectChanges(fixture);
+        type('#step-name', 'Gainage');
+        type('#step-seconds', '45');
+        type('#step-text', 'Corps aligné');
+        component.addCue(0);
+        safeDetectChanges(fixture);
+        type('.editor-cue-at', '20');
+        type('.editor-cue-say', 'Tiens bon');
+
+        component.onSubmit();
+
+        expect(mockRoutineService.create).toHaveBeenCalledTimes(1);
+        const payload = mockRoutineService.create.mock.calls[0][0];
+        expect(payload.steps).toHaveLength(1);
+        expect(payload.steps[0]).toMatchObject({
+          name: 'Gainage',
+          seconds: 45,
+          mode: 'mouvement',
+          text: 'Corps aligné',
+          cues: [{ at: 20, say: 'Tiens bon' }],
+        });
+      });
+
+      it('should sort the cues by moment when saving', () => {
+        addValidStep('Planche', 60, [
+          { at: 40, say: 'Trois' },
+          { at: 5, say: 'Un' },
+          { at: 20, say: 'Deux' },
+        ]);
+
+        component.onSubmit();
+
+        expect(
+          mockRoutineService.create.mock.calls[0][0].steps[0].cues,
+        ).toEqual([
+          { at: 5, say: 'Un' },
+          { at: 20, say: 'Deux' },
+          { at: 40, say: 'Trois' },
+        ]);
+        // The order shown in the panel is not changed while editing
+        expect(component.steps.at(0).value.cues[0].say).toBe('Trois');
+      });
+
+      it('should not save while a step is incomplete', () => {
+        component.addStep();
+
+        component.onSubmit();
+
+        expect(mockRoutineService.create).not.toHaveBeenCalled();
+        expect(component.error).toContain('champs obligatoires');
+      });
+
+      it('should not save while a cue is invalid', () => {
+        addValidStep('Planche', 30, [{ at: 45, say: 'Hors durée' }]);
+
+        component.onSubmit();
+
+        expect(mockRoutineService.create).not.toHaveBeenCalled();
+      });
+
+      it('should disable the save button while a step is incomplete', () => {
+        component.addStep();
+        safeDetectChanges(fixture);
+
+        const save = el().querySelector(
+          '.editor-toolbar .btn-primary',
+        ) as HTMLButtonElement;
+        expect(save.disabled).toBe(true);
+      });
+    });
+
+    it('should clear the selection when a routine is imported', () => {
+      addValidStep('A');
+      component.selectStep(0);
+      const file = new File(
+        [
+          JSON.stringify({
+            name: 'Importée',
+            steps: [
+              { name: 'S1', seconds: 20, mode: 'statique', text: 't' },
+              { name: 'S2', seconds: 20, mode: 'statique', text: 't' },
+            ],
+          }),
+        ],
+        'r.routine.json',
+        { type: 'application/json' },
+      );
+      const reader: any = {
+        readAsText: vi.fn(function (this: any) {
+          this.onload({
+            target: {
+              result: JSON.stringify({
+                name: 'Importée',
+                steps: [
+                  { name: 'S1', seconds: 20, mode: 'statique', text: 't' },
+                  { name: 'S2', seconds: 20, mode: 'statique', text: 't' },
+                ],
+              }),
+            },
+          });
+        }),
+      };
+      vi.stubGlobal(
+        'FileReader',
+        vi.fn(function () {
+          return reader;
+        }),
+      );
+
+      try {
+        component.onImportFile({ target: { files: [file] } } as any);
+      } finally {
+        vi.unstubAllGlobals();
+      }
+
+      expect(component.steps.length).toBe(2);
+      expect(component.selectedStepIndex).toBeNull();
     });
   });
 });

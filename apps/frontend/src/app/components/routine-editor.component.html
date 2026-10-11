@@ -141,7 +141,7 @@
         <button
           type="button"
           class="btn btn-ghost editor-add-btn"
-          (click)="openStepModal(null)"
+          (click)="addStep()"
         >
           <svg
             width="16"
@@ -175,6 +175,7 @@
               class="card editor-step"
               cdkDrag
               [class.editor-step--selected]="selectedStepIndex === $index"
+              [class.editor-step--invalid]="step.invalid"
               [style.border-color]="
                 selectedStepIndex === $index
                   ? getModeColor($safeNavigationMigration(step.get('mode')?.value))
@@ -186,6 +187,14 @@
                   : ''
               "
               (click)="selectStep($index)"
+              (keydown.enter)="selectStep($index)"
+              (keydown.space)="$event.preventDefault(); selectStep($index)"
+              tabindex="0"
+              role="button"
+              [attr.aria-pressed]="selectedStepIndex === $index"
+              [attr.aria-label]="
+                'Modifier l\'étape ' + ($index + 1) + ' : ' + (step.get('name')?.value || 'sans nom')
+              "
             >
               <span class="step-grip" cdkDragHandle aria-label="Déplacer">
                 <svg
@@ -228,32 +237,28 @@
                 </div>
                 <div class="type-caption">
                   {{ getModeLabel($safeNavigationMigration(step.get('mode')?.value)) }}
+                  @if (step.invalid) {
+                    <span class="step-incomplete">· À compléter</span>
+                  }
                 </div>
               </div>
               <span class="step-duration type-mono">{{
                 formatSeconds($safeNavigationMigration(step.get('seconds')?.value))
               }}</span>
-              <button
-                type="button"
-                class="btn btn-ghost btn-icon"
-                (click)="$event.stopPropagation(); openStepModal($index)"
-                aria-label="Éditer"
+              <svg
+                class="step-chevron"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
               >
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                >
-                  <circle cx="12" cy="12" r="1" />
-                  <circle cx="19" cy="12" r="1" />
-                  <circle cx="5" cy="12" r="1" />
-                </svg>
-              </button>
+                <polyline points="9 18 15 12 9 6" />
+              </svg>
             </div>
           }
         </div>
@@ -276,44 +281,96 @@
       </div>
     </div>
 
-    <!-- Right panel: selected step detail (desktop only) -->
-    <aside class="editor-panel">
+    <!-- Step detail panel: the only place where a step is edited.
+         Right column on desktop, full-screen sheet on mobile (when a step is selected). -->
+    <aside
+      class="editor-panel"
+      [class.editor-panel--open]="selectedStepIndex !== null && !!selectedStep"
+    >
       @if (selectedStepIndex !== null && selectedStep && selectedStepFormGroup) {
         <div class="card editor-panel-card" [formGroup]="selectedStepFormGroup">
-          <span
-            class="type-label editor-panel-mode-label"
-            [style.color]="getModeColor(selectedStep.mode)"
-          >
-            ● Étape sélectionnée
-          </span>
-          <h3 class="type-h2 editor-panel-title">{{ selectedStep.name }}</h3>
+          <div class="editor-panel-header">
+            <span
+              class="type-label editor-panel-mode-label"
+              [style.color]="getModeColor(selectedStep.mode)"
+            >
+              ● Étape sélectionnée
+            </span>
+            <button
+              type="button"
+              class="btn btn-secondary editor-panel-close"
+              (click)="selectedStepIndex = null"
+            >
+              Terminé
+            </button>
+          </div>
+          <h3 class="type-h2 editor-panel-title">
+            {{ selectedStep.name || 'Nouvelle étape' }}
+          </h3>
 
           <!-- Nom -->
           <div class="editor-field">
-            <label class="type-label">Nom</label>
-            <input class="input" formControlName="name" />
+            <label class="type-label" for="step-name">Nom</label>
+            <input
+              id="step-name"
+              class="input"
+              formControlName="name"
+              placeholder="ex : Chat-vache"
+              autocomplete="off"
+            />
+            @if (
+              selectedStepFormGroup.get('name')?.invalid &&
+              selectedStepFormGroup.get('name')?.touched
+            ) {
+              <span class="editor-field-error"
+                >Le nom est requis (100 caractères maximum)</span
+              >
+            }
           </div>
 
           <!-- Durée + Mode -->
           <div class="editor-field-row">
             <div class="editor-field">
-              <label class="type-label">Durée (s)</label>
-              <input class="input type-mono" type="number" formControlName="seconds" min="5" />
+              <label class="type-label" for="step-seconds">Durée (s)</label>
+              <input
+                id="step-seconds"
+                class="input type-mono"
+                type="number"
+                formControlName="seconds"
+                min="5"
+              />
             </div>
             <div class="editor-field">
-              <label class="type-label">Mode</label>
-              <select class="input" formControlName="mode">
+              <label class="type-label" for="step-mode">Mode</label>
+              <select id="step-mode" class="input" formControlName="mode">
                 <option value="respiration">Respiration</option>
                 <option value="mouvement">Mouvement</option>
                 <option value="statique">Statique</option>
               </select>
             </div>
           </div>
+          @if (selectedStepFormGroup.get('seconds')?.invalid) {
+            <span class="editor-field-error editor-field-error--row"
+              >La durée doit être d'au moins 5 secondes</span
+            >
+          }
 
           <!-- Consigne -->
           <div class="editor-field">
-            <label class="type-label">Consigne</label>
-            <textarea class="input" formControlName="text" rows="3"></textarea>
+            <label class="type-label" for="step-text">Consigne</label>
+            <textarea
+              id="step-text"
+              class="input"
+              formControlName="text"
+              rows="3"
+              placeholder="Ce que l'utilisateur doit faire pendant l'étape"
+            ></textarea>
+            @if (
+              selectedStepFormGroup.get('text')?.invalid &&
+              selectedStepFormGroup.get('text')?.touched
+            ) {
+              <span class="editor-field-error">La consigne est requise</span>
+            }
           </div>
 
           <!-- Image — facultatif -->
@@ -383,21 +440,69 @@
           <!-- Annonces vocales -->
           <div class="editor-cues-section">
             <div class="editor-cues-header">
-              <label class="type-label">Annonces vocales</label>
-              <button type="button" class="btn btn-ghost editor-cues-add-btn" (click)="openStepModal(selectedStepIndex)">
+              <span class="type-label">Annonces vocales</span>
+              <button
+                type="button"
+                class="btn btn-ghost editor-cues-add-btn"
+                (click)="addCue(selectedStepIndex!)"
+              >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                   <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
                 </svg>
                 Ajouter
               </button>
             </div>
-            @if (selectedStep.cues?.length) {
-              @for (cue of selectedStep.cues; track cue.at) {
-                <div class="editor-cue">
-                  <span class="type-mono editor-cue-time">+{{ cue.at }}s</span>
-                  <span class="editor-cue-text">{{ cue.say }}</span>
-                </div>
-              }
+            @if (!selectedStep.cues?.length) {
+              <p class="type-caption editor-cues-empty">
+                Aucune annonce. Ajoutez-en pour guider l'utilisateur à la voix
+                pendant l'étape.
+              </p>
+            }
+            @for (cue of selectedStep.cues; track $index) {
+              <div class="editor-cue">
+                <input
+                  class="input type-mono editor-cue-at"
+                  type="number"
+                  min="0"
+                  [max]="selectedStep.seconds"
+                  [value]="cue.at"
+                  (input)="
+                    updateCue(selectedStepIndex!, $index, 'at', $any($event.target).value)
+                  "
+                  [attr.aria-label]="'Annonce ' + ($index + 1) + ' : moment en secondes'"
+                />
+                <span class="type-caption editor-cue-unit">s</span>
+                <input
+                  class="input editor-cue-say"
+                  [value]="cue.say"
+                  (input)="
+                    updateCue(selectedStepIndex!, $index, 'say', $any($event.target).value)
+                  "
+                  placeholder="Texte à dire"
+                  [attr.aria-label]="'Annonce ' + ($index + 1) + ' : texte à dire'"
+                />
+                <button
+                  type="button"
+                  class="btn btn-ghost btn-icon editor-cue-remove"
+                  (click)="removeCue(selectedStepIndex!, $index)"
+                  [attr.aria-label]="'Supprimer l\'annonce ' + ($index + 1)"
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                  </svg>
+                </button>
+              </div>
+            }
+            @if (selectedStepFormGroup.hasError('cueTextRequired')) {
+              <span class="editor-field-error"
+                >Chaque annonce doit avoir un texte</span
+              >
+            }
+            @if (selectedStepFormGroup.hasError('cueOutOfRange')) {
+              <span class="editor-field-error"
+                >Le moment d'une annonce doit être compris entre 0 et la durée
+                de l'étape ({{ selectedStep.seconds }} s)</span
+              >
             }
           </div>
 
@@ -428,21 +533,10 @@
             <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" />
           </svg>
           <p class="type-body-sm">
-            Sélectionnez une étape pour voir ses détails
+            Sélectionnez une étape pour la modifier
           </p>
         </div>
       }
     </aside>
   </form>
-
-  <!-- Step modal -->
-  @if (showStepModal) {
-    <app-step-editor-modal
-      [step]="
-        currentStepIndex !== null ? steps.at(currentStepIndex).value : null
-      "
-      (save)="saveStep($event)"
-      (cancel)="closeStepModal()"
-    ></app-step-editor-modal>
-  }
 </div>

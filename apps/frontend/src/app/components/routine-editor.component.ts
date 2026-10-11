@@ -2,11 +2,13 @@ import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
 import {
+  AbstractControl,
   FormBuilder,
   FormGroup,
   Validators,
   ReactiveFormsModule,
   FormArray,
+  ValidationErrors,
 } from '@angular/forms';
 import {
   CdkDragDrop,
@@ -16,7 +18,6 @@ import {
 import { Routine, Step } from '@flexicoach/shared';
 import { RoutineService } from '../services/routine.service';
 import { UploadService } from '../services/upload.service';
-import { StepEditorModalComponent } from './step-editor-modal.component';
 
 const MODE_META: Record<string, { color: string; bg: string; label: string }> =
   {
@@ -37,6 +38,37 @@ const MODE_META: Record<string, { color: string; bg: string; label: string }> =
     },
   };
 
+type Cue = { at: number | null; say: string };
+
+/**
+ * Validates the voice cues of a step: every cue needs a text and a moment
+ * between 0 and the duration of the step.
+ */
+export function stepCuesValidator(
+  group: AbstractControl,
+): ValidationErrors | null {
+  const cues: Cue[] = group.get('cues')?.value ?? [];
+  const seconds = Number(group.get('seconds')?.value);
+  const errors: ValidationErrors = {};
+
+  if (cues.some((cue) => !cue.say || !cue.say.trim())) {
+    errors['cueTextRequired'] = true;
+  }
+  if (
+    cues.some(
+      (cue) =>
+        cue.at === null ||
+        cue.at === undefined ||
+        Number.isNaN(Number(cue.at)) ||
+        Number(cue.at) < 0 ||
+        Number(cue.at) > seconds,
+    )
+  ) {
+    errors['cueOutOfRange'] = true;
+  }
+  return Object.keys(errors).length ? errors : null;
+}
+
 const LEVEL_LABELS: Record<string, string> = {
   beginner: 'Débutant',
   intermediate: 'Intermédiaire',
@@ -46,12 +78,7 @@ const LEVEL_LABELS: Record<string, string> = {
 @Component({
   selector: 'app-routine-editor',
   standalone: true,
-  imports: [
-    CommonModule,
-    ReactiveFormsModule,
-    DragDropModule,
-    StepEditorModalComponent,
-  ],
+  imports: [CommonModule, ReactiveFormsModule, DragDropModule],
   templateUrl: './routine-editor.component.html',
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./routine-editor.component.scss'],
@@ -63,8 +90,7 @@ export class RoutineEditorComponent implements OnInit {
   success = '';
   isEditMode = false;
   routineId = '';
-  showStepModal = false;
-  currentStepIndex: number | null = null;
+  /** Step shown in the detail panel, the only place where a step is edited. */
   selectedStepIndex: number | null = null;
 
   uploadingStepIndex: number | null = null;
@@ -151,53 +177,123 @@ export class RoutineEditorComponent implements OnInit {
   }
 
   createStepFormGroup(step?: Step): FormGroup {
-    return this.fb.group({
-      name: [
-        step?.name || '',
-        [Validators.required, Validators.maxLength(100)],
-      ],
-      seconds: [step?.seconds || 30, [Validators.required, Validators.min(5)]],
-      mode: [step?.mode || 'mouvement', Validators.required],
-      text: [step?.text || '', [Validators.required, Validators.minLength(1)]],
-      imageUrl: [step?.imageUrl || ''],
-      imageName: [step?.imageName || ''],
-      imageSize: [step?.imageSize || 0],
-      imageUploadedAt: [step?.imageUploadedAt || ''],
-      cues: [step?.cues || []],
-    });
+    return this.fb.group(
+      {
+        name: [
+          step?.name || '',
+          [Validators.required, Validators.maxLength(100)],
+        ],
+        seconds: [
+          step?.seconds || 30,
+          [Validators.required, Validators.min(5)],
+        ],
+        mode: [step?.mode || 'mouvement', Validators.required],
+        text: [
+          step?.text || '',
+          [Validators.required, Validators.minLength(1)],
+        ],
+        imageUrl: [step?.imageUrl || ''],
+        imageName: [step?.imageName || ''],
+        imageSize: [step?.imageSize || 0],
+        imageUploadedAt: [step?.imageUploadedAt || ''],
+        cues: [step?.cues || []],
+      },
+      { validators: stepCuesValidator },
+    );
   }
 
-  openStepModal(index: number | null = null) {
-    this.currentStepIndex = index;
-    this.showStepModal = true;
-  }
-
-  closeStepModal() {
-    this.showStepModal = false;
-    this.currentStepIndex = null;
-  }
-
-  saveStep(stepData: Step) {
-    if (this.currentStepIndex !== null) {
-      // Edit existing step
-      this.steps.at(this.currentStepIndex).patchValue(stepData);
-    } else {
-      // Add new step
-      this.steps.push(this.createStepFormGroup(stepData));
-    }
-    this.closeStepModal();
+  /**
+   * Adds an empty step and opens it in the detail panel, where it is filled
+   * in (name and instruction are required before the routine can be saved).
+   */
+  addStep() {
+    this.steps.push(this.createStepFormGroup());
+    this.selectedStepIndex = this.steps.length - 1;
+    // Let the panel render, then put the cursor in the name field
+    setTimeout(() => document.getElementById('step-name')?.focus());
   }
 
   deleteStep(index: number) {
     if (confirm('Êtes-vous sûr de vouloir supprimer cette étape ?')) {
       this.steps.removeAt(index);
+      if (this.selectedStepIndex === index) {
+        this.selectedStepIndex = null;
+      } else if (
+        this.selectedStepIndex !== null &&
+        this.selectedStepIndex > index
+      ) {
+        this.selectedStepIndex -= 1;
+      }
     }
   }
 
   onDrop(event: CdkDragDrop<Step[]>) {
     const stepsArray = this.steps.controls;
+    const selected =
+      this.selectedStepIndex !== null
+        ? stepsArray[this.selectedStepIndex]
+        : null;
     moveItemInArray(stepsArray, event.previousIndex, event.currentIndex);
     this.steps.setValue(stepsArray.map((control) => control.value));
+    // The selection follows the step that was selected before the move
+    if (selected) {
+      this.selectedStepIndex = stepsArray.indexOf(selected);
+    }
+  }
+
+  // --- Voice cues of a step (edited in the detail panel) ---
+
+  private getCues(stepIndex: number): Cue[] {
+    return (this.steps.at(stepIndex)?.get('cues')?.value as Cue[]) ?? [];
+  }
+
+  private setCues(stepIndex: number, cues: Cue[]) {
+    const control = this.steps.at(stepIndex)?.get('cues');
+    control?.setValue(cues);
+    control?.markAsDirty();
+  }
+
+  addCue(stepIndex: number) {
+    this.setCues(stepIndex, [...this.getCues(stepIndex), { at: 0, say: '' }]);
+  }
+
+  removeCue(stepIndex: number, cueIndex: number) {
+    this.setCues(
+      stepIndex,
+      this.getCues(stepIndex).filter((_, i) => i !== cueIndex),
+    );
+  }
+
+  updateCue(
+    stepIndex: number,
+    cueIndex: number,
+    field: 'at' | 'say',
+    rawValue: string,
+  ) {
+    const value =
+      field === 'say'
+        ? rawValue
+        : rawValue === '' || Number.isNaN(Number(rawValue))
+          ? null
+          : Number(rawValue);
+    this.setCues(
+      stepIndex,
+      this.getCues(stepIndex).map((cue, i) =>
+        i === cueIndex ? { ...cue, [field]: value } : cue,
+      ),
+    );
+  }
+
+  /** Form value with the cues of every step sorted by moment. */
+  private buildRoutineData() {
+    const value = this.routineForm.value;
+    return {
+      ...value,
+      steps: (value.steps as Step[]).map((step) => ({
+        ...step,
+        cues: [...(step.cues ?? [])].sort((a, b) => a.at - b.at),
+      })),
+    };
   }
 
   getTotalDuration(): number {
@@ -220,9 +316,7 @@ export class RoutineEditorComponent implements OnInit {
     this.error = '';
     this.success = '';
 
-    const routineData = {
-      ...this.routineForm.value,
-    };
+    const routineData = this.buildRoutineData();
 
     const observable = this.isEditMode
       ? this.routineService.update(this.routineId, routineData)
@@ -254,9 +348,7 @@ export class RoutineEditorComponent implements OnInit {
 
     const exportData = {
       version: '1.0',
-      routine: {
-        ...this.routineForm.value,
-      },
+      routine: this.buildRoutineData(),
     };
 
     const blob = new Blob([JSON.stringify(exportData, null, 2)], {
@@ -348,6 +440,7 @@ export class RoutineEditorComponent implements OnInit {
         });
 
         // Clear and add steps
+        this.selectedStepIndex = null;
         this.steps.clear();
         if (routine.steps && Array.isArray(routine.steps)) {
           routine.steps.forEach((step: Step) => {
@@ -412,7 +505,12 @@ export class RoutineEditorComponent implements OnInit {
   }
 
   removeStepImage(stepIndex: number): void {
-    this.steps.at(stepIndex).patchValue({ imageUrl: '', imageName: '', imageSize: 0, imageUploadedAt: '' });
+    this.steps.at(stepIndex).patchValue({
+      imageUrl: '',
+      imageName: '',
+      imageSize: 0,
+      imageUploadedAt: '',
+    });
   }
 
   selectStep(index: number): void {
@@ -453,7 +551,7 @@ export class RoutineEditorComponent implements OnInit {
 
   get selectedStepFormGroup(): FormGroup | null {
     if (this.selectedStepIndex === null) return null;
-    return this.steps.at(this.selectedStepIndex) as FormGroup ?? null;
+    return (this.steps.at(this.selectedStepIndex) as FormGroup) ?? null;
   }
 
   /** Format upload date in short form (e.g. "12 avril") */
@@ -461,7 +559,20 @@ export class RoutineEditorComponent implements OnInit {
     if (!isoDate) return '';
     const d = new Date(isoDate);
     if (isNaN(d.getTime())) return '';
-    const months = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+    const months = [
+      'janvier',
+      'février',
+      'mars',
+      'avril',
+      'mai',
+      'juin',
+      'juillet',
+      'août',
+      'septembre',
+      'octobre',
+      'novembre',
+      'décembre',
+    ];
     return `${d.getDate()} ${months[d.getMonth()]}`;
   }
 
