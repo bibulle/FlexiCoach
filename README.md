@@ -2,7 +2,7 @@
 
 Application Progressive Web App (PWA) pour routines d'exercices guidées avec suivi quotidien, visualisation des progrès et programmes d'entraînement multiples.
 
-## 📝 Version actuelle : 0.7.4
+## 📝 Version actuelle : 0.8.5
 
 ### Corrections récentes
 - ✅ Authentification Google OAuth2 implémentée
@@ -232,10 +232,20 @@ npx nx build backend
 
 ### Configuration importante
 
-- Les dépendances Angular sont alignées (`~20.3.0`, pas besoin de `--legacy-peer-deps`)
-- Le frontend utilise un proxy (`proxy.conf.json`) pour rediriger `/api` vers `localhost:3000`
+- Les dépendances Angular sont alignées (`~21.2`, pas besoin de `--legacy-peer-deps`)
+- Le frontend utilise un proxy (`proxy.conf.json`) pour rediriger `/api` et `/uploads` vers `localhost:3000`
 - Les schémas MongoDB sont dans `apps/backend/src/schemas/`
 - Les modèles partagés sont dans `libs/shared/src/lib/models.ts`
+
+### Mises à jour des dépendances (Dependabot)
+
+Dependabot est configuré dans `.github/dependabot.yml` et ouvre des PR chaque lundi :
+
+- **npm** : mises à jour groupées (`angular`, `nx`, `nestjs`, puis mineures/patch dev et prod). Les montées **majeures** d'Angular et de Nx sont ignorées : elles se font manuellement via `npx nx migrate latest`.
+- **GitHub Actions** : actions du workflow `build-and-publish.yml`, regroupées en une PR.
+- **Docker** : image de base `node:24-alpine` (patch/mineur uniquement, on reste sur la LTS 24).
+
+Les PR de sécurité dépendent de l'option *Dependabot security updates* (Settings → Code security du dépôt).
 
 ## 🌐 API Endpoints
 
