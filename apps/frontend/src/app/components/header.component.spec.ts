@@ -147,7 +147,7 @@ describe('HeaderComponent', () => {
 
     const crumbs = component.breadcrumbs();
     expect(crumbs.length).toBe(2);
-    expect(crumbs[0]).toEqual({ label: 'Routines', url: '/' });
+    expect(crumbs[0]).toEqual({ label: 'Routines', url: '/routines' });
     expect(crumbs[1]).toEqual({
       label: 'Nouvelle routine',
       url: '/routines/new',
@@ -160,7 +160,7 @@ describe('HeaderComponent', () => {
 
     const crumbs = component.breadcrumbs();
     expect(crumbs.length).toBe(2);
-    expect(crumbs[0]).toEqual({ label: 'Routines', url: '/' });
+    expect(crumbs[0]).toEqual({ label: 'Routines', url: '/routines' });
     expect(crumbs[1]).toEqual({ label: 'Éditer', url: '/routines/123/edit' });
   });
 
@@ -184,7 +184,7 @@ describe('HeaderComponent', () => {
 
     const crumbs = component.breadcrumbs();
     expect(crumbs.length).toBe(2);
-    expect(crumbs[0]).toEqual({ label: 'Routines', url: '/' });
+    expect(crumbs[0]).toEqual({ label: 'Routines', url: '/routines' });
     expect(crumbs[1]).toEqual({ label: 'Administration', url: '/admin' });
   });
 
@@ -194,7 +194,7 @@ describe('HeaderComponent', () => {
 
     const crumbs = component.breadcrumbs();
     expect(crumbs.length).toBe(2);
-    expect(crumbs[0]).toEqual({ label: 'Routines', url: '/' });
+    expect(crumbs[0]).toEqual({ label: 'Routines', url: '/routines' });
     expect(crumbs[1]).toEqual({ label: 'Complétion', url: '/completion' });
   });
 
@@ -230,6 +230,56 @@ describe('HeaderComponent', () => {
 
     const separator = breadcrumbsContainer.querySelector('.separator');
     expect(separator.textContent.trim()).toBe('›');
+  });
+
+  it('should link the "Routines" breadcrumb of the player to the catalogue (issue #150)', () => {
+    vi.spyOn(router, 'url', 'get').mockReturnValue('/routine/douce-10min');
+    fixture.detectChanges();
+
+    const crumbs = component.breadcrumbs();
+    expect(crumbs).toEqual([
+      { label: 'Routines', url: '/routines' },
+      { label: 'Routine', url: '/routine/douce-10min' },
+    ]);
+
+    const link = fixture.nativeElement.querySelector(
+      '.breadcrumbs .breadcrumb-link',
+    ) as HTMLAnchorElement;
+    expect(link.textContent?.trim()).toBe('Routines');
+    expect(link.getAttribute('href')).toBe('/routines');
+  });
+
+  it('should show "Routines" as the current page (not a link) on the catalogue', () => {
+    vi.spyOn(router, 'url', 'get').mockReturnValue('/routines');
+    fixture.detectChanges();
+
+    expect(component.breadcrumbs()).toEqual([
+      { label: 'Routines', url: '/routines' },
+    ]);
+    const container = fixture.nativeElement.querySelector('.breadcrumbs');
+    expect(container.querySelectorAll('.breadcrumb-link').length).toBe(0);
+    expect(container.querySelector('.current').textContent.trim()).toBe(
+      'Routines',
+    );
+  });
+
+  it('should never point a breadcrumb labelled "Routines" to the home page', () => {
+    for (const url of [
+      '/routines',
+      '/routines/new',
+      '/routines/123/edit',
+      '/routine/douce-10min',
+      '/completion',
+      '/admin',
+    ]) {
+      vi.spyOn(router, 'url', 'get').mockReturnValue(url);
+      component['buildBreadcrumbs']();
+
+      const routinesCrumb = component
+        .breadcrumbs()
+        .find((crumb) => crumb.label === 'Routines');
+      expect(routinesCrumb?.url, url).toBe('/routines');
+    }
   });
 
   it('should unsubscribe from router events on destroy', () => {

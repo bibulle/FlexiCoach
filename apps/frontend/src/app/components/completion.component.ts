@@ -50,11 +50,11 @@ export class CompletionComponent implements OnInit {
       this.sessionService
         .update(this.sessionId, { feeling: this.selectedFeeling })
         .subscribe({
-          next: () => this.router.navigate(['/']),
-          error: () => this.router.navigate(['/']),
+          next: () => this.router.navigate(['/routines']),
+          error: () => this.router.navigate(['/routines']),
         });
     } else {
-      this.router.navigate(['/']);
+      this.router.navigate(['/routines']);
     }
   }
 
