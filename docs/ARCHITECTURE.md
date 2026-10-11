@@ -53,7 +53,7 @@ flexicoach/
 ├── Dockerfile                # Build multi-stage
 ├── docker-test.sh            # Test local de l'image Docker
 ├── release-please-config.json # Versions & CHANGELOG automatiques
-└── .github/workflows/        # CI/CD : build-and-publish (tests, e2e, image :latest),
+└── .github/workflows/        # CI/CD : build-and-publish (tests, e2e, build Docker de vérification sur les PR),
                               #         release (release-please, image VX.Y.Z + GitOps), docker (réutilisable)
 ```
 
@@ -84,7 +84,7 @@ flexicoach/
 - **Containerisation**: Docker (multi-stage build)
 - **CI/CD**: GitHub Actions (tests unitaires + e2e, image Docker)
 - **Versions**: release-please (Conventional Commits → Release PR → tag `vX.Y.Z` + CHANGELOG)
-- **Registry**: Docker Hub (`:latest` à chaque merge sur `main`, `:VX.Y.Z` à chaque release)
+- **Registry**: Docker Hub (`:VX.Y.Z` + `:latest` à chaque release uniquement ; rien n'est publié au merge sur `main`)
 - **Déploiement**: Kubernetes (GitOps, mis à jour à chaque release)
 
 ## Architecture des données

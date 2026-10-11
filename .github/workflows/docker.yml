@@ -2,9 +2,9 @@ name: Docker image
 
 # Reusable workflow: builds the Docker image and, when asked, pushes it to
 # Docker Hub and updates the GitOps repository.
-#   - merge on main  -> build-and-publish.yml : push ":latest" only
-#   - release (tag)  -> release-please.yml    : push ":latest" + ":VX.Y.Z" and update GitOps
 #   - pull request   -> build-and-publish.yml : build only (nothing is pushed)
+#   - merge on main  -> not called (no image is built nor pushed)
+#   - release (tag)  -> release-please.yml    : push ":latest" + ":VX.Y.Z" and update GitOps
 
 on:
   workflow_call:
