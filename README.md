@@ -96,7 +96,8 @@ MONGODB_URI=mongodb://localhost:27017/flexicoach npm run test:e2e:frontend     #
 ```
 
 Détails (prérequis, bonnes pratiques, CI) : voir [TESTING.md](./TESTING.md). Les deux suites tournent en CI
-(job `e2e`, avec un service `mongo:8`) et conditionnent la publication de l'image Docker.
+(job `e2e`, avec un service `mongo:8`) sur chaque PR et chaque merge sur `main` ; sur une PR, elles conditionnent
+le build de vérification de l'image Docker.
 
 ### Image Docker en local
 
@@ -266,8 +267,10 @@ messages de commit ([Conventional Commits](https://www.conventionalcommits.org/f
 et la compilation de `version.ts`) ; les E2E et le build Docker de `Build and Publish` sont sautés, le code ayant
 déjà été testé sur `main`. L'image de la release n'est donc construite qu'une fois, par le workflow `Release`.
 
-**Images Docker :** chaque merge sur `main` publie `:latest` ; seules les releases publient une image versionnée
-et déclenchent le déploiement GitOps. Les PR ne font qu'un build (rien n'est publié).
+**Images Docker :** seules les releases publient une image (`:VX.Y.Z` + `:latest`, construite depuis le tag) et
+déclenchent le déploiement GitOps : `:latest` désigne donc toujours la dernière release, et chaque image publiée
+affiche sa propre version. Les PR ne font qu'un build de vérification (rien n'est publié) ; un merge sur `main`
+ne construit ni ne publie d'image (tests unitaires et E2E seulement).
 
 **Réglages GitHub nécessaires** (une fois) :
 - *Settings → Actions → General → Workflow permissions* : cocher **Allow GitHub Actions to create and approve pull requests**.

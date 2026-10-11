@@ -107,16 +107,17 @@ jobs:
         if: failure()
         run: cat backend.log
 
-  # Docker image (only after tests pass):
-  #   - pull request : build only, nothing is pushed
-  #   - merge on main: push ":latest" (versioned images come from release-please.yml)
+  # Docker image, pull requests only (after tests pass): build only, nothing is pushed.
+  # It checks that the image still builds before the merge.
+  # Nothing is built on a merge into main: images are published by release-please.yml
+  # only (":latest" + ":VX.Y.Z", built once from the release tag), so that ":latest"
+  # is always the last release and every published image shows its own version.
   docker:
     name: Docker image
     needs: [test, e2e]
-    # Not built on the release-please PR nor on its merge into main: the release image
-    # (":latest" + ":VX.Y.Z") is built once, from the tag, by release-please.yml
-    if: ${{ !startsWith(github.head_ref, 'release-please--') && !contains(github.event.head_commit.message, 'release-please--') }}
+    # Not built on the release-please PR either: it only bumps version files
+    if: ${{ github.event_name == 'pull_request' && !startsWith(github.head_ref, 'release-please--') }}
     uses: ./.github/workflows/docker.yml
     with:
-      push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+      push: false
     secrets: inherit
