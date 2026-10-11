@@ -5,6 +5,19 @@ Ce fichier est maintenu automatiquement par [release-please](https://github.com/
 ne pas l'éditer à la main. Les releases sont publiées sur
 [GitHub Releases](https://github.com/bibulle/FlexiCoach/releases).
 
+## [0.8.12](https://github.com/bibulle/FlexiCoach/compare/v0.8.11...v0.8.12) (2026-10-11)
+
+
+### Corrections
+
+* **auth:** règle de mot de passe unique entre frontend et backend ([#151](https://github.com/bibulle/FlexiCoach/issues/151)) ([7a93d64](https://github.com/bibulle/FlexiCoach/commit/7a93d648a430bec54328b5f8d475b353d26894c3))
+* **auth:** règle de mot de passe unique entre frontend et backend ([#151](https://github.com/bibulle/FlexiCoach/issues/151)) ([ef5fe08](https://github.com/bibulle/FlexiCoach/commit/ef5fe0855722cc676369e8c9d717a21be1474106))
+
+
+### Tests
+
+* **frontend:** force NODE_ENV=test pour les tests unitaires lancés par Nx ([1f8cd54](https://github.com/bibulle/FlexiCoach/commit/1f8cd54284c7710ba9a419832fd801703ca5c1db))
+
 ## [0.8.11](https://github.com/bibulle/FlexiCoach/compare/v0.8.10...v0.8.11) (2026-10-11)
 
 
