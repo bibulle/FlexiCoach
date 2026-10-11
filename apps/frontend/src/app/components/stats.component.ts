@@ -1,4 +1,4 @@
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -25,6 +25,7 @@ const DEFAULT_REMINDERS: Reminder[] = [
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './stats.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./stats.component.scss'],
 })
 export class StatsComponent implements OnInit {

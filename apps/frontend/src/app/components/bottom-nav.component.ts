@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 
@@ -7,6 +7,7 @@ import { AuthService } from '../services/auth.service';
   standalone: true,
   imports: [RouterLink, RouterLinkActive],
   templateUrl: './bottom-nav.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./bottom-nav.component.scss'],
 })
 export class BottomNavComponent {

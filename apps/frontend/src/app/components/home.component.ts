@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { Routine } from '@flexicoach/shared';
@@ -11,6 +11,7 @@ import { AuthService } from '../services/auth.service';
   standalone: true,
   imports: [CommonModule, RouterLink],
   templateUrl: './home.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./home.component.scss'],
 })
 export class HomeComponent implements OnInit {

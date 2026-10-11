@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   FormBuilder,
@@ -13,6 +13,7 @@ import { AuthService } from '../services/auth.service';
   selector: 'app-signup',
   imports: [CommonModule, ReactiveFormsModule, RouterLink],
   styleUrl: './signup.component.sass',
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <div class="auth-shell">
       <!-- Desktop: split layout -->

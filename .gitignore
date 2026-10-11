@@ -59,3 +59,4 @@ vitest.config.*.timestamp*
 # Logs
 logs/
 *.log
+.nx/migrate-runs

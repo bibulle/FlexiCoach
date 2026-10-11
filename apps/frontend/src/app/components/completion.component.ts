@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -9,6 +9,7 @@ import { SessionService } from '../services/session.service';
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './completion.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./completion.component.scss'],
 })
 export class CompletionComponent implements OnInit {

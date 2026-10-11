@@ -177,12 +177,12 @@
               [class.editor-step--selected]="selectedStepIndex === $index"
               [style.border-color]="
                 selectedStepIndex === $index
-                  ? getModeColor(step.get('mode')?.value)
+                  ? getModeColor($safeNavigationMigration(step.get('mode')?.value))
                   : ''
               "
               [style.background]="
                 selectedStepIndex === $index
-                  ? getModeColorBg(step.get('mode')?.value)
+                  ? getModeColorBg($safeNavigationMigration(step.get('mode')?.value))
                   : ''
               "
               (click)="selectStep($index)"
@@ -211,7 +211,7 @@
               }}</span>
               <span
                 class="step-color-bar"
-                [style.background]="getModeColor(step.get('mode')?.value)"
+                [style.background]="getModeColor($safeNavigationMigration(step.get('mode')?.value))"
               ></span>
               <div class="step-info">
                 <div class="step-name-row">
@@ -227,11 +227,11 @@
                   }
                 </div>
                 <div class="type-caption">
-                  {{ getModeLabel(step.get('mode')?.value) }}
+                  {{ getModeLabel($safeNavigationMigration(step.get('mode')?.value)) }}
                 </div>
               </div>
               <span class="step-duration type-mono">{{
-                formatSeconds(step.get('seconds')?.value)
+                formatSeconds($safeNavigationMigration(step.get('seconds')?.value))
               }}</span>
               <button
                 type="button"

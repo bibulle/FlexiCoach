@@ -4,6 +4,7 @@ import {
   computed,
   inject,
   HostListener,
+  ChangeDetectionStrategy
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
@@ -14,6 +15,7 @@ import { AuthService } from '../services/auth.service';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './user-menu.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./user-menu.component.scss'],
 })
 export class UserMenuComponent {

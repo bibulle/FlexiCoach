@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
 import {
@@ -53,6 +53,7 @@ const LEVEL_LABELS: Record<string, string> = {
     StepEditorModalComponent,
   ],
   templateUrl: './routine-editor.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./routine-editor.component.scss'],
 })
 export class RoutineEditorComponent implements OnInit {

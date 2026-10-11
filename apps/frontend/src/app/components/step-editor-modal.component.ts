@@ -5,6 +5,7 @@ import {
   Input,
   Output,
   EventEmitter,
+  ChangeDetectionStrategy
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
@@ -21,6 +22,7 @@ import { Step } from '@flexicoach/shared';
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './step-editor-modal.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./step-editor-modal.component.scss'],
 })
 export class StepEditorModalComponent implements OnInit, OnDestroy {

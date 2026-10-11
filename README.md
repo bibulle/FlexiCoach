@@ -2,7 +2,7 @@
 
 Application Progressive Web App (PWA) pour routines d'exercices guidées avec suivi quotidien, visualisation des progrès et programmes d'entraînement multiples.
 
-## 📝 Version actuelle : 0.8.5
+## 📝 Version actuelle : 0.8.6
 
 ### Corrections récentes
 - ✅ Authentification Google OAuth2 implémentée
@@ -23,9 +23,9 @@ Monorepo Nx avec:
 
 ### Prérequis
 
-- Node.js 18+
+- Node.js 24 LTS (version utilisée par la CI et l'image Docker ; Angular 22 / Vite 8 exigent Node ≥ 22)
 - MongoDB 8.0.1+ (local ou distant)
-- npm ou yarn
+- npm 11 (fourni avec Node 24)
 
 ### Installation
 
@@ -203,13 +203,15 @@ Le design s'inspire du prototype vanilla JS avec:
 
 ## 🛠️ Technologies
 
-- **Nx** 22.0.2 - Monorepo intégré
-- **NestJS** - Framework backend
-- **Angular** 20.3 - Framework frontend
-- **MongoDB** 8.0.1 + Mongoose - Base de données
-- **Vitest** - Tests unitaires frontend
-- **Jest** - Tests e2e backend
-- **TypeScript** 5.9.2
+- **Node.js** 24 LTS (CI, Docker)
+- **Nx** 23.3 - Monorepo intégré
+- **NestJS** 11.2 - Framework backend
+- **Angular** 22.2 (+ Angular Material 22.2) - Framework frontend
+- **MongoDB** + Mongoose 9.11 - Base de données
+- **Vitest** 4.1 (+ jsdom) - Tests unitaires frontend
+- **Jest** 30 - Tests unitaires et e2e backend
+- **Playwright** 1.64 - Tests e2e frontend
+- **TypeScript** 6.0 (imposé par Angular 22)
 - **SASS** - Préprocesseur CSS
 
 ## 📝 Notes de développement
@@ -232,7 +234,7 @@ npx nx build backend
 
 ### Configuration importante
 
-- Les dépendances Angular sont alignées (`~21.2`, pas besoin de `--legacy-peer-deps`)
+- Les dépendances Angular sont alignées (`~22.2`, pas besoin de `--legacy-peer-deps`)
 - Le frontend utilise un proxy (`proxy.conf.json`) pour rediriger `/api` et `/uploads` vers `localhost:3000`
 - Les schémas MongoDB sont dans `apps/backend/src/schemas/`
 - Les modèles partagés sont dans `libs/shared/src/lib/models.ts`
@@ -246,6 +248,12 @@ Dependabot est configuré dans `.github/dependabot.yml` et ouvre des PR chaque l
 - **Docker** : image de base `node:24-alpine` (patch/mineur uniquement, on reste sur la LTS 24).
 
 Les PR de sécurité dépendent de l'option *Dependabot security updates* (Settings → Code security du dépôt).
+
+**Montées majeures volontairement reportées** (à traiter dans des PR dédiées) :
+- **NestJS 12** : publié en ESM uniquement ; le runtime fonctionne (Node 24 `require(esm)`) mais les tests backend (Jest/ts-jest en CommonJS) doivent d'abord être migrés.
+- **Vitest 5** : casse la compilation des composants Angular via `@analogjs/vitest-angular` (Vite 8 / oxc) ; on reste en Vitest 4.1.
+- **TypeScript 7** : Angular 22 impose `typescript >=6.0 <6.1`.
+- `npm audit` remonte encore 29 alertes modérées via `sprintf-js` (outillage de couverture Jest, aucune version corrigée publiée).
 
 ## 🌐 API Endpoints
 
