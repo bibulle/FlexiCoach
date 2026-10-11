@@ -5,7 +5,7 @@
 | Suite | Outil | Tests | Lancée en CI |
 |---|---|---|---|
 | Unitaires backend | Jest | 266 | ✅ job `test` |
-| Unitaires frontend | Vitest | 501 | ✅ job `test` |
+| Unitaires frontend | Vitest | 503 | ✅ job `test` |
 | E2E backend (API) | Jest + axios | 102 | ✅ job `e2e` |
 | E2E frontend (UI) | Playwright (Chromium) | 64 | ✅ job `e2e` |
 

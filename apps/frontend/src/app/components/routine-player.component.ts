@@ -24,6 +24,8 @@ export class RoutinePlayerComponent implements OnInit, OnDestroy {
   currentStepIndex = 0;
   timeLeft = 0;
   isResting = false;
+  /** True once the end of the routine is being recorded. */
+  private completing = false;
   /** Step images that failed to load: hidden instead of a broken picture. */
   private missingImages = new Set<string>();
   isPlaying = false;
@@ -373,10 +375,15 @@ export class RoutinePlayerComponent implements OnInit, OnDestroy {
   }
 
   private complete() {
+    // The session is saved asynchronously: skipping again meanwhile (double
+    // click on "Étape suivante") must not record the routine a second time
+    if (this.completing) return;
+
     this.pause();
     this.speak('Bravo ! Routine terminée.');
 
     if (!this.routine || !this.startTime) return;
+    this.completing = true;
 
     const endTime = new Date();
     const durationSec = Math.floor(

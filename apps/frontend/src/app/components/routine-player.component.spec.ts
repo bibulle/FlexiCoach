@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Router } from '@angular/router';
-import { of, throwError } from 'rxjs';
+import { Subject, of, throwError } from 'rxjs';
 import { signal } from '@angular/core';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { RoutinePlayerComponent } from './routine-player.component';
@@ -518,6 +518,54 @@ describe('RoutinePlayerComponent', () => {
 
       expect(component.isImageMissing(undefined)).toBe(false);
       expect(figure()).not.toBeNull();
+    });
+  });
+
+  describe('end of routine recorded once', () => {
+    /** Starts the routine, then skips every step. */
+    const playToTheEnd = () => {
+      fixture.detectChanges();
+      component.start();
+      component.pause();
+      mockRoutine.steps.forEach(() => component.skipToNext());
+    };
+
+    it('should record a single session when the last step is skipped twice in a row', () => {
+      // The session is still being saved when the user clicks again
+      const saving = new Subject<any>();
+      mockSessionService.create.mockReturnValue(saving);
+
+      playToTheEnd();
+      component.skipToNext();
+      component.skipToNext();
+
+      expect(mockSessionService.create).toHaveBeenCalledTimes(1);
+
+      saving.next({ _id: 'session-123' });
+      saving.complete();
+
+      expect(mockRouter.navigate).toHaveBeenCalledTimes(1);
+      expect(mockRouter.navigate).toHaveBeenCalledWith(['/completion'], {
+        queryParams: expect.objectContaining({ sessionId: 'session-123' }),
+      });
+    });
+
+    it('should navigate to the completion screen once when saving fails', () => {
+      vi.spyOn(console, 'error').mockImplementation(() => undefined);
+      mockSessionService.create.mockReturnValue(
+        throwError(() => new Error('Save failed')),
+      );
+
+      playToTheEnd();
+      component.skipToNext();
+
+      expect(mockSessionService.create).toHaveBeenCalledTimes(1);
+      expect(mockRouter.navigate).toHaveBeenCalledTimes(1);
+      expect(mockRouter.navigate).toHaveBeenCalledWith(['/completion'], {
+        queryParams: expect.not.objectContaining({
+          sessionId: expect.anything(),
+        }),
+      });
     });
   });
 });
