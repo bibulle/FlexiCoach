@@ -150,10 +150,19 @@
     }
     <div class="player-timer">{{ formatTime(timeLeft) }}</div>
     <p class="type-body player-step-desc">{{ currentInstruction }}</p>
-    @if (!isResting && currentStep?.imageUrl) {
+    @if (
+      !isResting &&
+      currentStep?.imageUrl &&
+      !isImageMissing(currentStep!.imageUrl)
+    ) {
       <figure class="player-step-figure">
         <div class="player-step-image-frame">
-          <img [src]="currentStep!.imageUrl" alt="Position" class="player-step-image" />
+          <img
+            [src]="currentStep!.imageUrl"
+            alt="Position"
+            class="player-step-image"
+            (error)="onImageError(currentStep!.imageUrl)"
+          />
         </div>
         <figcaption class="type-caption player-step-figcaption">Aide visuelle</figcaption>
       </figure>

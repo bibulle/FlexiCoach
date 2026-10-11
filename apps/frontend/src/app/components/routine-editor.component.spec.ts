@@ -958,4 +958,70 @@ describe('RoutineEditorComponent', () => {
       expect(component.selectedStepIndex).toBeNull();
     });
   });
+
+  describe('Issue #173: step image that cannot be loaded', () => {
+    const el = () => fixture.nativeElement as HTMLElement;
+    const thumb = () =>
+      el().querySelector('.editor-image-thumb img') as HTMLImageElement | null;
+
+    beforeEach(() => {
+      fixture.detectChanges();
+      component.steps.push(
+        component.createStepFormGroup({
+          name: 'Planche',
+          seconds: 30,
+          mode: 'statique',
+          text: 'Tiens',
+          imageUrl: '/uploads/perdue.png',
+          imageName: 'planche.png',
+        }),
+      );
+      component.selectStep(0);
+      safeDetectChanges(fixture);
+    });
+
+    it('should show the thumbnail of the step image', () => {
+      expect(thumb()?.getAttribute('src')).toBe('/uploads/perdue.png');
+      expect(el().querySelector('.editor-image-missing')).toBeNull();
+    });
+
+    it('should say the image is missing instead of showing a broken picture', () => {
+      thumb()!.dispatchEvent(new Event('error'));
+      safeDetectChanges(fixture);
+
+      expect(thumb()).toBeNull();
+      expect(
+        el().querySelector('.editor-image-missing')?.textContent,
+      ).toContain('Image introuvable');
+      // The step keeps its reference: the user decides to replace or remove it
+      expect(component.steps.at(0).value.imageUrl).toBe('/uploads/perdue.png');
+      expect(el().querySelector('.editor-image-replace-btn')).toBeTruthy();
+      expect(el().querySelector('.editor-image-remove-btn')).toBeTruthy();
+    });
+
+    it('should show the new image after a replacement', () => {
+      thumb()!.dispatchEvent(new Event('error'));
+      component.steps.at(0).patchValue({ imageUrl: '/uploads/nouvelle.png' });
+      safeDetectChanges(fixture);
+
+      expect(thumb()?.getAttribute('src')).toBe('/uploads/nouvelle.png');
+      expect(el().querySelector('.editor-image-missing')).toBeNull();
+    });
+
+    it('should go back to the dropzone when the missing image is removed', () => {
+      thumb()!.dispatchEvent(new Event('error'));
+      component.removeStepImage(0);
+      safeDetectChanges(fixture);
+
+      expect(el().querySelector('.editor-image-missing')).toBeNull();
+      expect(el().querySelector('.editor-image-dropzone')).toBeTruthy();
+    });
+
+    it('should ignore an error without image URL', () => {
+      component.onImageError(undefined);
+
+      expect(component.isImageMissing(undefined)).toBe(false);
+      expect(component.isImageMissing('/uploads/perdue.png')).toBe(false);
+    });
+  });
 });

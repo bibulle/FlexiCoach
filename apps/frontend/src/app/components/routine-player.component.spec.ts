@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Router } from '@angular/router';
-import { of, throwError } from 'rxjs';
+import { Subject, of, throwError } from 'rxjs';
 import { signal } from '@angular/core';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { RoutinePlayerComponent } from './routine-player.component';
@@ -8,6 +8,7 @@ import { RoutineService } from '../services/routine.service';
 import { SessionService } from '../services/session.service';
 import { AuthService } from '../services/auth.service';
 import { Routine } from '@flexicoach/shared';
+import { safeDetectChanges } from '../../test-utils';
 
 describe('RoutinePlayerComponent', () => {
   let component: RoutinePlayerComponent;
@@ -450,6 +451,121 @@ describe('RoutinePlayerComponent', () => {
       component.deleteRoutine();
 
       expect(mockRoutineService.delete).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('Issue #173: step image that cannot be loaded', () => {
+    const withImage: Routine = {
+      ...mockRoutine,
+      steps: [
+        { ...mockRoutine.steps[0], imageUrl: '/uploads/perdue.png' },
+        { ...mockRoutine.steps[1], imageUrl: '/uploads/presente.png' },
+      ],
+    };
+    const figure = () =>
+      (fixture.nativeElement as HTMLElement).querySelector(
+        '.player-step-figure',
+      );
+    const image = () =>
+      (fixture.nativeElement as HTMLElement).querySelector(
+        '.player-step-image',
+      ) as HTMLImageElement | null;
+
+    beforeEach(() => {
+      mockRoutineService.getBySlug.mockReturnValue(of(withImage));
+      fixture.detectChanges();
+    });
+
+    it('should show the image of the current step', () => {
+      expect(image()?.getAttribute('src')).toBe('/uploads/perdue.png');
+      expect(component.isImageMissing('/uploads/perdue.png')).toBe(false);
+    });
+
+    it('should hide the whole figure when the image fails to load', () => {
+      image()!.dispatchEvent(new Event('error'));
+      safeDetectChanges(fixture);
+
+      expect(figure()).toBeNull();
+      expect(component.isImageMissing('/uploads/perdue.png')).toBe(true);
+      // The step itself is still playable
+      expect(
+        (fixture.nativeElement as HTMLElement).querySelector(
+          '.player-step-name',
+        )?.textContent,
+      ).toContain('Step 1');
+    });
+
+    it('should still show the image of another step', () => {
+      image()!.dispatchEvent(new Event('error'));
+      component.currentStepIndex = 1;
+      safeDetectChanges(fixture);
+
+      expect(image()?.getAttribute('src')).toBe('/uploads/presente.png');
+    });
+
+    it('should keep a missing image hidden when coming back to its step', () => {
+      image()!.dispatchEvent(new Event('error'));
+      component.currentStepIndex = 1;
+      safeDetectChanges(fixture);
+      component.currentStepIndex = 0;
+      safeDetectChanges(fixture);
+
+      expect(figure()).toBeNull();
+    });
+
+    it('should ignore an error without image URL', () => {
+      component.onImageError(undefined);
+
+      expect(component.isImageMissing(undefined)).toBe(false);
+      expect(figure()).not.toBeNull();
+    });
+  });
+
+  describe('end of routine recorded once', () => {
+    /** Starts the routine, then skips every step. */
+    const playToTheEnd = () => {
+      fixture.detectChanges();
+      component.start();
+      component.pause();
+      mockRoutine.steps.forEach(() => component.skipToNext());
+    };
+
+    it('should record a single session when the last step is skipped twice in a row', () => {
+      // The session is still being saved when the user clicks again
+      const saving = new Subject<any>();
+      mockSessionService.create.mockReturnValue(saving);
+
+      playToTheEnd();
+      component.skipToNext();
+      component.skipToNext();
+
+      expect(mockSessionService.create).toHaveBeenCalledTimes(1);
+
+      saving.next({ _id: 'session-123' });
+      saving.complete();
+
+      expect(mockRouter.navigate).toHaveBeenCalledTimes(1);
+      expect(mockRouter.navigate).toHaveBeenCalledWith(['/completion'], {
+        queryParams: expect.objectContaining({ sessionId: 'session-123' }),
+      });
+    });
+
+    it('should navigate to the completion screen once when saving fails', () => {
+      vi.spyOn(console, 'error').mockImplementation(() => undefined);
+      mockSessionService.create.mockReturnValue(
+        throwError(() => new Error('Save failed')),
+      );
+
+      playToTheEnd();
+      component.skipToNext();
+
+      expect(mockSessionService.create).toHaveBeenCalledTimes(1);
+      expect(mockRouter.navigate).toHaveBeenCalledTimes(1);
+      expect(mockRouter.navigate).toHaveBeenCalledWith(['/completion'], {
+        queryParams: expect.not.objectContaining({
+          sessionId: expect.anything(),
+        }),
+      });
     });
   });
 });

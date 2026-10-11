@@ -557,6 +557,12 @@
     height: 100%;
     object-fit: contain;
   }
+
+  .editor-image-missing {
+    padding: 4px;
+    text-align: center;
+    color: var(--error);
+  }
 }
 
 .editor-image-meta {
