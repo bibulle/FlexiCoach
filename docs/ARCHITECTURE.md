@@ -199,7 +199,15 @@ Les erreurs de validation de l'API (`message` sous forme de tableau) sont mises 
 
 ### Frontend
 - **Authentification**: Contrôlée par `authGuard` sur les routes protégées
-- **Administration**: Les éléments UI admin (création/édition de routines) sont conditionnés par `authService.isAdmin()` signal
+- **Statut admin**: fourni par `GET /api/auth/is-admin`. `AuthService.resolveAdminStatus()` renvoie un `Observable<boolean>`
+  partagé et mis en cache pour la session (une seule requête pour `AppComponent` et le guard ; un échec n'est pas mis
+  en cache), et met à jour le signal `isAdmin`. Le cache est vidé à la connexion et à la déconnexion.
+- **Route `/admin`**: protégée par `adminGuard`, qui **attend** la réponse de `resolveAdminStatus()` — un administrateur
+  peut donc ouvrir `/admin` directement ou recharger la page. Non connecté → `/login` ; connecté non-admin → `/`.
+- **Mode administration**: bascule du menu utilisateur (visible si `isAdmin()`), signal `isAdminMode` conservé dans
+  `sessionStorage` (clé `admin_mode`) : il survit au rechargement, est propre à l'onglet, et est effacé à la
+  déconnexion ou si le backend répond que l'utilisateur n'est pas admin. Il conditionne les éléments UI admin
+  (lien « Admin » du header, création/édition de routines). `/admin` reste accessible à un admin même mode OFF.
 - **Masquage UI**: Les utilisateurs non-admin ne voient pas les boutons "Nouvelle routine", "Éditer", "Supprimer"
 
 ### Backend

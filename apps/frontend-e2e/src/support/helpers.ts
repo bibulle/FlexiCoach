@@ -67,7 +67,10 @@ export async function openUserMenu(page: Page) {
   await page.locator('app-user-menu').getByRole('button').first().click();
 }
 
-/** Switches the admin mode on (the flag lives in memory, not in storage). */
+/**
+ * Switches the admin mode on. The flag is kept in sessionStorage: it survives
+ * a reload, so call this once per page (a second call would switch it off).
+ */
 export async function enableAdminMode(page: Page) {
   await openUserMenu(page);
   await page.getByRole('button', { name: /Mode administration/ }).click();

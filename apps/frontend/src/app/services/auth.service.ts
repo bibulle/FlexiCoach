@@ -1,6 +1,14 @@
 import { Injectable, Injector, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, BehaviorSubject, tap } from 'rxjs';
+import {
+  Observable,
+  BehaviorSubject,
+  catchError,
+  map,
+  of,
+  shareReplay,
+  tap,
+} from 'rxjs';
 
 export interface AuthResponse {
   access_token: string;
@@ -29,6 +37,7 @@ export interface RegisterData {
 export class AuthService {
   private readonly TOKEN_KEY = 'auth_token';
   private readonly USER_KEY = 'current_user';
+  private readonly ADMIN_MODE_KEY = 'admin_mode';
 
   private currentUserSubject = new BehaviorSubject<AuthResponse['user'] | null>(
     this.getUserFromStorage(),
@@ -38,7 +47,11 @@ export class AuthService {
   // Signal for reactive components
   public isAuthenticated = signal<boolean>(this.hasToken());
   public isAdmin = signal<boolean>(false);
-  public isAdminMode = signal<boolean>(false);
+  // Persisted in sessionStorage so that it survives a page reload
+  public isAdminMode = signal<boolean>(this.getAdminModeFromStorage());
+
+  // Shared result of GET /api/auth/is-admin for the current session
+  private adminStatus$: Observable<boolean> | null = null;
 
   private injector = inject(Injector);
 
@@ -55,6 +68,23 @@ export class AuthService {
     } catch {
       localStorage.removeItem(this.USER_KEY);
       return null;
+    }
+  }
+
+  private getAdminModeFromStorage(): boolean {
+    if (typeof window === 'undefined') return false;
+    return (
+      this.hasToken() && sessionStorage.getItem(this.ADMIN_MODE_KEY) === 'true'
+    );
+  }
+
+  private setAdminMode(value: boolean): void {
+    this.isAdminMode.set(value);
+    if (typeof window === 'undefined') return;
+    if (value) {
+      sessionStorage.setItem(this.ADMIN_MODE_KEY, 'true');
+    } else {
+      sessionStorage.removeItem(this.ADMIN_MODE_KEY);
     }
   }
 
@@ -81,7 +111,8 @@ export class AuthService {
     this.currentUserSubject.next(null);
     this.isAuthenticated.set(false);
     this.isAdmin.set(false);
-    this.isAdminMode.set(false);
+    this.adminStatus$ = null;
+    this.setAdminMode(false);
   }
 
   getToken(): string | null {
@@ -98,6 +129,8 @@ export class AuthService {
     localStorage.setItem(this.USER_KEY, JSON.stringify(response.user));
     this.currentUserSubject.next(response.user);
     this.isAuthenticated.set(true);
+    // A new session starts: forget the admin status of the previous one
+    this.adminStatus$ = null;
     this.checkAdminStatus();
     // Sync settings from backend to localStorage right after login
     // Use injector to lazily resolve SettingsService and avoid circular dependency
@@ -109,14 +142,42 @@ export class AuthService {
   }
 
   toggleAdminMode(): void {
-    this.isAdminMode.update((value) => !value);
+    this.setAdminMode(!this.isAdminMode());
   }
 
   checkAdminStatus(): void {
-    this.http.get<{ isAdmin: boolean }>('/api/auth/is-admin').subscribe({
-      next: (response) => this.isAdmin.set(response.isAdmin),
-      error: () => this.isAdmin.set(false),
-    });
+    this.resolveAdminStatus().subscribe();
+  }
+
+  /**
+   * Emits whether the current user is an administrator, once the backend has
+   * answered. The request is shared: guards and components that ask during
+   * the same session get the same (cached) answer, and the `isAdmin` signal is
+   * updated before the value is emitted. A failed request is not cached, so
+   * the next call retries.
+   */
+  resolveAdminStatus(): Observable<boolean> {
+    if (!this.adminStatus$) {
+      const status$: Observable<boolean> = this.http
+        .get<{ isAdmin: boolean }>('/api/auth/is-admin')
+        .pipe(
+          map((response) => response?.isAdmin === true),
+          tap((isAdmin) => {
+            this.isAdmin.set(isAdmin);
+            // Admin mode is meaningless for a regular user
+            if (!isAdmin) this.setAdminMode(false);
+          }),
+          catchError(() => {
+            this.isAdmin.set(false);
+            if (this.adminStatus$ === status$) this.adminStatus$ = null;
+            return of(false);
+          }),
+          shareReplay(1),
+        );
+      this.adminStatus$ = status$;
+    }
+
+    return this.adminStatus$;
   }
 
   getAllUsers(): Observable<any[]> {

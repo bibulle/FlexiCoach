@@ -14,8 +14,9 @@ describe('AuthService', () => {
   let mockSettingsService: any;
 
   beforeEach(() => {
-    // Clear localStorage BEFORE creating the service
+    // Clear storages BEFORE creating the service
     localStorage.clear();
+    sessionStorage.clear();
 
     mockSettingsService = {
       load: vi.fn().mockReturnValue(of(null)),
@@ -37,6 +38,7 @@ describe('AuthService', () => {
   afterEach(() => {
     httpMock.verify();
     localStorage.clear();
+    sessionStorage.clear();
   });
 
   it('should be created', () => {
@@ -172,6 +174,207 @@ describe('AuthService', () => {
       service.toggleAdminMode();
       service.toggleAdminMode();
       expect(service.isAdminMode()).toBe(false);
+    });
+  });
+
+  describe('admin mode persistence (issue #149)', () => {
+    /** Builds a fresh service, as a page reload would. */
+    const reloadService = () => {
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        imports: [HttpClientTestingModule],
+        providers: [
+          AuthService,
+          { provide: SettingsService, useValue: mockSettingsService },
+        ],
+      });
+      service = TestBed.inject(AuthService);
+      httpMock = TestBed.inject(HttpTestingController);
+      return service;
+    };
+
+    it('should store the admin mode in sessionStorage when switched on', () => {
+      service.toggleAdminMode();
+
+      expect(sessionStorage.getItem('admin_mode')).toBe('true');
+    });
+
+    it('should remove the admin mode from sessionStorage when switched off', () => {
+      service.toggleAdminMode();
+      service.toggleAdminMode();
+
+      expect(sessionStorage.getItem('admin_mode')).toBeNull();
+    });
+
+    it('should restore the admin mode after a reload of an authenticated session', () => {
+      localStorage.setItem('auth_token', 'test-token');
+      sessionStorage.setItem('admin_mode', 'true');
+
+      expect(reloadService().isAdminMode()).toBe(true);
+    });
+
+    it('should not restore the admin mode without a token', () => {
+      sessionStorage.setItem('admin_mode', 'true');
+
+      expect(reloadService().isAdminMode()).toBe(false);
+    });
+
+    it('should ignore an unexpected stored value', () => {
+      localStorage.setItem('auth_token', 'test-token');
+      sessionStorage.setItem('admin_mode', 'yes');
+
+      expect(reloadService().isAdminMode()).toBe(false);
+    });
+
+    it('should clear the stored admin mode on logout', () => {
+      service.toggleAdminMode();
+
+      service.logout();
+
+      expect(service.isAdminMode()).toBe(false);
+      expect(sessionStorage.getItem('admin_mode')).toBeNull();
+    });
+
+    it('should switch the admin mode off when the backend says the user is not admin', async () => {
+      service.toggleAdminMode();
+
+      const status = firstValueFrom(service.resolveAdminStatus());
+      httpMock.expectOne('/api/auth/is-admin').flush({ isAdmin: false });
+
+      expect(await status).toBe(false);
+      expect(service.isAdminMode()).toBe(false);
+      expect(sessionStorage.getItem('admin_mode')).toBeNull();
+    });
+
+    it('should keep the admin mode when the backend confirms the admin', async () => {
+      service.toggleAdminMode();
+
+      const status = firstValueFrom(service.resolveAdminStatus());
+      httpMock.expectOne('/api/auth/is-admin').flush({ isAdmin: true });
+
+      expect(await status).toBe(true);
+      expect(service.isAdminMode()).toBe(true);
+    });
+
+    it('should keep the admin mode when the admin check fails (network error)', async () => {
+      service.toggleAdminMode();
+
+      const status = firstValueFrom(service.resolveAdminStatus());
+      httpMock
+        .expectOne('/api/auth/is-admin')
+        .error(new ProgressEvent('error'));
+
+      expect(await status).toBe(false);
+      expect(service.isAdminMode()).toBe(true);
+    });
+  });
+
+  describe('resolveAdminStatus (issue #149)', () => {
+    it('should emit true and update the isAdmin signal for an admin', async () => {
+      const status = firstValueFrom(service.resolveAdminStatus());
+
+      const req = httpMock.expectOne('/api/auth/is-admin');
+      expect(req.request.method).toBe('GET');
+      // Nothing is known before the backend answers
+      expect(service.isAdmin()).toBe(false);
+      req.flush({ isAdmin: true });
+
+      expect(await status).toBe(true);
+      expect(service.isAdmin()).toBe(true);
+    });
+
+    it('should emit false for a regular user', async () => {
+      const status = firstValueFrom(service.resolveAdminStatus());
+      httpMock.expectOne('/api/auth/is-admin').flush({ isAdmin: false });
+
+      expect(await status).toBe(false);
+      expect(service.isAdmin()).toBe(false);
+    });
+
+    it.each([{}, null, { isAdmin: 'true' }])(
+      'should emit false for the unexpected response %j',
+      async (body) => {
+        const status = firstValueFrom(service.resolveAdminStatus());
+        httpMock.expectOne('/api/auth/is-admin').flush(body as any);
+
+        expect(await status).toBe(false);
+        expect(service.isAdmin()).toBe(false);
+      },
+    );
+
+    it('should emit false (without throwing) when the request fails', async () => {
+      const status = firstValueFrom(service.resolveAdminStatus());
+      httpMock
+        .expectOne('/api/auth/is-admin')
+        .flush('Unauthorized', { status: 401, statusText: 'Unauthorized' });
+
+      expect(await status).toBe(false);
+      expect(service.isAdmin()).toBe(false);
+    });
+
+    it('should share a single request between concurrent callers', async () => {
+      // AppComponent and the admin guard both ask at startup
+      service.checkAdminStatus();
+      const fromGuard = firstValueFrom(service.resolveAdminStatus());
+
+      httpMock.expectOne('/api/auth/is-admin').flush({ isAdmin: true });
+
+      expect(await fromGuard).toBe(true);
+    });
+
+    it('should reuse the cached answer for later callers', async () => {
+      const first = firstValueFrom(service.resolveAdminStatus());
+      httpMock.expectOne('/api/auth/is-admin').flush({ isAdmin: true });
+      await first;
+
+      expect(await firstValueFrom(service.resolveAdminStatus())).toBe(true);
+      httpMock.expectNone('/api/auth/is-admin');
+    });
+
+    it('should retry after a failed request instead of caching the failure', async () => {
+      const first = firstValueFrom(service.resolveAdminStatus());
+      httpMock
+        .expectOne('/api/auth/is-admin')
+        .error(new ProgressEvent('error'));
+      expect(await first).toBe(false);
+
+      const second = firstValueFrom(service.resolveAdminStatus());
+      httpMock.expectOne('/api/auth/is-admin').flush({ isAdmin: true });
+
+      expect(await second).toBe(true);
+      expect(service.isAdmin()).toBe(true);
+    });
+
+    it('should ask the backend again after logout', async () => {
+      const first = firstValueFrom(service.resolveAdminStatus());
+      httpMock.expectOne('/api/auth/is-admin').flush({ isAdmin: true });
+      await first;
+
+      service.logout();
+      expect(service.isAdmin()).toBe(false);
+
+      const second = firstValueFrom(service.resolveAdminStatus());
+      httpMock.expectOne('/api/auth/is-admin').flush({ isAdmin: false });
+      expect(await second).toBe(false);
+    });
+
+    it('should ask the backend again after a new login', async () => {
+      const first = firstValueFrom(service.resolveAdminStatus());
+      httpMock.expectOne('/api/auth/is-admin').flush({ isAdmin: false });
+      await first;
+
+      const login = firstValueFrom(
+        service.login({ email: 'admin@example.com', password: 'Password123' }),
+      );
+      httpMock.expectOne('/api/auth/login').flush({
+        access_token: 'admin-token',
+        user: { _id: '1', email: 'admin@example.com' },
+      });
+      await login;
+      httpMock.expectOne('/api/auth/is-admin').flush({ isAdmin: true });
+
+      expect(service.isAdmin()).toBe(true);
+      expect(await firstValueFrom(service.resolveAdminStatus())).toBe(true);
     });
   });
 

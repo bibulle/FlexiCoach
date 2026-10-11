@@ -1,5 +1,6 @@
 import { inject } from '@angular/core';
 import { Router, CanActivateFn } from '@angular/router';
+import { map } from 'rxjs';
 import { AuthService } from '../services/auth.service';
 
 export const adminGuard: CanActivateFn = () => {
@@ -10,9 +11,9 @@ export const adminGuard: CanActivateFn = () => {
     return router.createUrlTree(['/login']);
   }
 
-  if (!authService.isAdmin()) {
-    return router.createUrlTree(['/']);
-  }
-
-  return true;
+  // The admin status comes from the backend: wait for the answer instead of
+  // reading the `isAdmin` signal, still false on a direct access or a reload.
+  return authService
+    .resolveAdminStatus()
+    .pipe(map((isAdmin) => (isAdmin ? true : router.createUrlTree(['/']))));
 };
