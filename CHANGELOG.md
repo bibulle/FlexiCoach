@@ -5,6 +5,14 @@ Ce fichier est maintenu automatiquement par [release-please](https://github.com/
 ne pas l'éditer à la main. Les releases sont publiées sur
 [GitHub Releases](https://github.com/bibulle/FlexiCoach/releases).
 
+## [0.8.16](https://github.com/bibulle/FlexiCoach/compare/v0.8.15...v0.8.16) (2026-10-11)
+
+
+### Corrections
+
+* **stats:** activité par jour et top routines calculés depuis les séances réelles ([#148](https://github.com/bibulle/FlexiCoach/issues/148)) ([2b3456a](https://github.com/bibulle/FlexiCoach/commit/2b3456a6f3e54dfa879a416189b2b802014d8b08))
+* **stats:** activité par jour et top routines calculés depuis les séances réelles ([#148](https://github.com/bibulle/FlexiCoach/issues/148)) ([848d2b0](https://github.com/bibulle/FlexiCoach/commit/848d2b0dc3a1083791fa031b396f354d6cccb711))
+
 ## [0.8.15](https://github.com/bibulle/FlexiCoach/compare/v0.8.14...v0.8.15) (2026-10-11)
 
 
