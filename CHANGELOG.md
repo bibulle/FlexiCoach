@@ -5,6 +5,14 @@ Ce fichier est maintenu automatiquement par [release-please](https://github.com/
 ne pas l'éditer à la main. Les releases sont publiées sur
 [GitHub Releases](https://github.com/bibulle/FlexiCoach/releases).
 
+## [0.8.10](https://github.com/bibulle/FlexiCoach/compare/v0.8.9...v0.8.10) (2026-10-11)
+
+
+### Corrections
+
+* **ui:** styles globaux non appliqués en production ([#158](https://github.com/bibulle/FlexiCoach/issues/158)) ([dcd0197](https://github.com/bibulle/FlexiCoach/commit/dcd01976ca579fe48436784b7c51aa9988f727bc))
+* **ui:** styles globaux non appliqués en production ([#158](https://github.com/bibulle/FlexiCoach/issues/158)) ([6136d12](https://github.com/bibulle/FlexiCoach/commit/6136d1263cef658b8099533d30e64546bb47460c))
+
 ## [0.8.9](https://github.com/bibulle/FlexiCoach/compare/v0.8.8...v0.8.9) (2026-10-11)
 
 
