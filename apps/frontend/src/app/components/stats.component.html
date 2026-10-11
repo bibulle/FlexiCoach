@@ -55,8 +55,15 @@
         <div class="card settings-card">
           <div class="settings-card-header">
             <span class="type-label">Activité par jour de la semaine</span>
-            <span class="type-mono settings-avg">moy. 4 séances</span>
+            <span class="type-mono settings-avg"
+              >30 derniers jours · {{ recentSessionsLabel }}</span
+            >
           </div>
+          @if (!hasRecentActivity) {
+            <p class="type-body-sm settings-empty">
+              Pas encore de séance sur les 30 derniers jours.
+            </p>
+          }
           <div class="settings-bars">
             @for (day of dayActivity; track day.label) {
               <div class="settings-bar-row">
@@ -81,7 +88,13 @@
           <span class="type-label" style="display: block; margin-bottom: 14px"
             >Top routines</span
           >
-          @for (r of topRoutines; track r.name; let last = $last) {
+          @if (topRoutines.length === 0) {
+            <p class="type-body-sm settings-empty">
+              Pas encore de séance. Tes routines les plus pratiquées
+              apparaîtront ici.
+            </p>
+          }
+          @for (r of topRoutines; track $index; let last = $last) {
             <div
               class="settings-routine-row"
               [class.settings-routine-row--last]="last"

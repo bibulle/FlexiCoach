@@ -51,6 +51,9 @@ describe('SessionsService', () => {
       .mockReturnValue({ exec: mockRoutineExec });
     mockRoutineModel = {
       findOne: mockRoutineFindOne,
+      find: jest
+        .fn()
+        .mockReturnValue({ exec: jest.fn().mockResolvedValue([]) }),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -564,6 +567,169 @@ describe('SessionsService', () => {
       expect(result.totalMinutes).toBe(0);
       expect(result.adherenceRate).toBe(0);
       expect(result.favoriteRoutine).toBeNull();
+    });
+  });
+
+  describe('getSummary - recent activity (issue #148)', () => {
+    const DAY = 86400000;
+    const daysAgo = (days: number) => new Date(Date.now() - days * DAY);
+    const session = (startAt: Date, routineId = 'routine1') => ({
+      ...mockSession,
+      startAt,
+      routineId,
+      completed: true,
+    });
+    const mockRoutines = (routines: Array<{ id: string; name: string }>) =>
+      mockRoutineModel.find.mockReturnValue({
+        exec: jest.fn().mockResolvedValue(routines),
+      });
+
+    it('should return an empty activity for a user without sessions', async () => {
+      mockSessionModel.find().exec.mockResolvedValue([]);
+
+      const result = await service.getSummary('user1');
+
+      expect(result.recentSessions).toBe(0);
+      expect(result.weekdayActivity).toEqual([0, 0, 0, 0, 0, 0, 0]);
+      expect(result.topRoutines).toEqual([]);
+      // No routine to look up
+      expect(mockRoutineModel.find).not.toHaveBeenCalled();
+    });
+
+    it('should count the sessions of each weekday, Monday first', async () => {
+      jest.useFakeTimers().setSystemTime(new Date('2024-01-31T12:00:00Z'));
+      try {
+        mockSessionModel.find().exec.mockResolvedValue([
+          session(new Date('2024-01-29T08:00:00Z')), // Monday
+          session(new Date('2024-01-22T18:00:00Z')), // Monday
+          session(new Date('2024-01-24T07:00:00Z')), // Wednesday
+          session(new Date('2024-01-28T10:00:00Z')), // Sunday
+        ]);
+
+        const result = await service.getSummary('user1');
+
+        expect(result.weekdayActivity).toEqual([2, 0, 1, 0, 0, 0, 1]);
+        expect(result.recentSessions).toBe(4);
+      } finally {
+        jest.useRealTimers();
+      }
+    });
+
+    it('should ignore sessions older than 30 days', async () => {
+      mockSessionModel
+        .find()
+        .exec.mockResolvedValue([
+          session(daysAgo(1), 'recent'),
+          session(daysAgo(29), 'recent'),
+          session(daysAgo(31), 'old'),
+          session(daysAgo(200), 'old'),
+        ]);
+      mockRoutines([{ id: 'recent', name: 'Récente' }]);
+
+      const result = await service.getSummary('user1');
+
+      expect(result.recentSessions).toBe(2);
+      expect(result.weekdayActivity.reduce((a, b) => a + b, 0)).toBe(2);
+      expect(result.topRoutines).toEqual([
+        { routineId: 'recent', name: 'Récente', count: 2 },
+      ]);
+      // The all-time figures still include the old sessions
+      expect(result.totalSessions).toBe(4);
+    });
+
+    it("should use the client's time zone to pick the weekday", async () => {
+      jest.useFakeTimers().setSystemTime(new Date('2024-01-31T12:00:00Z'));
+      try {
+        // Sunday 23:30 UTC = Monday 00:30 in Paris = Sunday 18:30 in New York
+        mockSessionModel
+          .find()
+          .exec.mockResolvedValue([session(new Date('2024-01-28T23:30:00Z'))]);
+
+        const utc = await service.getSummary('user1');
+        const paris = await service.getSummary('user1', 'Europe/Paris');
+        const newYork = await service.getSummary('user1', 'America/New_York');
+
+        expect(utc.weekdayActivity).toEqual([0, 0, 0, 0, 0, 0, 1]);
+        expect(paris.weekdayActivity).toEqual([1, 0, 0, 0, 0, 0, 0]);
+        expect(newYork.weekdayActivity).toEqual([0, 0, 0, 0, 0, 0, 1]);
+      } finally {
+        jest.useRealTimers();
+      }
+    });
+
+    it('should fall back to UTC for a time zone unknown to the runtime', async () => {
+      jest.useFakeTimers().setSystemTime(new Date('2024-01-31T12:00:00Z'));
+      try {
+        mockSessionModel
+          .find()
+          .exec.mockResolvedValue([session(new Date('2024-01-29T08:00:00Z'))]);
+
+        const result = await service.getSummary('user1', 'Not/AZone');
+
+        expect(result.weekdayActivity).toEqual([1, 0, 0, 0, 0, 0, 0]);
+      } finally {
+        jest.useRealTimers();
+      }
+    });
+
+    it('should return the 3 most practised routines with their names', async () => {
+      mockSessionModel
+        .find()
+        .exec.mockResolvedValue([
+          ...[1, 2, 3, 4].map((d) => session(daysAgo(d), 'squash')),
+          ...[1, 2, 3].map((d) => session(daysAgo(d), 'douce')),
+          ...[1, 2].map((d) => session(daysAgo(d), 'bureau')),
+          session(daysAgo(1), 'rare'),
+        ]);
+      mockRoutines([
+        { id: 'bureau', name: 'Pause bureau' },
+        { id: 'squash', name: 'Squash quotidien' },
+        { id: 'douce', name: 'Routine douce' },
+      ]);
+
+      const result = await service.getSummary('user1');
+
+      expect(result.topRoutines).toEqual([
+        { routineId: 'squash', name: 'Squash quotidien', count: 4 },
+        { routineId: 'douce', name: 'Routine douce', count: 3 },
+        { routineId: 'bureau', name: 'Pause bureau', count: 2 },
+      ]);
+      expect(mockRoutineModel.find).toHaveBeenCalledWith({
+        id: { $in: ['squash', 'douce', 'bureau'] },
+      });
+    });
+
+    it('should rank ties by the most recently practised routine', async () => {
+      mockSessionModel
+        .find()
+        .exec.mockResolvedValue([
+          session(daysAgo(10), 'older'),
+          session(daysAgo(2), 'newer'),
+        ]);
+      mockRoutines([
+        { id: 'older', name: 'Ancienne' },
+        { id: 'newer', name: 'Nouvelle' },
+      ]);
+
+      const result = await service.getSummary('user1');
+
+      expect(result.topRoutines.map((r) => r.routineId)).toEqual([
+        'newer',
+        'older',
+      ]);
+    });
+
+    it('should label a routine deleted since the session', async () => {
+      mockSessionModel
+        .find()
+        .exec.mockResolvedValue([session(daysAgo(1), 'deleted-routine')]);
+      mockRoutines([]);
+
+      const result = await service.getSummary('user1');
+
+      expect(result.topRoutines).toEqual([
+        { routineId: 'deleted-routine', name: 'Routine supprimée', count: 1 },
+      ]);
     });
   });
 });

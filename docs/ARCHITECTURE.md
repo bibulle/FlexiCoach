@@ -168,7 +168,11 @@ flexicoach/
 - `GET /api/sessions/:id` - Détails session
 - `PATCH /api/sessions/:id/complete` - Marquer complétée + feeling
 - `GET /api/sessions/stats` - Stats basiques
-- `GET /api/sessions/stats/summary` - Stats détaillées (streaks, adhérence)
+- `GET /api/sessions/stats/summary?tz=<fuseau IANA>` - Stats détaillées (streaks, adhérence) + activité des
+  30 derniers jours : `recentSessions`, `weekdayActivity` (lundi → dimanche, dans le fuseau `tz`, UTC par défaut)
+  et `topRoutines` (3 au plus). Calculé en mémoire par `SessionsService.getSummary()` à partir des sessions de
+  l'utilisateur déjà chargées pour les autres indicateurs ; alimente les blocs « Activité par jour de la semaine »
+  et « Top routines » de la page Paramètres (`StatsComponent`), qui affichent un état vide sans séance.
 - `GET /api/sessions/calendar` - Données calendrier
 
 ### Utilisateurs

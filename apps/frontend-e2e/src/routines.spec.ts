@@ -107,7 +107,12 @@ test.describe('Routines Flow', () => {
       .click();
     await expect(page).toHaveURL('/routine/bureau-5min');
 
-    await page.getByRole('button', { name: 'Démarrer' }).click();
+    // Scoped to the player: during the route transition the catalogue, with
+    // its own "Démarrer" buttons, can still be in the DOM
+    await page
+      .locator('.player-shell')
+      .getByRole('button', { name: 'Démarrer' })
+      .click();
 
     // Playing: the button turns into "Pause" and the step timer moves
     await expect(page.getByRole('button', { name: 'Pause' })).toBeVisible();

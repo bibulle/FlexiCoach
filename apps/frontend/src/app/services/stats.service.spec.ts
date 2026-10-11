@@ -3,7 +3,8 @@ import {
   HttpClientTestingModule,
   HttpTestingController,
 } from '@angular/common/http/testing';
-import { StatsService, StatsSummary } from './stats.service';
+import { StatsService, StatsSummary, browserTimeZone } from './stats.service';
+import { vi } from 'vitest';
 import { firstValueFrom } from 'rxjs';
 
 describe('StatsService', () => {
@@ -37,11 +38,18 @@ describe('StatsService', () => {
         totalMinutes: 2500,
         adherenceRate: 0.85,
         favoriteRoutine: 'Morning Stretch',
+        recentSessions: 12,
+        weekdayActivity: [3, 2, 2, 1, 2, 1, 1],
+        topRoutines: [
+          { routineId: 'morning', name: 'Morning Stretch', count: 8 },
+        ],
       };
 
       const responsePromise = firstValueFrom(service.getSummary());
 
-      const req = httpMock.expectOne('/api/sessions/stats/summary');
+      const req = httpMock.expectOne(
+        (r) => r.url === '/api/sessions/stats/summary',
+      );
       expect(req.request.method).toBe('GET');
       expect(req.request.params.has('userId')).toBe(false);
       req.flush(mockSummary);
@@ -65,12 +73,15 @@ describe('StatsService', () => {
         totalMinutes: 1200,
         adherenceRate: 0.75,
         favoriteRoutine: 'Evening Yoga',
+        recentSessions: 4,
+        weekdayActivity: [1, 0, 1, 0, 1, 0, 1],
+        topRoutines: [{ routineId: 'yoga', name: 'Evening Yoga', count: 4 }],
       };
 
       const responsePromise = firstValueFrom(service.getSummary(userId));
 
       const req = httpMock.expectOne(
-        '/api/sessions/stats/summary?userId=user123',
+        (r) => r.url === '/api/sessions/stats/summary',
       );
       expect(req.request.method).toBe('GET');
       expect(req.request.params.get('userId')).toBe(userId);
@@ -90,17 +101,75 @@ describe('StatsService', () => {
         totalMinutes: 0,
         adherenceRate: 0,
         favoriteRoutine: null,
+        recentSessions: 0,
+        weekdayActivity: [0, 0, 0, 0, 0, 0, 0],
+        topRoutines: [],
       };
 
       const responsePromise = firstValueFrom(service.getSummary());
 
-      const req = httpMock.expectOne('/api/sessions/stats/summary');
+      const req = httpMock.expectOne(
+        (r) => r.url === '/api/sessions/stats/summary',
+      );
       expect(req.request.method).toBe('GET');
       req.flush(mockSummary);
 
       const summary = await responsePromise;
       expect(summary).toEqual(mockSummary);
       expect(summary.favoriteRoutine).toBeNull();
+    });
+
+    it("should send the browser's time zone (issue #148)", () => {
+      vi.spyOn(
+        Intl.DateTimeFormat.prototype,
+        'resolvedOptions',
+      ).mockReturnValue({
+        timeZone: 'Europe/Paris',
+      } as Intl.ResolvedDateTimeFormatOptions);
+      try {
+        service.getSummary().subscribe();
+
+        const req = httpMock.expectOne(
+          (r) => r.url === '/api/sessions/stats/summary',
+        );
+        expect(req.request.params.get('tz')).toBe('Europe/Paris');
+        expect(req.request.urlWithParams).toBe(
+          '/api/sessions/stats/summary?tz=Europe/Paris',
+        );
+        req.flush({});
+      } finally {
+        vi.restoreAllMocks();
+      }
+    });
+
+    it('should not send a time zone when the browser exposes none', () => {
+      vi.spyOn(
+        Intl.DateTimeFormat.prototype,
+        'resolvedOptions',
+      ).mockReturnValue({} as Intl.ResolvedDateTimeFormatOptions);
+      try {
+        expect(browserTimeZone()).toBeUndefined();
+        service.getSummary().subscribe();
+
+        const req = httpMock.expectOne(
+          (r) => r.url === '/api/sessions/stats/summary',
+        );
+        expect(req.request.params.has('tz')).toBe(false);
+        req.flush({});
+      } finally {
+        vi.restoreAllMocks();
+      }
+    });
+
+    it('should not fail when the time zone cannot be read', () => {
+      vi.spyOn(Intl, 'DateTimeFormat').mockImplementation(() => {
+        throw new Error('Intl unavailable');
+      });
+      try {
+        expect(browserTimeZone()).toBeUndefined();
+      } finally {
+        vi.restoreAllMocks();
+      }
     });
   });
 });

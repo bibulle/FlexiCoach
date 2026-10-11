@@ -15,6 +15,7 @@ import { CreateSessionDto } from './dto/create-session.dto';
 import { UpdateSessionDto } from './dto/update-session.dto';
 import { CompleteSessionDto } from './dto/complete-session.dto';
 import { CalendarQueryDto } from './dto/calendar-query.dto';
+import { SummaryQueryDto } from './dto/summary-query.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CurrentUser } from '../auth/current-user.decorator';
 import { User } from '../schemas/user.schema';
@@ -46,8 +47,8 @@ export class SessionsController {
   }
 
   @Get('stats/summary')
-  getSummary(@CurrentUser() user: User) {
-    return this.sessionsService.getSummary(user._id.toString());
+  getSummary(@CurrentUser() user: User, @Query() query: SummaryQueryDto) {
+    return this.sessionsService.getSummary(user._id.toString(), query.tz);
   }
 
   @Get('calendar')

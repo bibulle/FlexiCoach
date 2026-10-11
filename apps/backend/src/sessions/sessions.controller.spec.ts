@@ -210,14 +210,33 @@ describe('SessionsController', () => {
         totalMinutes: 1250,
         adherenceRate: 75,
         favoriteRoutine: 'Routine Matinale',
+        recentSessions: 12,
+        weekdayActivity: [3, 2, 2, 1, 2, 1, 1],
+        topRoutines: [
+          { routineId: 'routine1', name: 'Routine Matinale', count: 8 },
+        ],
       };
 
       service.getSummary.mockResolvedValue(summary);
 
-      const result = await controller.getSummary(mockUser);
+      const result = await controller.getSummary(mockUser, {});
 
       expect(result).toEqual(summary);
-      expect(service.getSummary).toHaveBeenCalledWith(mockUser._id.toString());
+      expect(service.getSummary).toHaveBeenCalledWith(
+        mockUser._id.toString(),
+        undefined,
+      );
+    });
+
+    it("should forward the client's time zone", async () => {
+      service.getSummary.mockResolvedValue({} as any);
+
+      await controller.getSummary(mockUser, { tz: 'Europe/Paris' });
+
+      expect(service.getSummary).toHaveBeenCalledWith(
+        mockUser._id.toString(),
+        'Europe/Paris',
+      );
     });
   });
 

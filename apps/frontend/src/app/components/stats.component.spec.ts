@@ -24,6 +24,26 @@ describe('StatsComponent', () => {
     totalMinutes: 250,
     adherenceRate: 75,
     favoriteRoutine: 'Douce 10 min',
+    recentSessions: 22,
+    weekdayActivity: [5, 4, 3, 5, 4, 1, 0],
+    topRoutines: [
+      { routineId: 'squash', name: 'Squash quotidien', count: 12 },
+      { routineId: 'douce', name: 'Routine douce', count: 6 },
+      { routineId: 'bureau', name: 'Bureau express', count: 4 },
+    ],
+  };
+
+  /** Summary of a brand new account: no session at all. */
+  const emptySummary: StatsSummary = {
+    currentStreak: 0,
+    longestStreak: 0,
+    totalSessions: 0,
+    totalMinutes: 0,
+    adherenceRate: 0,
+    favoriteRoutine: null,
+    recentSessions: 0,
+    weekdayActivity: [0, 0, 0, 0, 0, 0, 0],
+    topRoutines: [],
   };
 
   beforeEach(async () => {
@@ -153,7 +173,185 @@ describe('StatsComponent', () => {
   });
 
   it('should compute maxDayCount from dayActivity', () => {
+    component.summary = mockSummary;
     expect(component.maxDayCount).toBe(5);
+  });
+
+  // ── Issue #148: real data instead of hard-coded figures ───────────────────
+
+  describe('activity blocks fed by the API (issue #148)', () => {
+    const el = () => fixture.nativeElement as HTMLElement;
+    const texts = (selector: string) =>
+      Array.from(el().querySelectorAll(selector)).map((e) =>
+        e.textContent?.trim(),
+      );
+    const load = (summary: StatsSummary) => {
+      mockStatsService.getSummary.mockReturnValue(of(summary));
+      fixture.detectChanges();
+    };
+
+    it('should have no activity before the summary is loaded', () => {
+      expect(component.dayActivity.map((d) => d.count)).toEqual([
+        0, 0, 0, 0, 0, 0, 0,
+      ]);
+      expect(component.topRoutines).toEqual([]);
+      expect(component.hasRecentActivity).toBe(false);
+      expect(component.maxDayCount).toBe(1);
+    });
+
+    it('should show the weekday counts returned by the API, Monday first', () => {
+      load({ ...mockSummary, weekdayActivity: [2, 0, 1, 0, 0, 0, 7] });
+
+      expect(texts('.settings-bar-label')).toEqual([
+        'Lun',
+        'Mar',
+        'Mer',
+        'Jeu',
+        'Ven',
+        'Sam',
+        'Dim',
+      ]);
+      expect(texts('.settings-bar-count')).toEqual([
+        '2',
+        '0',
+        '1',
+        '0',
+        '0',
+        '0',
+        '7',
+      ]);
+    });
+
+    it('should size the bars relative to the busiest weekday', () => {
+      load({ ...mockSummary, weekdayActivity: [2, 0, 1, 0, 0, 0, 4] });
+
+      const widths = Array.from(
+        el().querySelectorAll<HTMLElement>('.settings-bar-fill'),
+      ).map((bar) => bar.style.width);
+      expect(widths).toEqual(['50%', '0%', '25%', '0%', '0%', '0%', '100%']);
+    });
+
+    it('should highlight every busiest weekday, and only them', () => {
+      load({ ...mockSummary, weekdayActivity: [5, 4, 3, 5, 4, 1, 0] });
+
+      expect(component.dayActivity.map((d) => d.highlight)).toEqual([
+        true,
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+      ]);
+      expect(el().querySelectorAll('.settings-bar-fill--hi').length).toBe(2);
+    });
+
+    it('should show the number of sessions of the last 30 days', () => {
+      load(mockSummary);
+      expect(el().querySelector('.settings-avg')?.textContent).toContain(
+        '30 derniers jours · 22 séances',
+      );
+    });
+
+    it('should not pluralise a single session', () => {
+      load({ ...mockSummary, recentSessions: 1 });
+      expect(component.recentSessionsLabel).toBe('1 séance');
+    });
+
+    it('should list the top routines returned by the API', () => {
+      load(mockSummary);
+
+      expect(texts('.settings-routine-name')).toEqual([
+        'Squash quotidien',
+        'Routine douce',
+        'Bureau express',
+      ]);
+      expect(texts('.settings-routine-count')).toEqual(['12×', '6×', '4×']);
+      expect(el().querySelector('.settings-empty')).toBeNull();
+    });
+
+    it('should size the routine bars relative to the first one', () => {
+      load(mockSummary);
+
+      expect(component.topRoutines.map((r) => r.pct)).toEqual([1, 0.5, 4 / 12]);
+    });
+
+    it('should show the routines of this user, not hard-coded ones', () => {
+      load({
+        ...mockSummary,
+        topRoutines: [{ routineId: 'r1', name: 'Ma routine perso', count: 2 }],
+      });
+
+      expect(texts('.settings-routine-name')).toEqual(['Ma routine perso']);
+      expect(el().textContent).not.toContain('Squash quotidien');
+      expect(el().textContent).not.toContain('Bureau express');
+    });
+
+    it('should cope with two routines sharing the same name', () => {
+      load({
+        ...mockSummary,
+        topRoutines: [
+          { routineId: 'a', name: 'Routine supprimée', count: 3 },
+          { routineId: 'b', name: 'Routine supprimée', count: 1 },
+        ],
+      });
+
+      expect(el().querySelectorAll('.settings-routine-row').length).toBe(2);
+    });
+
+    describe('empty state (account without any session)', () => {
+      beforeEach(() => load(emptySummary));
+
+      it('should not show any fake figure', () => {
+        expect(el().textContent).not.toContain('Squash quotidien');
+        expect(el().textContent).not.toContain('moy. 4');
+        expect(texts('.settings-bar-count')).toEqual([
+          '0',
+          '0',
+          '0',
+          '0',
+          '0',
+          '0',
+          '0',
+        ]);
+        expect(el().querySelectorAll('.settings-bar-fill--hi').length).toBe(0);
+      });
+
+      it('should explain that there is no session yet in both blocks', () => {
+        const messages = texts('.settings-empty');
+        expect(messages.length).toBe(2);
+        expect(messages[0]).toContain(
+          'Pas encore de séance sur les 30 derniers jours',
+        );
+        expect(messages[1]).toContain('Pas encore de séance');
+        expect(el().querySelectorAll('.settings-routine-row').length).toBe(0);
+        expect(el().querySelector('.settings-avg')?.textContent).toContain(
+          '0 séance',
+        );
+      });
+
+      it('should keep empty bars without dividing by zero', () => {
+        const widths = Array.from(
+          el().querySelectorAll<HTMLElement>('.settings-bar-fill'),
+        ).map((bar) => bar.style.width);
+        expect(widths).toEqual(['0%', '0%', '0%', '0%', '0%', '0%', '0%']);
+      });
+    });
+
+    it('should tolerate a summary without the new fields (older API)', () => {
+      load({
+        currentStreak: 1,
+        longestStreak: 1,
+        totalSessions: 1,
+        totalMinutes: 10,
+        adherenceRate: 3,
+        favoriteRoutine: null,
+      } as unknown as StatsSummary);
+
+      expect(el().querySelectorAll('.settings-bar-row').length).toBe(7);
+      expect(component.topRoutines).toEqual([]);
+      expect(texts('.settings-empty').length).toBe(2);
+    });
   });
 
   // ── Theme ────────────────────────────────────────────────────────────────
