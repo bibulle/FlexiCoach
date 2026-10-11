@@ -297,7 +297,12 @@ ne construit ni ne publie d'image (tests unitaires et E2E seulement).
 - `GET /api/sessions/:id` - Détails d'une session
 - `PATCH /api/sessions/:id/complete` - Marquer une session comme complétée
 - `GET /api/sessions/stats` - Statistiques basiques
-- `GET /api/sessions/stats/summary` - Statistiques détaillées (streaks, adhérence)
+- `GET /api/sessions/stats/summary` - Statistiques détaillées de l'utilisateur connecté - **Protégé JWT**
+  - Depuis toujours : `currentStreak`, `longestStreak`, `totalSessions`, `totalMinutes`, `adherenceRate`, `favoriteRoutine`
+  - Sur les 30 derniers jours : `recentSessions` (nombre de séances), `weekdayActivity` (7 valeurs, lundi → dimanche)
+    et `topRoutines` (3 au plus : `routineId`, `name`, `count` ; « Routine supprimée » si la routine n'existe plus)
+  - Paramètre optionnel `tz` (fuseau IANA, ex. `Europe/Paris`) : fuseau utilisé pour attribuer chaque séance à un
+    jour de la semaine (UTC par défaut ; `400` si invalide). Le frontend envoie celui du navigateur.
 - `GET /api/sessions/calendar` - Données calendrier (filtrable par dates)
 
 ### Utilisateurs

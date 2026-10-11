@@ -213,6 +213,124 @@ describe('Sessions API', () => {
     });
   });
 
+  describe('GET /api/sessions/stats/summary - recent activity (issue #148)', () => {
+    const DAY = 24 * 3600 * 1000;
+    let active: TestUser;
+    let ownRoutineId: string;
+
+    /** Noon UTC, `days` days ago: the same weekday in every time zone but the extreme ones. */
+    const noonDaysAgo = (days: number) => {
+      const date = new Date(Date.now() - days * DAY);
+      date.setUTCHours(12, 0, 0, 0);
+      return date;
+    };
+    const weekdayOf = (date: Date) => (date.getUTCDay() + 6) % 7; // 0 = Monday
+    const record = (owner: TestUser, routineId: string, startAt: Date) =>
+      axios.post(
+        `${API_URL}/api/sessions`,
+        { routineId, startAt: startAt.toISOString(), durationSec: 300, completed: true },
+        authHeaders(owner),
+      );
+    const summaryOf = (owner: TestUser, query = '') =>
+      axios.get(
+        `${API_URL}/api/sessions/stats/summary${query}`,
+        authHeaders(owner),
+      );
+
+    beforeAll(async () => {
+      active = await registerUser('sessions-activity');
+      const routine = await axios.post(
+        `${API_URL}/api/routines`,
+        {
+          name: 'Routine du top',
+          difficulty: 'beginner',
+          steps: [{ name: 'Étape', seconds: 30, mode: 'mouvement', text: 'Go' }],
+        },
+        authHeaders(active),
+      );
+      ownRoutineId = routine.data.id;
+
+      // 3 sessions of the user's own routine, 2 of a routine that no longer
+      // exists, 1 too old to count
+      await record(active, ownRoutineId, noonDaysAgo(2));
+      await record(active, ownRoutineId, noonDaysAgo(2));
+      await record(active, ownRoutineId, noonDaysAgo(9));
+      await record(active, 'routine-disparue', noonDaysAgo(3));
+      await record(active, 'routine-disparue', noonDaysAgo(4));
+      await record(active, 'routine-ancienne', noonDaysAgo(45));
+    });
+
+    it('should return an empty activity for a user without sessions', async () => {
+      const newcomer = await registerUser('sessions-newcomer');
+
+      const res = await summaryOf(newcomer);
+
+      expect(res.status).toBe(200);
+      expect(res.data.recentSessions).toBe(0);
+      expect(res.data.weekdayActivity).toEqual([0, 0, 0, 0, 0, 0, 0]);
+      expect(res.data.topRoutines).toEqual([]);
+    });
+
+    it('should split the sessions of the last 30 days by weekday', async () => {
+      const res = await summaryOf(active);
+
+      const expected = [0, 0, 0, 0, 0, 0, 0];
+      [2, 2, 9, 3, 4].forEach((d) => expected[weekdayOf(noonDaysAgo(d))]++);
+      expect(res.data.weekdayActivity).toEqual(expected);
+      expect(res.data.recentSessions).toBe(5);
+      // All-time figures still include the old session
+      expect(res.data.totalSessions).toBe(6);
+    });
+
+    it('should rank the most practised routines with their names', async () => {
+      const res = await summaryOf(active);
+
+      expect(res.data.topRoutines).toEqual([
+        { routineId: ownRoutineId, name: 'Routine du top', count: 3 },
+        { routineId: 'routine-disparue', name: 'Routine supprimée', count: 2 },
+      ]);
+    });
+
+    it('should not include the sessions of other users', async () => {
+      const res = await summaryOf(otherUser);
+
+      expect(
+        res.data.topRoutines.map((r: any) => r.routineId),
+      ).not.toContain(ownRoutineId);
+    });
+
+    it("should use the client's time zone to pick the weekday", async () => {
+      const traveller = await registerUser('sessions-tz');
+      // 23:30 UTC, 5 days ago: already the next day in Paris and in Tokyo
+      const lateEvening = new Date(Date.now() - 5 * DAY);
+      lateEvening.setUTCHours(23, 30, 0, 0);
+      await record(traveller, 'routine-tz', lateEvening);
+      const utcDay = weekdayOf(lateEvening);
+
+      const utc = await summaryOf(traveller, '?tz=UTC');
+      const tokyo = await summaryOf(traveller, '?tz=Asia/Tokyo');
+      const byDefault = await summaryOf(traveller);
+
+      expect(utc.data.weekdayActivity[utcDay]).toBe(1);
+      expect(tokyo.data.weekdayActivity[(utcDay + 1) % 7]).toBe(1);
+      expect(tokyo.data.weekdayActivity[utcDay]).toBe(0);
+      // Without tz the split is done in UTC
+      expect(byDefault.data.weekdayActivity).toEqual(utc.data.weekdayActivity);
+    });
+
+    it('should reject an invalid time zone', async () => {
+      await expect(summaryOf(active, '?tz=Not/AZone')).rejects.toMatchObject({
+        response: { status: 400 },
+      });
+    });
+
+    it('should reject an unknown query parameter', async () => {
+      await expect(summaryOf(active, '?foo=bar')).rejects.toMatchObject({
+        response: { status: 400 },
+      });
+    });
+  });
+
   describe('GET /api/sessions/calendar', () => {
     it('should return calendar data including today', async () => {
       const res = await axios.get(

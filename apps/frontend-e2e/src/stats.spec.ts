@@ -144,6 +144,103 @@ test.describe('Stats and Calendar Flow', () => {
     expect(await color(localDate())).not.toBe(await color(emptyDate));
   });
 
+  test('Issue #148: a new account shows no made-up activity in the settings', async ({
+    page,
+  }) => {
+    await loginAs(page, session, '/settings');
+    await expect(pageTitle(page, 'Tes 30 derniers jours.')).toBeVisible();
+    const main = page.getByRole('main').first();
+
+    // These figures used to be hard-coded for every user
+    await expect(main).not.toContainText('Squash quotidien');
+    await expect(main).not.toContainText('Bureau express');
+    await expect(main).not.toContainText('moy. 4 séances');
+
+    await expect(page.locator('.settings-bar-count')).toHaveText([
+      '0',
+      '0',
+      '0',
+      '0',
+      '0',
+      '0',
+      '0',
+    ]);
+    await expect(page.locator('.settings-routine-row')).toHaveCount(0);
+    await expect(page.locator('.settings-empty')).toHaveText([
+      /Pas encore de séance sur les 30 derniers jours/,
+      /Pas encore de séance/,
+    ]);
+  });
+
+  test('Issue #148: weekday activity and top routines come from the real sessions', async ({
+    page,
+    request,
+  }) => {
+    // Noon local time on the Monday and the Wednesday of last week: always in
+    // the past, always within the last 30 days
+    const lastWeek = (weekday: number) => {
+      const date = new Date();
+      date.setDate(date.getDate() - ((date.getDay() + 6) % 7) - 7 + weekday);
+      date.setHours(12, 0, 0, 0);
+      return date;
+    };
+    await createCompletedSession(request, session, 'bureau-5min', 300, lastWeek(0));
+    await createCompletedSession(request, session, 'bureau-5min', 300, lastWeek(0));
+    await createCompletedSession(request, session, 'douce-10min', 600, lastWeek(2));
+    // Too old to count in the "last 30 days" blocks
+    await createCompletedSession(
+      request,
+      session,
+      'douce-10min',
+      600,
+      new Date(Date.now() - 45 * 24 * 3600 * 1000),
+    );
+
+    await loginAs(page, session, '/settings');
+
+    // Lun … Dim
+    await expect(page.locator('.settings-bar-count')).toHaveText([
+      '2',
+      '0',
+      '1',
+      '0',
+      '0',
+      '0',
+      '0',
+    ]);
+    await expect(page.locator('.settings-avg')).toHaveText(
+      '30 derniers jours · 3 séances',
+    );
+    await expect(page.locator('.settings-bar-fill--hi')).toHaveCount(1);
+
+    await expect(page.locator('.settings-routine-name')).toHaveText([
+      'Pause bureau',
+      'Routine douce',
+    ]);
+    await expect(page.locator('.settings-routine-count')).toHaveText([
+      '2×',
+      '1×',
+    ]);
+    await expect(page.locator('.settings-empty')).toHaveCount(0);
+  });
+
+  test('Issue #148: a routine appears in the top after being played', async ({
+    page,
+  }) => {
+    await loginAs(page, session);
+    await completeRoutine(page, 'bureau-5min');
+
+    await page.goto('/settings');
+
+    await expect(page.locator('.settings-routine-name')).toHaveText([
+      'Pause bureau',
+    ]);
+    await expect(page.locator('.settings-routine-count')).toHaveText(['1×']);
+    await expect(page.locator('.settings-avg')).toHaveText(
+      '30 derniers jours · 1 séance',
+    );
+  });
+
   test('should display favorite routine', async ({ page }) => {
     await loginAs(page, session);
 

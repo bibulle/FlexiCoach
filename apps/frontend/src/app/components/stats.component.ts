@@ -1,4 +1,11 @@
-import { Component, OnInit, computed, inject, signal, ChangeDetectionStrategy } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  computed,
+  inject,
+  signal,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -61,22 +68,46 @@ export class StatsComponent implements OnInit {
   selectedVoiceName = '';
   availableVoices: SpeechSynthesisVoice[] = [];
 
-  // Placeholder stats (future API endpoint)
-  readonly dayActivity = [
-    { label: 'Lun', count: 5, highlight: true },
-    { label: 'Mar', count: 4, highlight: false },
-    { label: 'Mer', count: 3, highlight: false },
-    { label: 'Jeu', count: 5, highlight: true },
-    { label: 'Ven', count: 4, highlight: false },
-    { label: 'Sam', count: 1, highlight: false },
-    { label: 'Dim', count: 0, highlight: false },
+  private static readonly WEEKDAY_LABELS = [
+    'Lun',
+    'Mar',
+    'Mer',
+    'Jeu',
+    'Ven',
+    'Sam',
+    'Dim',
   ];
 
-  readonly topRoutines = [
-    { name: 'Squash quotidien', count: 12, pct: 1.0 },
-    { name: 'Routine douce', count: 6, pct: 0.5 },
-    { name: 'Bureau express', count: 4, pct: 0.33 },
-  ];
+  /** Sessions of the last 30 days per weekday (from the summary). */
+  get dayActivity(): { label: string; count: number; highlight: boolean }[] {
+    const counts = this.summary?.weekdayActivity ?? [];
+    const max = Math.max(0, ...counts);
+    return StatsComponent.WEEKDAY_LABELS.map((label, index) => {
+      const count = counts[index] ?? 0;
+      return { label, count, highlight: max > 0 && count === max };
+    });
+  }
+
+  /** Most practised routines of the last 30 days, with their bar ratio. */
+  get topRoutines(): { name: string; count: number; pct: number }[] {
+    const routines = this.summary?.topRoutines ?? [];
+    const max = Math.max(1, ...routines.map((r) => r.count));
+    return routines.map((r) => ({
+      name: r.name,
+      count: r.count,
+      pct: r.count / max,
+    }));
+  }
+
+  /** True when the user has at least one session over the last 30 days. */
+  get hasRecentActivity(): boolean {
+    return (this.summary?.recentSessions ?? 0) > 0;
+  }
+
+  get recentSessionsLabel(): string {
+    const count = this.summary?.recentSessions ?? 0;
+    return `${count} séance${count > 1 ? 's' : ''}`;
+  }
 
   ngOnInit(): void {
     this.settingsService.load().subscribe({
@@ -128,10 +159,7 @@ export class StatsComponent implements OnInit {
   private loadFromStorage(): void {
     // Theme
     const savedTheme = localStorage.getItem('theme') as
-      | 'light'
-      | 'dark'
-      | 'auto'
-      | null;
+      'light' | 'dark' | 'auto' | null;
     if (savedTheme) {
       this.selectedTheme.set(savedTheme);
       this.applyTheme(savedTheme);

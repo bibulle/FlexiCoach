@@ -4,6 +4,27 @@ import { Model } from 'mongoose';
 import { Session, SessionDocument } from '../schemas/session.schema';
 import { Routine, RoutineDocument } from '../schemas/routine.schema';
 
+/** Window of the "recent activity" statistics (weekday split, top routines). */
+export const RECENT_ACTIVITY_DAYS = 30;
+/** Number of routines returned in the top. */
+export const TOP_ROUTINES_LIMIT = 3;
+
+export interface TopRoutine {
+  routineId: string;
+  name: string;
+  count: number;
+}
+
+const WEEKDAY_INDEX: Record<string, number> = {
+  Mon: 0,
+  Tue: 1,
+  Wed: 2,
+  Thu: 3,
+  Fri: 4,
+  Sat: 5,
+  Sun: 6,
+};
+
 @Injectable()
 export class SessionsService {
   constructor(
@@ -105,13 +126,92 @@ export class SessionsService {
     return calendar.sort((a, b) => a.date.localeCompare(b.date));
   }
 
-  async getSummary(userId?: string): Promise<{
+  /**
+   * Weekday (0 = Monday … 6 = Sunday) of a date in the given IANA time zone.
+   * Falls back to UTC when the time zone is unknown to the runtime.
+   */
+  private weekdayIndex(date: Date, timeZone: string): number {
+    let weekday: string;
+    try {
+      weekday = new Intl.DateTimeFormat('en-US', {
+        timeZone,
+        weekday: 'short',
+      }).format(date);
+    } catch {
+      weekday = new Intl.DateTimeFormat('en-US', {
+        timeZone: 'UTC',
+        weekday: 'short',
+      }).format(date);
+    }
+    return WEEKDAY_INDEX[weekday];
+  }
+
+  /**
+   * Sessions of the last RECENT_ACTIVITY_DAYS days split by weekday, and the
+   * most practised routines over the same period.
+   */
+  private async getRecentActivity(
+    sessions: Session[],
+    timeZone: string,
+  ): Promise<{
+    recentSessions: number;
+    weekdayActivity: number[];
+    topRoutines: TopRoutine[];
+  }> {
+    const since = Date.now() - RECENT_ACTIVITY_DAYS * 86400000;
+    const recent = sessions.filter((s) => s.startAt.getTime() >= since);
+
+    const weekdayActivity = [0, 0, 0, 0, 0, 0, 0];
+    const byRoutine = new Map<string, { count: number; last: number }>();
+    recent.forEach((session) => {
+      weekdayActivity[this.weekdayIndex(session.startAt, timeZone)]++;
+      const entry = byRoutine.get(session.routineId) ?? { count: 0, last: 0 };
+      entry.count++;
+      entry.last = Math.max(entry.last, session.startAt.getTime());
+      byRoutine.set(session.routineId, entry);
+    });
+
+    // Most practised first; ties go to the most recently practised routine
+    const top = Array.from(byRoutine.entries())
+      .sort(
+        ([idA, a], [idB, b]) =>
+          b.count - a.count || b.last - a.last || idA.localeCompare(idB),
+      )
+      .slice(0, TOP_ROUTINES_LIMIT);
+
+    let names = new Map<string, string>();
+    if (top.length > 0) {
+      const routines = await this.routineModel
+        .find({ id: { $in: top.map(([routineId]) => routineId) } })
+        .exec();
+      names = new Map(routines.map((r) => [r.id, r.name]));
+    }
+
+    return {
+      recentSessions: recent.length,
+      weekdayActivity,
+      topRoutines: top.map(([routineId, { count }]) => ({
+        routineId,
+        // The routine may have been deleted since the session
+        name: names.get(routineId) ?? 'Routine supprimée',
+        count,
+      })),
+    };
+  }
+
+  async getSummary(
+    userId?: string,
+    timeZone = 'UTC',
+  ): Promise<{
     currentStreak: number;
     longestStreak: number;
     totalSessions: number;
     totalMinutes: number;
     adherenceRate: number;
     favoriteRoutine: string | null;
+    recentSessions: number;
+    weekdayActivity: number[];
+    topRoutines: TopRoutine[];
   }> {
     const filter: any = userId ? { userId } : {};
     const sessions = await this.sessionModel.find(filter).exec();
@@ -223,6 +323,8 @@ export class SessionsService {
       favoriteRoutine = routine ? routine.name : favoriteRoutineId;
     }
 
+    const recentActivity = await this.getRecentActivity(sessions, timeZone);
+
     return {
       currentStreak,
       longestStreak,
@@ -230,6 +332,7 @@ export class SessionsService {
       totalMinutes: Math.round(totalMinutes),
       adherenceRate,
       favoriteRoutine,
+      ...recentActivity,
     };
   }
 }
