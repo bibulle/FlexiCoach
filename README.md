@@ -2,14 +2,10 @@
 
 Application Progressive Web App (PWA) pour routines d'exercices guidées avec suivi quotidien, visualisation des progrès et programmes d'entraînement multiples.
 
-## 📝 Version actuelle : 0.8.7
+[![Release](https://img.shields.io/github/v/release/bibulle/FlexiCoach?sort=semver)](https://github.com/bibulle/FlexiCoach/releases)
 
-### Corrections récentes
-- ✅ Authentification Google OAuth2 implémentée
-- ✅ Tests backend migrés vers mocks (compatibilité Apple Silicon)
-- ✅ Menu utilisateur avec navigation cohérente
-
-Voir [CHANGELOG.md](./CHANGELOG.md) pour l'historique complet.
+Historique des versions : [CHANGELOG.md](./CHANGELOG.md) et [GitHub Releases](https://github.com/bibulle/FlexiCoach/releases)
+(versions gérées automatiquement, voir [Versions et releases](#-versions-et-releases)).
 
 ## 🏗️ Architecture
 
@@ -102,24 +98,11 @@ MONGODB_URI=mongodb://localhost:27017/flexicoach npm run test:e2e:frontend     #
 Détails (prérequis, bonnes pratiques, CI) : voir [TESTING.md](./TESTING.md). Les deux suites tournent en CI
 (job `e2e`, avec un service `mongo:8`) et conditionnent la publication de l'image Docker.
 
-### Tests e2e complets (production)
-
-Pour tester l'application complète en mode production avec MongoDB local:
+### Image Docker en local
 
 ```bash
-./test-e2e-local.sh
+./docker-test.sh   # build de l'image, démarrage du conteneur et vérifications de base
 ```
-
-Ce script:
-- ✅ Vérifie que MongoDB est installé (Homebrew)
-- ✅ Nettoie la base de données
-- ✅ Build le backend et le frontend en mode production
-- ✅ Démarre le backend sur le port 3000
-- ✅ Exécute tous les tests automatiques (validation, rate limiting)
-- ✅ Crée un utilisateur admin (`famille.martin@gmail.com` / `Martin2024!Test`)
-- ✅ Charge les routines de test
-
-L'environnement reste actif pour validation manuelle. Appuyez sur Ctrl+C pour arrêter.
 
 ## 📁 Structure du projet
 
@@ -145,11 +128,6 @@ apps/
 libs/
 └── shared/            # Bibliothèque partagée
     └── src/lib/models.ts  # Modèles TypeScript
-
-prototype/             # Prototype HTML/CSS/JS original
-├── index.html
-├── assets/common.css
-└── routines/
 
 routines/              # Données JSON des routines
 ├── douce-10min.json
@@ -200,7 +178,7 @@ routines/              # Données JSON des routines
 
 ## 🎨 Design
 
-Le design s'inspire du prototype vanilla JS avec:
+Interface « hi-fi » (refonte 2026) :
 
 - Palette de couleurs: bleu (#3b82f6) comme accent
 - Cards arrondies (16px border-radius)
@@ -262,6 +240,35 @@ Les PR de sécurité dépendent de l'option *Dependabot security updates* (Setti
 - **Vitest 5** : casse la compilation des composants Angular via `@analogjs/vitest-angular` (Vite 8 / oxc) ; on reste en Vitest 4.1.
 - **TypeScript 7** : Angular 22 impose `typescript >=6.0 <6.1`.
 - `npm audit` remonte encore 29 alertes modérées via `sprintf-js` (outillage de couverture Jest, aucune version corrigée publiée).
+
+## 🏷️ Versions et releases
+
+Les versions sont gérées par **[release-please](https://github.com/googleapis/release-please)** à partir des
+messages de commit ([Conventional Commits](https://www.conventionalcommits.org/fr/)) :
+
+| Préfixe du commit | Effet sur la version | Section du CHANGELOG |
+|---|---|---|
+| `fix: …` | patch (0.8.7 → 0.8.8) | Corrections |
+| `feat: …` | minor (0.8.7 → 0.9.0) | Fonctionnalités |
+| `feat!: …` ou `BREAKING CHANGE:` | major | — |
+| `perf`, `refactor`, `test`, `docs`, `build`, `ci` | aucune (listés dans la release suivante) | section dédiée |
+| `chore: …` (dont `chore(deps)` de Dependabot) | aucune | masqué |
+
+**Cycle :**
+1. Les PR **ne touchent plus à la version** (plus de `npm version patch`).
+2. À chaque merge sur `main`, le workflow `Release` ouvre ou met à jour une PR **« chore: release X.Y.Z »**
+   qui met à jour `package.json`, `package-lock.json`, `apps/frontend/src/app/version.ts` et `CHANGELOG.md`.
+3. **Merger cette Release PR** crée le tag `vX.Y.Z` et la GitHub Release, publie l'image Docker
+   `bibulle/flexicoach:VX.Y.Z` (+ `:latest`) et met à jour le dépôt GitOps (déploiement).
+
+**Images Docker :** chaque merge sur `main` publie `:latest` ; seules les releases publient une image versionnée
+et déclenchent le déploiement GitOps. Les PR ne font qu'un build (rien n'est publié).
+
+**Réglages GitHub nécessaires** (une fois) :
+- *Settings → Actions → General → Workflow permissions* : cocher **Allow GitHub Actions to create and approve pull requests**.
+- Optionnel : secret **`RELEASE_PLEASE_TOKEN`** (PAT avec droits `contents` + `pull-requests` sur ce dépôt).
+  Sans lui, la Release PR est créée avec le `GITHUB_TOKEN` et GitHub n'y lance pas la CI
+  (elle ne contient que la montée de version et le changelog).
 
 ## 🌐 API Endpoints
 

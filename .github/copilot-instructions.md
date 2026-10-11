@@ -1,153 +1,20 @@
-# FlexiCoach - AI Coding Agent Instructions
+# FlexiCoach — instructions pour les agents de code
 
-## Project Overview
+La source de vérité pour travailler sur ce dépôt est **[`CLAUDE.md`](../CLAUDE.md)** (règles de travail, commandes,
+versioning) ; les consignes Nx sont dans [`AGENTS.md`](../AGENTS.md).
 
-This is a French-language Progressive Web App (PWA) for guided exercise routines with daily tracking, progress visualization, and multiple training programs.
+À lire selon le besoin :
+- [`README.md`](../README.md) : démarrage, structure, API, **versions et releases** (release-please)
+- [`TESTING.md`](../TESTING.md) : tests unitaires et E2E (prérequis, commandes, bonnes pratiques)
+- [`docs/ARCHITECTURE.md`](../docs/ARCHITECTURE.md), [`docs/SPECIFICATION.md`](../docs/SPECIFICATION.md)
 
-## Development Workflow - IMPORTANT
+## Conventions propres au projet
 
-### Development Server Setup
-
-**4 terminaux en mode watch (workflow recommandé):**
-
-1. **Terminal 1 - Backend**: `npx nx serve backend` (port 3000)
-2. **Terminal 2 - Frontend**: `npx nx serve frontend` (port 4200)
-3. **Terminal 3 - Tests frontend**: `npx nx test frontend --watch`
-4. **Terminal 4 - Tests backend e2e**: `npx nx run backend-e2e:e2e` (manuel, à la demande)
-
-> **Note pour l'agent**: Si les serveurs tournent déjà, **demander l'état des tests ou serveurs** plutôt que de relancer les commandes.
-
-### Database Access
-
-- **ALWAYS use MongoDB MCP tools** for database operations instead of terminal commands
-- Available tools: `mcp_mongodb_mcp_s_*` for queries, counts, aggregations, exports
-- Example: Use `mcp_mongodb_mcp_s_count` instead of `mongosh --eval "db.collection.count()"`
-
-### Testing Requirements - CRITICAL
-
-**BEFORE any git commit:**
-
-1. Vérifier l'état des tests en cours (demander à l'utilisateur)
-2. Si nécessaire, lancer `npx nx test frontend --run` ET `npx nx run backend-e2e:e2e`
-3. Verify 100% pass rate
-4. Fix any failing tests before proceeding
-5. Update tests when adding new features
-6. **Never commit with failing tests**
-
-### Git Workflow
-
-1. Ensure all tests are green ✅
-2. Add meaningful commit messages
-3. Push to GitHub only after verification
-
-## Architecture Pattern
-
-**Training Routine Engine** - The current HTML file demonstrates the core pattern for guided exercise sessions:
-
-- Self-contained training modules (HTML + embedded CSS/JS)
-- Step-based timer system with voice coaching
-- Standardized exercise configuration format
-
-The full app vision includes:
-
-- Multiple training routines (different durations, difficulty levels, focus areas)
-- User progress tracking and daily adherence recording
-- Streak visualization and calendar views
-- PWA capabilities for offline use and app-like experience
-
-## Core Application Logic
-
-### Timer System Architecture
-
-The app uses a **step-based timer** with two types of intervals:
-
-- **Exercise steps**: Defined in the `plan` array with name, duration, mode, and voice cues
-- **Rest periods**: Automatic 10-second transitions between exercises (`REST_SECONDS`)
-
-Key state variables:
-
-- `idx`: Current step index in the plan array
-- `timeLeft`: Remaining seconds for current step
-- `resting`: Boolean flag for transition periods vs actual exercises
-
-### Voice Coaching System
-
-Dual-mode audio feedback:
-
-- **Primary**: Web Speech API (`speechSynthesis`) for French voice instructions
-- **Fallback**: WebAudio API beeps when speech synthesis unavailable
-
-Voice cue timing is based on **elapsed time within step**, not remaining time:
-
-```javascript
-const elapsed = s.seconds - timeLeft;
-processCues(s, elapsed);
-```
-
-### Exercise Configuration Pattern
-
-Each exercise in the `plan` array follows this structure:
-
-```javascript
-{
-  name: "Exercise name",
-  seconds: 60,
-  mode: "mouvement" | "statique" | "respiration",
-  text: "Instructions shown to user",
-  cues: [{ at: 30, say: "Voice instruction at 30s elapsed" }]
-}
-```
-
-## French Language Conventions
-
-- All UI text, voice instructions, and comments are in French
-- Exercise terminology follows physiotherapy conventions ("kiné" style)
-- Voice cues use informal "tu" form for personal coaching feel
-
-## Key Files
-
-- `coach_dos_routine_douce_10_min.html`: Example training routine showcasing the coaching engine
-- `specification.md`: Full app vision and requirements (currently abbreviated)
-
-## Current Implementation Status
-
-The existing HTML file serves as a **proof of concept** for the coaching system:
-
-- ✅ Core timer and voice coaching functionality
-- ✅ Exercise sequencing with transitions
-- ✅ French physiotherapy terminology and UX
-- ⏳ **Planned**: Multiple routines, progress tracking, PWA features
-
-## Development Patterns
-
-- **No build tools**: Direct HTML/CSS/JS editing
-- **CSS Custom Properties**: Consistent theming via `:root` variables
-- **Progressive Enhancement**: Core functionality works without JavaScript, enhanced with timers and voice
-- **Responsive Design**: Grid-based layout that adapts to mobile/desktop
-
-## Testing Approach
-
-Since this is a single-file app, test by:
-
-1. Opening HTML file directly in browser
-2. Testing voice synthesis (requires user interaction to activate)
-3. Verifying timer accuracy and step transitions
-4. Checking mobile responsiveness and PWA capabilities
-
-## Adding New Exercises
-
-Extend the `plan` array following the established pattern. Consider:
-
-- Voice cue timing for mid-exercise guidance
-- Appropriate mode classification
-- Clear, concise instruction text
-- Reasonable duration for target audience (beginner-friendly)
-
-## Creating Additional Training Routines
-
-When building new training modules, follow the established coaching engine pattern:
-
-- Self-contained HTML files with embedded CSS/JS
-- Reuse the timer system architecture and voice coaching logic
-- Maintain consistent French terminology and UX patterns
-- Consider different target durations, difficulty levels, or focus areas (upper back, lower back, flexibility, strength)
+- **Langue** : toute l'interface, les instructions vocales et les messages de commit sont en français ;
+  le coaching tutoie l'utilisateur (« Inspire, expire… »), terminologie de kinésithérapie.
+- **Commits** : [Conventional Commits](https://www.conventionalcommits.org/fr/) (`feat:`, `fix:`, `test:`…) —
+  ils pilotent la version et le CHANGELOG. Ne jamais modifier la version à la main.
+- **Routines** : format JSON partagé (`libs/shared/src/lib/models.ts`, exemples dans `routines/*.json`) :
+  étapes `{ name, seconds, mode: 'mouvement' | 'statique' | 'respiration', text, cues: [{ at, say }] }`,
+  où `at` est le temps **écoulé** dans l'étape.
+- **Tests** : aucun test supprimé ou ignoré ; unitaires + E2E verts avant toute PR.

@@ -41,8 +41,6 @@ flexicoach/
 │   └── shared/               # Bibliothèque partagée
 │       └── src/lib/models.ts # Interfaces TypeScript
 │
-├── prototype/                # Prototype HTML/CSS/JS original
-│
 ├── routines/                 # Données JSON des routines
 │   ├── douce-10min.json
 │   └── bureau-5min.json
@@ -50,41 +48,44 @@ flexicoach/
 ├── docs/                     # Documentation
 │   ├── ARCHITECTURE.md       # Ce fichier
 │   ├── SPECIFICATION.md      # Spécification fonctionnelle
-│   └── MIGRATION.md          # Plan de migration
+│   └── google-oauth-setup.md # Configuration OAuth Google
 │
 ├── Dockerfile                # Build multi-stage
-├── docker-test.sh            # Script de test Docker
-└── .github/workflows/        # CI/CD GitHub Actions
+├── docker-test.sh            # Test local de l'image Docker
+├── release-please-config.json # Versions & CHANGELOG automatiques
+└── .github/workflows/        # CI/CD : build-and-publish (tests, e2e, image :latest),
+                              #         release (release-please, image VX.Y.Z + GitOps), docker (réutilisable)
 ```
 
 ## Stack technique
 
 ### Backend (NestJS)
-- **Framework**: NestJS 11 (TypeScript)
-- **Base de données**: MongoDB 8.0.1 avec Mongoose 8.19
+- **Framework**: NestJS 11.2 (TypeScript 6)
+- **Base de données**: MongoDB 8 avec Mongoose 9.11
 - **Authentification**: JWT (Passport strategy)
 - **Validation**: class-validator, class-transformer
 - **Sécurité**: bcrypt (hachage mots de passe)
 
 ### Frontend (Angular)
-- **Framework**: Angular 20.3 (standalone components)
+- **Framework**: Angular 22.2 (standalone components)
 - **Build**: Vite via Nx
-- **Tests**: Vitest
+- **Tests**: Vitest 4 (unitaires), Playwright (e2e)
 - **État**: Services Angular + RxJS + Signals
 - **UI**: SASS avec CSS Custom Properties
 - **Voice**: Web Speech API (français)
 - **Audio**: Web Audio API (bips de secours)
 
 ### Monorepo (Nx)
-- **Version**: Nx 22.0.2
+- **Version**: Nx 23.3
 - **Workspace**: Integrated monorepo
 - **Shared**: `@flexicoach/shared` pour les modèles TypeScript
 
 ### DevOps
 - **Containerisation**: Docker (multi-stage build)
-- **CI/CD**: GitHub Actions
-- **Registry**: Docker Hub
-- **Déploiement**: Kubernetes (GitOps)
+- **CI/CD**: GitHub Actions (tests unitaires + e2e, image Docker)
+- **Versions**: release-please (Conventional Commits → Release PR → tag `vX.Y.Z` + CHANGELOG)
+- **Registry**: Docker Hub (`:latest` à chaque merge sur `main`, `:VX.Y.Z` à chaque release)
+- **Déploiement**: Kubernetes (GitOps, mis à jour à chaque release)
 
 ## Architecture des données
 
@@ -237,5 +238,5 @@ Le Dockerfile utilise un build multi-stage :
 ## Références
 
 - Spécification complète : `docs/SPECIFICATION.md`
-- Guide Docker : `DOCKER.md`
-- Prototype fonctionnel : `prototype/`
+- Tests : `TESTING.md`
+- Versions et releases : `README.md` (section « Versions et releases ») et `CHANGELOG.md`

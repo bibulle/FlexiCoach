@@ -3,19 +3,17 @@
 ## Contexte du projet
 Flexy Coach est une application web de coaching personnel.
 
-**Stack technique :**
-- Frontend : Angular
-- Backend : Node.js (API REST)
+**Stack technique :** monorepo Nx 23 — frontend Angular 22, backend NestJS 11 (API REST), MongoDB, Node.js 24.
 
 ---
 
 ## Contraintes critiques (OBLIGATOIRES)
-- **Toujours commencer par un `git pull` sur `master`** avant de créer une branche ou de commencer à travailler, afin de partir de la version la plus récente du code
+- **Toujours commencer par un `git pull` sur `main`** avant de créer une branche ou de commencer à travailler, afin de partir de la version la plus récente du code
 - Travailler exclusivement dans une branche dédiée (pas dans `main`)
 - Ne jamais pousser de modifications directement sur la branche `main`
 - Ne jamais commiter sans feu vert explicite de l'utilisateur
 - Ne jamais créer de pull request sans validation explicite de l'utilisateur
-- **Avant de demander le feu vert de l'utilisateur, lancer les serveurs** (`npm run start:api` et `npm run start:frontend`) afin qu'il puisse tester l'application localement
+- **Avant de demander le feu vert de l'utilisateur, lancer les serveurs** (`npx nx serve backend` et `npx nx serve frontend`) afin qu'il puisse tester l'application localement
 - Attendre explicitement le feu vert de l'utilisateur après qu'il ait exécuté les tests localement
 - Ne pas modifier le code fonctionnel existant (hors ajustements mineurs strictement nécessaires aux tests)
 - Aucun test ne doit être supprimé, désactivé ou ignoré (`skip`, `xit`, `pending`, etc.)
@@ -98,37 +96,48 @@ Ne demander de tester que lorsque les environnements sont fonctionnels et stable
 
 ---
 
+## Commandes
+
+| Usage | Commande |
+|---|---|
+| Backend (port 3000) | `npx nx serve backend` (ou `npx nx build backend && node dist/apps/backend/main.js`) |
+| Frontend (port 4200) | `npx nx serve frontend` |
+| Tests unitaires | `npm run test:backend`, `npm run test:frontend` (ou `npm test`) |
+| E2E backend | backend lancé avec `THROTTLE_DISABLED=true`, puis `npm run test:e2e:backend` |
+| E2E frontend | `npx playwright install chromium` (une fois), puis `MONGODB_URI=<base du backend> npm run test:e2e:frontend` |
+
+Détails et prérequis des E2E (MongoDB, `ADMIN_EMAILS`…) : voir `TESTING.md`.
+
 ## Lancement des serveurs dans un worktree
 
 Dans un git worktree, le fichier `.env` et le dossier `dist/` ne sont pas présents par défaut.
-Suivre ces étapes dans le répertoire du worktree avant de lancer les serveurs :
+Depuis le répertoire du worktree :
 
-### Backend
 ```bash
-# 1. Copier le .env depuis le repo principal
-cp /Users/eric/Documents/Dev/FlexiCoach/.env .env
+# 1. Copier le .env depuis le dépôt principal (chemin à adapter)
+cp <chemin-du-depot-principal>/.env .env
 
-# 2. Builder le backend (le serve nx dépend d'un build préalable)
+# 2. Builder puis lancer le backend (nx serve backend dépend d'un build préalable)
 npx nx build backend
-
-# 3. Lancer le backend directement
 node dist/apps/backend/main.js &
 ```
 
-### Frontend
-Le frontend se lance normalement via `preview_start` (`.claude/launch.json`) sans prérequis supplémentaire.
+Le frontend se lance normalement (`npx nx serve frontend` ou `preview_start` via `.claude/launch.json`).
 
-### Pourquoi ces étapes ?
-- Le backend NestJS charge le `.env` depuis la racine du worktree (`ConfigModule.forRoot({ envFilePath: '.env' })`)
-- `nx serve backend` exécute `node dist/apps/backend/main.js` sans recompiler si le dist est absent
-- Sans `.env`, le backend crashe au démarrage sur `OAuth2Strategy requires a clientID option`
+Pourquoi : le backend charge le `.env` depuis la racine (`ConfigModule.forRoot({ envFilePath: '.env' })`)
+et crashe sans lui (`OAuth2Strategy requires a clientID option`).
 
 ---
 
-## Versioning (OBLIGATOIRE)
-- **Avant chaque PR**, exécuter `npm version patch` pour incrémenter automatiquement la version (cela exécute le script `version` du `package.json` qui met à jour `apps/frontend/src/app/version.ts`)
-- Si l'utilisateur demande explicitement une montée de version différente (minor, major), utiliser la commande correspondante (`npm version minor`, `npm version major`)
-- Par défaut, toujours faire un `patch`
+## Versioning (automatique — release-please)
+- **Ne jamais modifier la version à la main** : pas de `npm version`, pas d'édition de `package.json` (`version`),
+  `apps/frontend/src/app/version.ts` ni `CHANGELOG.md`. Release-please s'en charge (voir README › Versions et releases).
+- **Messages de commit au format [Conventional Commits](https://www.conventionalcommits.org/fr/)** : ils déterminent
+  la prochaine version et le contenu du CHANGELOG.
+  - `fix: …` → patch, `feat: …` → minor, `feat!: …` / `BREAKING CHANGE:` → major
+  - `test:`, `docs:`, `refactor:`, `perf:`, `build:`, `ci:` → pas de montée de version ; `chore:` → masqué du CHANGELOG
+  - Portée recommandée : `feat(editor): …`, `fix(auth): …`
+- Une release = merger la PR « chore: release X.Y.Z » ouverte par release-please (décision de l'utilisateur).
 
 ---
 
@@ -136,4 +145,4 @@ Le frontend se lance normalement via `preview_start` (`.claude/launch.json`) san
 - Travailler par étapes : analyse → proposition → implémentation → validation
 - Justifier les choix effectués
 - Prioriser la clarté, la cohérence et la maintenabilité
-- **Attendre explicitement le feu vert de l'utilisateur avant toute action de versioning**
+- **Ne jamais merger la Release PR (« chore: release X.Y.Z ») sans feu vert explicite de l'utilisateur**
