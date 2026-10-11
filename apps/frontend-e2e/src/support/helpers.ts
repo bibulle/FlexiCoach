@@ -108,3 +108,17 @@ export async function completeRoutine(page: Page, slug: string) {
 export function field(page: Page, id: string) {
   return page.locator(`#${id}`).filter({ visible: true });
 }
+
+/**
+ * Page title (h1) with the expected text. During a route transition the old
+ * and the new component are briefly both in the DOM, so a bare
+ * getByRole('heading', { level: 1 }) can match two elements: always target
+ * the expected title instead.
+ */
+export function pageTitle(page: Page, name: string | RegExp) {
+  return page.getByRole('heading', {
+    level: 1,
+    name,
+    exact: typeof name === 'string',
+  });
+}

@@ -6,6 +6,7 @@ import {
   openUserMenu,
   registerViaApi,
   routineCard,
+  pageTitle,
 } from './support/helpers';
 
 test.describe('Navigation and Header', () => {
@@ -14,7 +15,7 @@ test.describe('Navigation and Header', () => {
   test.beforeEach(async ({ page, request }) => {
     session = await registerViaApi(request, 'nav', 'Marie Curie');
     await loginAs(page, session);
-    await expect(page.getByRole('heading', { level: 1 })).toContainText('Marie');
+    await expect(pageTitle(page, /Marie/)).toBeVisible();
   });
 
   test.describe('Header and Logo', () => {
@@ -47,7 +48,7 @@ test.describe('Navigation and Header', () => {
       for (const [label, url, heading] of pages) {
         await navLink(page, label).click();
         await expect(page).toHaveURL(url);
-        await expect(page.getByRole('heading', { level: 1 })).toHaveText(heading);
+        await expect(pageTitle(page, heading)).toBeVisible();
       }
     });
   });
@@ -91,7 +92,7 @@ test.describe('Navigation and Header', () => {
     test('should display breadcrumbs on calendar page', async ({ page }) => {
       // Top-level pages (calendar, settings) have no breadcrumbs, sub-pages do
       await page.goto('/calendar');
-      await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+      await expect(page.getByRole('heading', { level: 1 }).first()).toBeVisible();
       await expect(page.locator('.breadcrumbs')).toHaveCount(0);
 
       await page.goto('/routine/douce-10min');

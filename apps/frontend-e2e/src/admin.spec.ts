@@ -10,6 +10,7 @@ import {
   openUserMenu,
   registerViaApi,
   routineCard,
+  pageTitle,
 } from './support/helpers';
 
 /** Card of a user in the administration list. */
@@ -29,9 +30,7 @@ test.describe('Admin Panel Flow', () => {
   });
 
   test('should access admin panel with admin account', async ({ page }) => {
-    await expect(page.getByRole('heading', { level: 1 })).toHaveText(
-      'Administration',
-    );
+    await expect(pageTitle(page, 'Administration')).toBeVisible();
     await expect(page.getByText('Gestion des utilisateurs')).toBeVisible();
     await expect(page.locator('.breadcrumbs')).toContainText('Administration');
   });
@@ -101,7 +100,7 @@ test.describe('Admin Panel Flow', () => {
   }) => {
     const regular = await registerViaApi(request, 'not-admin');
     await loginAs(page, regular);
-    await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+    await expect(page.getByRole('heading', { level: 1 }).first()).toBeVisible();
 
     await openUserMenu(page);
     await expect(

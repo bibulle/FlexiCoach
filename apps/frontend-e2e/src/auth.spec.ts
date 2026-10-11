@@ -6,6 +6,7 @@ import {
   openUserMenu,
   registerViaApi,
   uniqueEmail,
+  pageTitle,
 } from './support/helpers';
 
 test.describe('Authentication Flow', () => {
@@ -13,9 +14,7 @@ test.describe('Authentication Flow', () => {
     await page.goto('/');
 
     await expect(page).toHaveURL('/login');
-    await expect(page.getByRole('heading', { level: 1 })).toHaveText(
-      'Bon retour.',
-    );
+    await expect(pageTitle(page, 'Bon retour.')).toBeVisible();
     await expect(
       page.getByRole('button', { name: 'Continuer avec Google' }),
     ).toBeVisible();
@@ -23,9 +22,7 @@ test.describe('Authentication Flow', () => {
 
   test('should register a new user', async ({ page }) => {
     await page.goto('/signup');
-    await expect(page.getByRole('heading', { level: 1 })).toHaveText(
-      'Crée ton compte.',
-    );
+    await expect(pageTitle(page, 'Crée ton compte.')).toBeVisible();
 
     await field(page, 'displayName').fill('Camille');
     await field(page, 'email').fill(uniqueEmail('signup'));
@@ -40,24 +37,20 @@ test.describe('Authentication Flow', () => {
     await submit.click();
 
     await expect(page).toHaveURL('/');
-    await expect(page.getByRole('heading', { level: 1 })).toContainText(
-      'Camille',
-    );
+    await expect(pageTitle(page, /Camille/)).toBeVisible();
   });
 
   test('should login with valid credentials', async ({ page, request }) => {
     const session = await registerViaApi(request, 'login', 'Léa');
 
     await page.goto('/login');
-    await expect(page.getByRole('heading', { level: 1 })).toHaveText(
-      'Bon retour.',
-    );
+    await expect(pageTitle(page, 'Bon retour.')).toBeVisible();
     await field(page, 'email').fill(session.user.email);
     await field(page, 'password').fill(session.password);
     await page.getByRole('button', { name: 'Se connecter' }).click();
 
     await expect(page).toHaveURL('/');
-    await expect(page.getByRole('heading', { level: 1 })).toContainText('Léa');
+    await expect(pageTitle(page, /Léa/)).toBeVisible();
   });
 
   test('should show error with invalid credentials', async ({ page }) => {
@@ -86,9 +79,7 @@ test.describe('Authentication Flow', () => {
 
   test('should validate password confirmation on signup', async ({ page }) => {
     await page.goto('/signup');
-    await expect(page.getByRole('heading', { level: 1 })).toHaveText(
-      'Crée ton compte.',
-    );
+    await expect(pageTitle(page, 'Crée ton compte.')).toBeVisible();
 
     await field(page, 'displayName').fill('Camille');
     await field(page, 'email').fill('test@example.com');
@@ -110,7 +101,7 @@ test.describe('Authentication Flow', () => {
   test('should logout successfully', async ({ page, request }) => {
     const session = await registerViaApi(request, 'logout');
     await loginAs(page, session);
-    await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+    await expect(page.getByRole('heading', { level: 1 }).first()).toBeVisible();
 
     await openUserMenu(page);
     await page.getByRole('button', { name: 'Déconnexion' }).click();
@@ -128,9 +119,7 @@ test.describe('Authentication Flow', () => {
       await page.goto(path);
       await expect(page).toHaveURL('/login');
       // Let the client-side redirect settle before the next navigation
-      await expect(page.getByRole('heading', { level: 1 })).toHaveText(
-        'Bon retour.',
-      );
+      await expect(pageTitle(page, 'Bon retour.')).toBeVisible();
     }
   });
 });

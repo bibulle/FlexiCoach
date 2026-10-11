@@ -7,6 +7,7 @@ import {
   navLink,
   registerViaApi,
   routineCard,
+  pageTitle,
 } from './support/helpers';
 
 /** Records a completed session through the API (faster than playing it). */
@@ -49,9 +50,7 @@ test.describe('Stats and Calendar Flow', () => {
     await navLink(page, 'Paramètres').click();
 
     await expect(page).toHaveURL('/settings');
-    await expect(page.getByRole('heading', { level: 1 })).toHaveText(
-      'Tes 30 derniers jours.',
-    );
+    await expect(pageTitle(page, 'Tes 30 derniers jours.')).toBeVisible();
     for (const label of ['Série actuelle', 'Temps cumulé', 'Séances', 'Régularité']) {
       await expect(page.getByRole('main').first()).toContainText(label);
     }
@@ -70,7 +69,7 @@ test.describe('Stats and Calendar Flow', () => {
     const year = new Date().getFullYear();
 
     await expect(page.getByText(`Année ${year}`)).toBeVisible();
-    await expect(page.getByRole('heading', { level: 1 })).toHaveText('0 séances.');
+    await expect(pageTitle(page, '0 séances.')).toBeVisible();
     await expect(
       page.getByRole('heading', { name: 'Détail jour par jour' }),
     ).toBeVisible();
@@ -97,7 +96,7 @@ test.describe('Stats and Calendar Flow', () => {
     await page.getByRole('button', { name: 'Voir mon calendrier' }).click();
 
     await expect(page).toHaveURL('/calendar');
-    await expect(page.getByRole('heading', { level: 1 })).toHaveText(/^1 séances?\.$/);
+    await expect(pageTitle(page, /^1 séances?\.$/)).toBeVisible();
 
     await navLink(page, 'Accueil').click();
     await expect(homeTile(page, 'Sessions totales')).toContainText('1');
@@ -131,7 +130,7 @@ test.describe('Stats and Calendar Flow', () => {
     await createCompletedSession(request, session, 'douce-10min', 600);
 
     await loginAs(page, session, '/calendar');
-    await expect(page.getByRole('heading', { level: 1 })).toHaveText(/^1 séances?\.$/);
+    await expect(pageTitle(page, /^1 séances?\.$/)).toBeVisible();
 
     const year = new Date().getFullYear();
     // A day of the current year without any session (Jan 2nd if today is Jan 1st)
