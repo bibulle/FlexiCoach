@@ -3,6 +3,11 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../services/auth.service';
 import { Router } from '@angular/router';
+import {
+  PASSWORD_POLICY_HINT,
+  getPasswordPolicyErrors,
+} from '@flexicoach/shared';
+import { formatApiError } from '../utils/api-error';
 
 interface User {
   _id: string;
@@ -70,6 +75,13 @@ interface User {
                   [(ngModel)]="newPassword"
                   placeholder="Nouveau mot de passe"
                 />
+                @if (passwordErrors.length) {
+                  @for (error of passwordErrors; track error) {
+                    <span class="field-error">{{ error }}</span>
+                  }
+                } @else {
+                  <span class="field-hint">{{ passwordHint }}</span>
+                }
               </div>
 
               <div class="modal-actions">
@@ -83,7 +95,7 @@ interface User {
                 <button
                   class="confirm-btn"
                   (click)="confirmReset()"
-                  [disabled]="!newPassword || resetting"
+                  [disabled]="!isNewPasswordValid || resetting"
                 >
                   @if (resetting) {
                     <span>Réinitialisation...</span>
@@ -107,6 +119,17 @@ export class AdminComponent implements OnInit {
   successMessage = '';
   selectedUser: User | null = null;
   newPassword = '';
+
+  readonly passwordHint = PASSWORD_POLICY_HINT;
+
+  /** Règles non respectées par le mot de passe saisi (vide tant que rien n'est saisi). */
+  get passwordErrors(): string[] {
+    return this.newPassword ? getPasswordPolicyErrors(this.newPassword) : [];
+  }
+
+  get isNewPasswordValid(): boolean {
+    return getPasswordPolicyErrors(this.newPassword).length === 0;
+  }
 
   constructor(
     private authService: AuthService,
@@ -151,7 +174,7 @@ export class AdminComponent implements OnInit {
   }
 
   confirmReset(): void {
-    if (!this.selectedUser || !this.newPassword) return;
+    if (!this.selectedUser || !this.isNewPasswordValid) return;
 
     this.resetting = true;
     this.errorMessage = '';
@@ -173,9 +196,10 @@ export class AdminComponent implements OnInit {
         },
         error: (error) => {
           this.resetting = false;
-          this.errorMessage =
-            error.error?.message ||
-            'Erreur lors de la réinitialisation du mot de passe';
+          this.errorMessage = formatApiError(
+            error,
+            'Erreur lors de la réinitialisation du mot de passe',
+          );
           this.selectedUser = null;
         },
       });

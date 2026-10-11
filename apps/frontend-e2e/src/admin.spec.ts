@@ -94,6 +94,51 @@ test.describe('Admin Panel Flow', () => {
     expect(oldLogin.status()).toBe(401);
   });
 
+  test('should refuse a weak password when resetting a user password', async ({
+    page,
+    request,
+  }) => {
+    await userCard(page, user.user.email)
+      .getByRole('button', { name: 'Réinitialiser le mot de passe' })
+      .click();
+
+    const modal = page.locator('.modal');
+    const confirm = modal.getByRole('button', { name: 'Confirmer' });
+    await expect(modal.locator('.field-hint')).toHaveText(
+      '8 caractères minimum, avec une majuscule, une minuscule et un chiffre',
+    );
+
+    // Same rule as the signup form: the dialog blocks a weak password
+    await page.locator('#newPassword').fill('abc123');
+    await expect(modal.locator('.field-error')).toHaveText([
+      'Le mot de passe doit contenir au moins 8 caractères',
+      'Le mot de passe doit contenir au moins une majuscule, une minuscule et un chiffre',
+    ]);
+    await expect(confirm).toBeDisabled();
+
+    await page.locator('#newPassword').fill('ResetPassword789');
+    await expect(modal.locator('.field-error')).toHaveCount(0);
+    await expect(confirm).toBeEnabled();
+    await modal.getByRole('button', { name: 'Annuler' }).click();
+
+    // The API enforces the rule as well (it used to accept anything)
+    const admin = await adminSession(request);
+    const weakReset = await request.patch(
+      `${API_URL}/api/admin/users/${user.user._id}/password`,
+      {
+        headers: { Authorization: `Bearer ${admin.access_token}` },
+        data: { newPassword: 'abc123' },
+      },
+    );
+    expect(weakReset.status()).toBe(400);
+
+    // Nothing changed: the user still logs in with the original password
+    const login = await request.post(`${API_URL}/api/auth/login`, {
+      data: { email: user.user.email, password: user.password },
+    });
+    expect(login.status()).toBe(200);
+  });
+
   test('should not allow non-admin to access admin panel', async ({
     page,
     request,

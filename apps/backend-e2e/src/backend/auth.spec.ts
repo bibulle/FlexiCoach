@@ -60,6 +60,19 @@ describe('Auth API', () => {
       }
     });
 
+    it('should reject a password shorter than 8 characters', async () => {
+      try {
+        await axios.post(`${API_URL}/api/auth/register`, {
+          email: `short-${Date.now()}@example.com`,
+          password: 'Abc123',
+        });
+        fail('Should have thrown an error');
+      } catch (error: any) {
+        expect(error.response.status).toBe(400);
+        expect(errorMessage(error)).toContain('au moins 8 caractères');
+      }
+    });
+
     it('should reject an invalid email', async () => {
       try {
         await axios.post(`${API_URL}/api/auth/register`, {

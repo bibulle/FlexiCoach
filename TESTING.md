@@ -4,10 +4,10 @@
 
 | Suite | Outil | Tests | Lancée en CI |
 |---|---|---|---|
-| Unitaires backend | Jest | 198 | ✅ job `test` |
-| Unitaires frontend | Vitest | 385 | ✅ job `test` |
-| E2E backend (API) | Jest + axios | 73 | ✅ job `e2e` |
-| E2E frontend (UI) | Playwright (Chromium) | 50 | ✅ job `e2e` |
+| Unitaires backend | Jest | 224 | ✅ job `test` |
+| Unitaires frontend | Vitest | 424 | ✅ job `test` |
+| E2E backend (API) | Jest + axios | 77 | ✅ job `e2e` |
+| E2E frontend (UI) | Playwright (Chromium) | 52 | ✅ job `e2e` |
 
 Aucun test n'est ignoré (`skip`, `xit`, `fixme`…).
 
@@ -43,6 +43,10 @@ npm run test:watch:frontend
 npm run test:cov:backend
 npm run test:cov:frontend
 ```
+
+> ℹ️ Nx injecte le `.env` de la racine dans les tâches. `apps/frontend/.env.test` force `NODE_ENV=test`
+> pour la cible `test` du frontend : avec `NODE_ENV=production` dans le `.env` local,
+> `src/build-config.spec.ts` échoue avec `Cannot find package 'node:'`.
 
 ### Tests E2E
 

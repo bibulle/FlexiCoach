@@ -74,5 +74,6 @@
       "style": "sass",
       "unitTestRunner": "vitest"
     }
-  }
+  },
+  "analytics": false
 }

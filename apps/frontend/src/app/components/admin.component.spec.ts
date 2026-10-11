@@ -214,14 +214,14 @@ describe('AdminComponent', () => {
     expect(confirmButton.disabled).toBe(true);
   });
 
-  it('should enable confirm button when newPassword is filled', () => {
+  it('should enable confirm button when newPassword respects the password policy', () => {
     mockAuthService.isAdmin.mockReturnValue(true);
     mockAuthService.getAllUsers.mockReturnValue(of(mockUsers));
 
     safeDetectChanges(fixture);
 
     component.selectUser(mockUsers[0]);
-    component.newPassword = 'newpassword123';
+    component.newPassword = 'NewPassword123';
     safeDetectChanges(fixture);
 
     const compiled = fixture.nativeElement as HTMLElement;
@@ -239,12 +239,12 @@ describe('AdminComponent', () => {
     safeDetectChanges(fixture);
 
     component.selectUser(mockUsers[0]);
-    component.newPassword = 'newpassword123';
+    component.newPassword = 'NewPassword123';
     component.confirmReset();
 
     expect(mockAuthService.resetUserPassword).toHaveBeenCalledWith(
       '1',
-      'newpassword123',
+      'NewPassword123',
     );
   });
 
@@ -256,7 +256,7 @@ describe('AdminComponent', () => {
     safeDetectChanges(fixture);
 
     component.selectUser(mockUsers[0]);
-    component.newPassword = 'newpassword123';
+    component.newPassword = 'NewPassword123';
     component.confirmReset();
 
     expect(component.resetting).toBe(false);
@@ -282,7 +282,7 @@ describe('AdminComponent', () => {
     safeDetectChanges(fixture);
 
     component.selectUser(mockUsers[0]);
-    component.newPassword = 'newpassword123';
+    component.newPassword = 'NewPassword123';
     component.confirmReset();
 
     expect(component.resetting).toBe(false);
@@ -298,7 +298,7 @@ describe('AdminComponent', () => {
     safeDetectChanges(fixture);
 
     component.selectUser(mockUsers[0]);
-    component.newPassword = 'newpassword123';
+    component.newPassword = 'NewPassword123';
     component.confirmReset();
 
     expect(component.errorMessage).toBe(
@@ -314,7 +314,7 @@ describe('AdminComponent', () => {
     safeDetectChanges(fixture);
 
     component.selectUser(mockUsers[0]);
-    component.newPassword = 'newpassword123';
+    component.newPassword = 'NewPassword123';
     component.confirmReset();
 
     expect(component.resetting).toBe(false);
@@ -327,10 +327,81 @@ describe('AdminComponent', () => {
     safeDetectChanges(fixture);
 
     component.selectedUser = null;
-    component.newPassword = 'newpassword123';
+    component.newPassword = 'NewPassword123';
     component.confirmReset();
 
     expect(mockAuthService.resetUserPassword).not.toHaveBeenCalled();
+  });
+
+  it.each(['abc123', 'motdepasse', 'newpassword123', 'NEWPASSWORD123'])(
+    'should disable confirm button and show the broken rules for the weak password "%s"',
+    (weakPassword) => {
+      mockAuthService.isAdmin.mockReturnValue(true);
+      mockAuthService.getAllUsers.mockReturnValue(of(mockUsers));
+
+      safeDetectChanges(fixture);
+
+      component.selectUser(mockUsers[0]);
+      component.newPassword = weakPassword;
+      safeDetectChanges(fixture);
+
+      const compiled = fixture.nativeElement as HTMLElement;
+      const confirmButton = compiled.querySelector(
+        '.confirm-btn',
+      ) as HTMLButtonElement;
+      expect(confirmButton.disabled).toBe(true);
+      expect(compiled.querySelectorAll('.field-error').length).toBeGreaterThan(
+        0,
+      );
+      expect(compiled.querySelector('.field-hint')).toBeNull();
+    },
+  );
+
+  it('should show the password policy hint (and no error) before any input', () => {
+    mockAuthService.isAdmin.mockReturnValue(true);
+    mockAuthService.getAllUsers.mockReturnValue(of(mockUsers));
+
+    safeDetectChanges(fixture);
+
+    component.selectUser(mockUsers[0]);
+    safeDetectChanges(fixture);
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    expect(compiled.querySelector('.field-hint')?.textContent?.trim()).toBe(
+      '8 caractères minimum, avec une majuscule, une minuscule et un chiffre',
+    );
+    expect(compiled.querySelectorAll('.field-error').length).toBe(0);
+  });
+
+  it('should not call resetUserPassword if newPassword is too weak', () => {
+    mockAuthService.isAdmin.mockReturnValue(true);
+    mockAuthService.getAllUsers.mockReturnValue(of(mockUsers));
+
+    safeDetectChanges(fixture);
+
+    component.selectUser(mockUsers[0]);
+    component.newPassword = 'abc123';
+    component.confirmReset();
+
+    expect(mockAuthService.resetUserPassword).not.toHaveBeenCalled();
+  });
+
+  it('should display API validation messages (array) one per line when reset fails', () => {
+    mockAuthService.isAdmin.mockReturnValue(true);
+    mockAuthService.getAllUsers.mockReturnValue(of(mockUsers));
+    mockAuthService.resetUserPassword.mockReturnValue(
+      throwError(() => ({
+        error: { message: ['Première règle', 'Deuxième règle'] },
+      })),
+    );
+
+    safeDetectChanges(fixture);
+
+    component.selectUser(mockUsers[0]);
+    component.newPassword = 'NewPassword123';
+    component.confirmReset();
+
+    expect(component.errorMessage).toBe('Première règle\nDeuxième règle');
   });
 
   it('should not call resetUserPassword if newPassword is empty', () => {
@@ -397,7 +468,7 @@ describe('AdminComponent', () => {
     safeDetectChanges(fixture);
 
     component.selectUser(mockUsers[0]);
-    component.newPassword = 'newpassword123';
+    component.newPassword = 'NewPassword123';
     component.resetting = true;
     safeDetectChanges(fixture);
 
@@ -413,7 +484,7 @@ describe('AdminComponent', () => {
     safeDetectChanges(fixture);
 
     component.selectUser(mockUsers[0]);
-    component.newPassword = 'newpassword123';
+    component.newPassword = 'NewPassword123';
     component.resetting = false;
     safeDetectChanges(fixture);
 

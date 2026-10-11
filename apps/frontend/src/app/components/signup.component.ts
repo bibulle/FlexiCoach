@@ -8,6 +8,13 @@ import {
 } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../services/auth.service';
+import {
+  PASSWORD_COMPLEXITY_MESSAGE,
+  PASSWORD_MIN_LENGTH_MESSAGE,
+  PASSWORD_POLICY_HINT,
+} from '@flexicoach/shared';
+import { passwordPolicyValidator } from '../validators/password-policy.validator';
+import { formatApiError } from '../utils/api-error';
 
 @Component({
   selector: 'app-signup',
@@ -168,9 +175,17 @@ import { AuthService } from '../services/auth.service';
             signupForm.get('password')?.invalid &&
             signupForm.get('password')?.touched
           ) {
-            <span class="field-error"
-              >Le mot de passe doit contenir au moins 6 caractères</span
-            >
+            @if (signupForm.get('password')?.hasError('required')) {
+              <span class="field-error">Le mot de passe est requis</span>
+            }
+            @if (signupForm.get('password')?.hasError('passwordMinLength')) {
+              <span class="field-error">{{ passwordMinLengthMessage }}</span>
+            }
+            @if (signupForm.get('password')?.hasError('passwordComplexity')) {
+              <span class="field-error">{{ passwordComplexityMessage }}</span>
+            }
+          } @else {
+            <span class="field-hint">{{ passwordHint }}</span>
           }
         </div>
 
@@ -230,6 +245,10 @@ export class SignupComponent {
   loading = false;
   errorMessage = '';
 
+  readonly passwordHint = PASSWORD_POLICY_HINT;
+  readonly passwordMinLengthMessage = PASSWORD_MIN_LENGTH_MESSAGE;
+  readonly passwordComplexityMessage = PASSWORD_COMPLEXITY_MESSAGE;
+
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
@@ -239,7 +258,7 @@ export class SignupComponent {
       {
         displayName: [''],
         email: ['', [Validators.required, Validators.email]],
-        password: ['', [Validators.required, Validators.minLength(6)]],
+        password: ['', [Validators.required, passwordPolicyValidator]],
         confirmPassword: ['', Validators.required],
         acceptCgu: [false, Validators.requiredTrue],
       },
@@ -276,8 +295,10 @@ export class SignupComponent {
       },
       error: (error) => {
         this.loading = false;
-        this.errorMessage =
-          error.error?.message || 'Erreur lors de la création du compte.';
+        this.errorMessage = formatApiError(
+          error,
+          'Erreur lors de la création du compte.',
+        );
       },
     });
   }

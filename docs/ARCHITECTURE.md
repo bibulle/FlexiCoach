@@ -78,7 +78,7 @@ flexicoach/
 ### Monorepo (Nx)
 - **Version**: Nx 23.3
 - **Workspace**: Integrated monorepo
-- **Shared**: `@flexicoach/shared` pour les modèles TypeScript
+- **Shared**: `@flexicoach/shared` pour les modèles TypeScript et la règle de mot de passe
 
 ### DevOps
 - **Containerisation**: Docker (multi-stage build)
@@ -173,10 +173,27 @@ flexicoach/
 
 ### Utilisateurs
 - `GET /api/users/:id` - Profil utilisateur
+- `PATCH /api/users/me/password` - Changer son mot de passe
 
 ### Administration
 - `GET /api/admin/users` - Liste utilisateurs (admin)
-- `PATCH /api/admin/password` - Reset mot de passe (admin)
+- `PATCH /api/admin/users/:userId/password` - Reset mot de passe d'un utilisateur (admin)
+
+### Règle de mot de passe (partagée front/back)
+
+Définie une seule fois dans `libs/shared/src/lib/password-policy.ts` : 8 caractères minimum,
+au moins une majuscule, une minuscule et un chiffre.
+
+| Parcours | Backend (DTO, `@IsValidPassword()`) | Frontend |
+|---|---|---|
+| Inscription `POST /api/auth/register` | `RegisterDto.password` | `SignupComponent` + `passwordPolicyValidator` |
+| Changement `PATCH /api/users/me/password` | `UpdatePasswordDto.newPassword` | (pas d'écran à ce jour) |
+| Reset admin `PATCH /api/admin/users/:userId/password` | `ResetPasswordDto.newPassword` | modale de `AdminComponent` |
+
+Le backend importe la règle à l'exécution : webpack l'embarque dans `main.js` (aucune dépendance npm
+supplémentaire). Côté tests frontend, l'alias `@flexicoach/shared` est déclaré dans `apps/frontend/vite.config.mts`.
+Les erreurs de validation de l'API (`message` sous forme de tableau) sont mises en forme par
+`apps/frontend/src/app/utils/api-error.ts`.
 
 ## Contrôle d'accès et autorisation
 
