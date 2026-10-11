@@ -64,14 +64,14 @@ flexicoach/
 - **Base de données**: MongoDB 8 avec Mongoose 9.11
 - **Authentification**: JWT (Passport strategy)
 - **Validation**: class-validator, class-transformer
-- **Sécurité**: bcrypt (hachage mots de passe)
+- **Sécurité**: bcrypt (hachage mots de passe), helmet (en-têtes HTTP et CSP en production : `script-src 'self'`, aucun `<script>` inline autorisé)
 
 ### Frontend (Angular)
 - **Framework**: Angular 22.2 (standalone components)
 - **Build**: Vite via Nx
 - **Tests**: Vitest 4 (unitaires), Playwright (e2e)
 - **État**: Services Angular + RxJS + Signals
-- **UI**: SASS avec CSS Custom Properties
+- **UI**: SASS avec CSS Custom Properties ; styles globaux dans `styles.sass`, chargés par un `<link>` classique (l'inlining du CSS critique est désactivé en production, son script inline serait bloqué par la CSP)
 - **Voice**: Web Speech API (français)
 - **Audio**: Web Audio API (bips de secours)
 
