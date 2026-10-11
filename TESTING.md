@@ -44,6 +44,10 @@ npm run test:cov:backend
 npm run test:cov:frontend
 ```
 
+> ℹ️ Nx injecte le `.env` de la racine dans les tâches. `apps/frontend/.env.test` force `NODE_ENV=test`
+> pour la cible `test` du frontend : avec `NODE_ENV=production` dans le `.env` local,
+> `src/build-config.spec.ts` échoue avec `Cannot find package 'node:'`.
+
 ### Tests E2E
 
 Les E2E tournent contre un **vrai backend** et une **vraie base MongoDB**.
