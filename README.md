@@ -251,7 +251,7 @@ messages de commit ([Conventional Commits](https://www.conventionalcommits.org/f
 | `fix: …` | patch (0.8.7 → 0.8.8) | Corrections |
 | `feat: …` | minor (0.8.7 → 0.9.0) | Fonctionnalités |
 | `feat!: …` ou `BREAKING CHANGE:` | major | — |
-| `perf`, `refactor`, `test`, `docs`, `build`, `ci` | aucune (listés dans la release suivante) | section dédiée |
+| `perf`, `refactor`, `test`, `docs`, `build`, `ci` | patch (section visible : une Release PR est proposée) | section dédiée |
 | `chore: …` (dont `chore(deps)` de Dependabot) | aucune | masqué |
 
 **Cycle :**
@@ -261,8 +261,9 @@ messages de commit ([Conventional Commits](https://www.conventionalcommits.org/f
 3. **Merger cette Release PR** crée le tag `vX.Y.Z` et la GitHub Release, publie l'image Docker
    `bibulle/flexicoach:VX.Y.Z` (+ `:latest`) et met à jour le dépôt GitOps (déploiement).
 
-**CI de la Release PR :** seuls les tests unitaires y tournent (ils valident `npm ci` et la compilation de
-`version.ts`) ; les E2E et le build Docker sont sautés, le code ayant déjà été testé sur `main`.
+**CI de la Release PR et de son merge sur `main` :** seuls les tests unitaires y tournent (ils valident `npm ci`
+et la compilation de `version.ts`) ; les E2E et le build Docker de `Build and Publish` sont sautés, le code ayant
+déjà été testé sur `main`. L'image de la release n'est donc construite qu'une fois, par le workflow `Release`.
 
 **Images Docker :** chaque merge sur `main` publie `:latest` ; seules les releases publient une image versionnée
 et déclenchent le déploiement GitOps. Les PR ne font qu'un build (rien n'est publié).
