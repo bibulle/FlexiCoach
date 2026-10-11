@@ -2,7 +2,7 @@
 
 Application Progressive Web App (PWA) pour routines d'exercices guidées avec suivi quotidien, visualisation des progrès et programmes d'entraînement multiples.
 
-## 📝 Version actuelle : 0.8.6
+## 📝 Version actuelle : 0.8.7
 
 ### Corrections récentes
 - ✅ Authentification Google OAuth2 implémentée
