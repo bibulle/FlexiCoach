@@ -226,6 +226,7 @@ npx nx build backend
 - Les dépendances Angular sont alignées (`~22.2`, pas besoin de `--legacy-peer-deps`)
 - Le frontend utilise un proxy (`proxy.conf.json`) pour rediriger `/api` et `/uploads` vers `localhost:3000`
 - Les schémas MongoDB sont dans `apps/backend/src/schemas/`
+- Les images uploadées sont enregistrées en base (`UploadedImage`) ; un ancien dossier local `uploads/` reste lu s'il existe
 - Les modèles partagés sont dans `libs/shared/src/lib/models.ts`
 - La règle de mot de passe partagée (front + back) est dans `libs/shared/src/lib/password-policy.ts`
 
@@ -304,6 +305,13 @@ ne construit ni ne publie d'image (tests unitaires et E2E seulement).
   - Paramètre optionnel `tz` (fuseau IANA, ex. `Europe/Paris`) : fuseau utilisé pour attribuer chaque séance à un
     jour de la semaine (UTC par défaut ; `400` si invalide). Le frontend envoie celui du navigateur.
 - `GET /api/sessions/calendar` - Données calendrier (filtrable par dates)
+
+### Images
+- `POST /api/uploads/image` - Envoyer une image d'étape (multipart, champ `file` ; JPEG, PNG ou WebP ; 5 Mo max) - **Protégé JWT**
+- `GET /uploads/:filename` - Lire une image (hors préfixe `/api`, sans authentification)
+
+Les images sont stockées dans MongoDB (collection `uploadedimages`), pas sur le disque : elles survivent aux
+redéploiements et sont couvertes par la sauvegarde de la base.
 
 ### Utilisateurs
 - `GET /api/users/:id` - Profil utilisateur

@@ -95,6 +95,9 @@ export class RoutineEditorComponent implements OnInit {
 
   uploadingStepIndex: number | null = null;
 
+  /** Step images that failed to load (file no longer on the server). */
+  private missingImages = new Set<string>();
+
   constructor(
     private fb: FormBuilder,
     private routineService: RoutineService,
@@ -502,6 +505,14 @@ export class RoutineEditorComponent implements OnInit {
 
     // Reset input so the same file can be re-selected
     input.value = '';
+  }
+
+  onImageError(imageUrl: string | undefined): void {
+    if (imageUrl) this.missingImages.add(imageUrl);
+  }
+
+  isImageMissing(imageUrl: string | undefined): boolean {
+    return !!imageUrl && this.missingImages.has(imageUrl);
   }
 
   removeStepImage(stepIndex: number): void {

@@ -1,4 +1,9 @@
-import { Component, OnInit, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Routine, Step } from '@flexicoach/shared';
@@ -19,6 +24,8 @@ export class RoutinePlayerComponent implements OnInit, OnDestroy {
   currentStepIndex = 0;
   timeLeft = 0;
   isResting = false;
+  /** Step images that failed to load: hidden instead of a broken picture. */
+  private missingImages = new Set<string>();
   isPlaying = false;
   totalSeconds = 0;
   startTime: Date | null = null;
@@ -523,6 +530,14 @@ export class RoutinePlayerComponent implements OnInit, OnDestroy {
         },
       });
     }
+  }
+
+  onImageError(imageUrl: string | undefined): void {
+    if (imageUrl) this.missingImages.add(imageUrl);
+  }
+
+  isImageMissing(imageUrl: string | undefined): boolean {
+    return !!imageUrl && this.missingImages.has(imageUrl);
   }
 
   goBack() {

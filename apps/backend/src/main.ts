@@ -3,7 +3,7 @@
  * This is only a minimal backend to get started.
  */
 
-import { Logger, ValidationPipe } from '@nestjs/common';
+import { Logger, RequestMethod, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app/app.module';
 import { NestExpressApplication } from '@nestjs/platform-express';
@@ -58,13 +58,18 @@ async function bootstrap() {
     allowedHeaders: ['Content-Type', 'Authorization'],
   });
 
-  // Serve uploaded files statically (before global prefix)
+  // Legacy: images uploaded before they were stored in MongoDB, still on the
+  // local disk (development machines). A file missing here falls through to
+  // UploadedFilesController, which reads the database.
   app.useStaticAssets(join(process.cwd(), 'uploads'), {
     prefix: '/uploads/',
   });
 
   const globalPrefix = 'api';
-  app.setGlobalPrefix(globalPrefix);
+  app.setGlobalPrefix(globalPrefix, {
+    // Uploaded images keep their public URL `/uploads/<filename>`
+    exclude: [{ path: 'uploads/:filename', method: RequestMethod.GET }],
+  });
 
   // Enable global validation
   app.useGlobalPipes(

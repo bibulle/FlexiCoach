@@ -393,7 +393,19 @@
             @if (selectedStep.imageUrl) {
               <div class="editor-image-card">
                 <div class="editor-image-thumb">
-                  <img [src]="selectedStep.imageUrl" alt="Position" />
+                  @if (isImageMissing(selectedStep.imageUrl)) {
+                    <span
+                      class="type-caption editor-image-missing"
+                      title="Le fichier n'existe plus sur le serveur : remplacez-le ou retirez-le"
+                      >Image introuvable</span
+                    >
+                  } @else {
+                    <img
+                      [src]="selectedStep.imageUrl"
+                      alt="Position"
+                      (error)="onImageError(selectedStep.imageUrl)"
+                    />
+                  }
                 </div>
                 <div class="editor-image-meta">
                   <div>

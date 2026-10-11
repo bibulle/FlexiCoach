@@ -150,6 +150,22 @@ flexicoach/
 }
 ```
 
+### UploadedImage
+Image d'illustration d'une étape. Le contenu binaire est stocké en base (collection `uploadedimages`), pas sur
+le disque du conteneur : celui-ci est recréé à chaque release et à chaque redémarrage du pod.
+```typescript
+{
+  _id: ObjectId,
+  filename: string,          // unique, « <uuid>.<jpg|png|webp> » — nom public, URL /uploads/<filename>
+  contentType: string,       // image/jpeg | image/png | image/webp
+  size: number,              // octets (5 Mo maximum)
+  originalName?: string,     // nom du fichier côté client, à titre de libellé
+  ownerId?: ObjectId,        // utilisateur qui a envoyé l'image
+  data: Buffer               // contenu de l'image
+}
+```
+Une étape référence son image par `Step.imageUrl` (`/uploads/<filename>`).
+
 ## API REST
 
 ### Authentification
@@ -178,6 +194,14 @@ flexicoach/
 ### Utilisateurs
 - `GET /api/users/:id` - Profil utilisateur
 - `PATCH /api/users/me/password` - Changer son mot de passe
+
+### Images
+- `POST /api/uploads/image` - Envoi d'une image (multipart, champ `file` ; JPEG, PNG ou WebP ; 5 Mo max) - JWT.
+  L'image est enregistrée dans MongoDB ; l'extension du nom public vient du type validé, jamais du nom client.
+- `GET /uploads/:filename` - Lecture de l'image, **hors préfixe `/api`** et sans authentification (balises
+  `<img>`), avec `Cache-Control: immutable`. `UploadedFilesController` lit la base ; `404` si l'image n'existe pas.
+  Les fichiers d'un ancien dossier local `uploads/` restent servis en priorité (machines de développement).
+- Le frontend masque une image d'étape introuvable (lecteur) ou la signale « Image introuvable » (éditeur).
 
 ### Administration
 - `GET /api/admin/users` - Liste utilisateurs (admin)
@@ -242,6 +266,8 @@ Le Dockerfile utilise un build multi-stage :
 - Le backend NestJS sert l'API sur `/api/*`
 - Le frontend Angular est servi comme fichiers statiques depuis `/`
 - Conteneur unique pour simplifier le déploiement
+- Le conteneur est sans état : toutes les données, images uploadées comprises, sont dans MongoDB. Aucun volume
+  n'est nécessaire et la sauvegarde de la base couvre les images.
 
 ## Fonctionnalités implémentées
 

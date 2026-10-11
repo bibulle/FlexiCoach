@@ -7,39 +7,29 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { memoryStorage } from 'multer';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import { diskStorage } from 'multer';
-import { extname, join } from 'path';
-import { randomUUID } from 'crypto';
-import { existsSync, mkdirSync } from 'fs';
-
-const UPLOADS_DIR = join(process.cwd(), 'uploads');
-
-// Ensure uploads directory exists
-if (!existsSync(UPLOADS_DIR)) {
-  mkdirSync(UPLOADS_DIR, { recursive: true });
-}
+import { CurrentUser } from '../auth/current-user.decorator';
+import { User } from '../schemas/user.schema';
+import {
+  IMAGE_EXTENSIONS,
+  MAX_IMAGE_SIZE,
+  UploadsService,
+} from './uploads.service';
 
 @Controller('uploads')
 @UseGuards(JwtAuthGuard)
 export class UploadsController {
+  constructor(private readonly uploadsService: UploadsService) {}
+
   @Post('image')
   @UseInterceptors(
     FileInterceptor('file', {
-      storage: diskStorage({
-        destination: (_req, _file, cb) => {
-          if (!existsSync(UPLOADS_DIR)) {
-            mkdirSync(UPLOADS_DIR, { recursive: true });
-          }
-          cb(null, UPLOADS_DIR);
-        },
-        filename: (_req, file, cb) => {
-          const uniqueName = `${randomUUID()}${extname(file.originalname)}`;
-          cb(null, uniqueName);
-        },
-      }),
+      // Kept in memory, then stored in MongoDB: nothing is written on the
+      // container disk, which does not survive a redeployment
+      storage: memoryStorage(),
       fileFilter: (_req, file, cb) => {
-        if (!file.mimetype.match(/^image\/(jpeg|png|webp)$/)) {
+        if (!IMAGE_EXTENSIONS[file.mimetype]) {
           cb(
             new BadRequestException(
               'Seuls les formats JPEG, PNG et WebP sont acceptés',
@@ -51,21 +41,26 @@ export class UploadsController {
         cb(null, true);
       },
       limits: {
-        fileSize: 5 * 1024 * 1024, // 5 MB
+        fileSize: MAX_IMAGE_SIZE,
       },
     }),
   )
-  uploadImage(
+  async uploadImage(
     @UploadedFile()
     file: Express.Multer.File,
+    @CurrentUser() user?: User,
   ) {
     if (!file) {
       throw new BadRequestException('Aucun fichier fourni');
     }
+    const saved = await this.uploadsService.saveImage(
+      file,
+      user?._id?.toString(),
+    );
     return {
-      imageUrl: `/uploads/${file.filename}`,
-      originalName: file.originalname,
-      size: file.size,
+      imageUrl: `/uploads/${saved.filename}`,
+      originalName: saved.originalName,
+      size: saved.size,
     };
   }
 }

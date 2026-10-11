@@ -8,6 +8,7 @@ import { RoutineService } from '../services/routine.service';
 import { SessionService } from '../services/session.service';
 import { AuthService } from '../services/auth.service';
 import { Routine } from '@flexicoach/shared';
+import { safeDetectChanges } from '../../test-utils';
 
 describe('RoutinePlayerComponent', () => {
   let component: RoutinePlayerComponent;
@@ -450,6 +451,73 @@ describe('RoutinePlayerComponent', () => {
       component.deleteRoutine();
 
       expect(mockRoutineService.delete).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('Issue #173: step image that cannot be loaded', () => {
+    const withImage: Routine = {
+      ...mockRoutine,
+      steps: [
+        { ...mockRoutine.steps[0], imageUrl: '/uploads/perdue.png' },
+        { ...mockRoutine.steps[1], imageUrl: '/uploads/presente.png' },
+      ],
+    };
+    const figure = () =>
+      (fixture.nativeElement as HTMLElement).querySelector(
+        '.player-step-figure',
+      );
+    const image = () =>
+      (fixture.nativeElement as HTMLElement).querySelector(
+        '.player-step-image',
+      ) as HTMLImageElement | null;
+
+    beforeEach(() => {
+      mockRoutineService.getBySlug.mockReturnValue(of(withImage));
+      fixture.detectChanges();
+    });
+
+    it('should show the image of the current step', () => {
+      expect(image()?.getAttribute('src')).toBe('/uploads/perdue.png');
+      expect(component.isImageMissing('/uploads/perdue.png')).toBe(false);
+    });
+
+    it('should hide the whole figure when the image fails to load', () => {
+      image()!.dispatchEvent(new Event('error'));
+      safeDetectChanges(fixture);
+
+      expect(figure()).toBeNull();
+      expect(component.isImageMissing('/uploads/perdue.png')).toBe(true);
+      // The step itself is still playable
+      expect(
+        (fixture.nativeElement as HTMLElement).querySelector(
+          '.player-step-name',
+        )?.textContent,
+      ).toContain('Step 1');
+    });
+
+    it('should still show the image of another step', () => {
+      image()!.dispatchEvent(new Event('error'));
+      component.currentStepIndex = 1;
+      safeDetectChanges(fixture);
+
+      expect(image()?.getAttribute('src')).toBe('/uploads/presente.png');
+    });
+
+    it('should keep a missing image hidden when coming back to its step', () => {
+      image()!.dispatchEvent(new Event('error'));
+      component.currentStepIndex = 1;
+      safeDetectChanges(fixture);
+      component.currentStepIndex = 0;
+      safeDetectChanges(fixture);
+
+      expect(figure()).toBeNull();
+    });
+
+    it('should ignore an error without image URL', () => {
+      component.onImageError(undefined);
+
+      expect(component.isImageMissing(undefined)).toBe(false);
+      expect(figure()).not.toBeNull();
     });
   });
 });
