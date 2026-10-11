@@ -72,6 +72,7 @@ export class RoutinesService {
       description: createRoutineDto.description,
       duration,
       level: createRoutineDto.difficulty || 'beginner',
+      tag: createRoutineDto.tag,
       steps: createRoutineDto.steps,
       totalSeconds,
       restSeconds: 10, // Default rest time between steps

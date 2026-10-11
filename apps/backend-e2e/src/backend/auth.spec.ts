@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { errorMessage } from '../support/auth-helper';
 
 describe('Auth API', () => {
   const API_URL = process.env.API_URL || 'http://localhost:3000';
@@ -7,7 +8,7 @@ describe('Auth API', () => {
 
   const testUser = {
     email: `test-${Date.now()}@example.com`,
-    password: 'password123',
+    password: 'Password123',
     displayName: 'Test User',
   };
 
@@ -42,7 +43,33 @@ describe('Auth API', () => {
         });
         fail('Should have thrown an error');
       } catch (error: any) {
-        expect(error.response.status).toBe(500);
+        expect(error.response.status).toBe(400);
+      }
+    });
+
+    it('should reject a weak password', async () => {
+      try {
+        await axios.post(`${API_URL}/api/auth/register`, {
+          email: `weak-${Date.now()}@example.com`,
+          password: 'password123',
+        });
+        fail('Should have thrown an error');
+      } catch (error: any) {
+        expect(error.response.status).toBe(400);
+        expect(errorMessage(error)).toContain('majuscule');
+      }
+    });
+
+    it('should reject an invalid email', async () => {
+      try {
+        await axios.post(`${API_URL}/api/auth/register`, {
+          email: 'not-an-email',
+          password: 'Password123',
+        });
+        fail('Should have thrown an error');
+      } catch (error: any) {
+        expect(error.response.status).toBe(400);
+        expect(errorMessage(error)).toContain('Email invalide');
       }
     });
   });
@@ -79,7 +106,7 @@ describe('Auth API', () => {
       try {
         await axios.post(`${API_URL}/api/auth/login`, {
           email: 'nonexistent@example.com',
-          password: 'password123',
+          password: 'Password123',
         });
         fail('Should have thrown an error');
       } catch (error: any) {
@@ -121,6 +148,30 @@ describe('Auth API', () => {
         fail('Should have thrown an error');
       } catch (error: any) {
         expect(error.response.status).toBe(401);
+      }
+    });
+
+    it('should report a regular user as non-admin', async () => {
+      const res = await axios.get(`${API_URL}/api/auth/is-admin`, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      expect(res.status).toBe(200);
+      expect(res.data).toEqual({ isAdmin: false });
+    });
+
+    it('should forbid admin routes to a regular user', async () => {
+      try {
+        await axios.get(`${API_URL}/api/admin/users`, {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        });
+        fail('Should have thrown an error');
+      } catch (error: any) {
+        expect(error.response.status).toBe(403);
       }
     });
 

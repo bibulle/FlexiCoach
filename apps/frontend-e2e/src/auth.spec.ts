@@ -1,130 +1,125 @@
 import { test, expect } from '@playwright/test';
+import {
+  TEST_PASSWORD,
+  field,
+  loginAs,
+  openUserMenu,
+  registerViaApi,
+  uniqueEmail,
+  pageTitle,
+} from './support/helpers';
 
 test.describe('Authentication Flow', () => {
-  const testEmail = `test-${Date.now()}@example.com`;
-  const testPassword = 'TestPassword123!';
-  const testName = 'Test User';
-
-  test.beforeEach(async ({ page }) => {
-    await page.goto('/');
-  });
-
   test('should display login page when not authenticated', async ({ page }) => {
+    await page.goto('/');
+
     await expect(page).toHaveURL('/login');
-    await expect(page.locator('h1')).toContainText('Connexion');
+    await expect(pageTitle(page, 'Bon retour.')).toBeVisible();
+    await expect(
+      page.getByRole('button', { name: 'Continuer avec Google' }),
+    ).toBeVisible();
   });
 
   test('should register a new user', async ({ page }) => {
     await page.goto('/signup');
+    await expect(pageTitle(page, 'Crée ton compte.')).toBeVisible();
 
-    // Fill registration form
-    await page.fill('input[id="displayName"]', testName);
-    await page.fill('input[id="email"]', testEmail);
-    await page.fill('input[id="password"]', testPassword);
-    await page.fill('input[id="confirmPassword"]', testPassword);
+    await field(page, 'displayName').fill('Camille');
+    await field(page, 'email').fill(uniqueEmail('signup'));
+    await field(page, 'password').fill(TEST_PASSWORD);
+    await field(page, 'confirmPassword').fill(TEST_PASSWORD);
 
-    // Submit form
-    await page.click('button[type="submit"]');
+    const submit = page.getByRole('button', { name: 'Créer mon compte' });
+    // The terms of use must be accepted first
+    await expect(submit).toBeDisabled();
+    await page.getByRole('checkbox').check();
+    await expect(submit).toBeEnabled();
+    await submit.click();
 
-    // Should redirect to home/routines after successful registration
     await expect(page).toHaveURL('/');
+    await expect(pageTitle(page, /Camille/)).toBeVisible();
   });
 
-  test('should login with valid credentials', async ({ page }) => {
-    // First register a user
-    await page.goto('/signup');
-    const email = `test-login-${Date.now()}@example.com`;
-    await page.fill('input[id="displayName"]', 'Login Test');
-    await page.fill('input[id="email"]', email);
-    await page.fill('input[id="password"]', testPassword);
-    await page.fill('input[id="confirmPassword"]', testPassword);
-    await page.click('button[type="submit"]');
-    await page.waitForURL('/');
+  test('should login with valid credentials', async ({ page, request }) => {
+    const session = await registerViaApi(request, 'login', 'Léa');
 
-    // Logout
-    await page.click(
-      'button:has-text("Déconnexion"), a:has-text("Déconnexion")',
-    );
-    await expect(page).toHaveURL('/login');
+    await page.goto('/login');
+    await expect(pageTitle(page, 'Bon retour.')).toBeVisible();
+    await field(page, 'email').fill(session.user.email);
+    await field(page, 'password').fill(session.password);
+    await page.getByRole('button', { name: 'Se connecter' }).click();
 
-    // Login with same credentials
-    await page.fill('input[id="email"]', email);
-    await page.fill('input[id="password"]', testPassword);
-    await page.click('button[type="submit"]');
-
-    // Should redirect to home
     await expect(page).toHaveURL('/');
+    await expect(pageTitle(page, /Léa/)).toBeVisible();
   });
 
   test('should show error with invalid credentials', async ({ page }) => {
     await page.goto('/login');
 
-    await page.fill('input[id="email"]', 'nonexistent@example.com');
-    await page.fill('input[id="password"]', 'wrongpassword');
-    await page.click('button[type="submit"]');
+    await field(page, 'email').fill('nonexistent@example.com');
+    await field(page, 'password').fill('WrongPassword1');
+    await page.getByRole('button', { name: 'Se connecter' }).click();
 
-    // Should show error message
-    await expect(page.locator('.error-message')).toBeVisible();
+    await expect(page.locator('.error-message').filter({ visible: true })).toContainText(
+      'Invalid credentials',
+    );
+    await expect(page).toHaveURL('/login');
   });
 
   test('should validate email format', async ({ page }) => {
     await page.goto('/login');
 
-    await page.fill('input[id="email"]', 'invalid-email');
-    await page.fill('input[id="password"]', 'somepassword');
+    await field(page, 'email').fill('invalid-email');
+    await field(page, 'password').fill('somepassword');
+    await field(page, 'email').blur();
 
-    // Button should be disabled with invalid email
-    const submitButton = page.locator('button[type="submit"]');
-    await expect(submitButton).toBeDisabled();
+    await expect(page.getByText('Email invalide').filter({ visible: true })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Se connecter' })).toBeDisabled();
   });
 
   test('should validate password confirmation on signup', async ({ page }) => {
     await page.goto('/signup');
+    await expect(pageTitle(page, 'Crée ton compte.')).toBeVisible();
 
-    await page.fill('input[id="email"]', 'test@example.com');
-    await page.fill('input[id="password"]', 'password123');
-    await page.fill('input[id="confirmPassword"]', 'differentpassword');
+    await field(page, 'displayName').fill('Camille');
+    await field(page, 'email').fill('test@example.com');
+    await field(page, 'password').fill(TEST_PASSWORD);
+    await field(page, 'confirmPassword').fill('Different123');
+    await field(page, 'confirmPassword').blur();
+    await page.getByRole('checkbox').check();
 
-    // Trigger validation by clicking outside
-    await page.locator('input[id="confirmPassword"]').blur();
-
-    // Should show error about password mismatch
-    await expect(page.locator('.field-error')).toContainText(
-      'ne correspondent pas',
-    );
+    await expect(
+      page
+        .getByText('Les mots de passe ne correspondent pas')
+        .filter({ visible: true }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole('button', { name: 'Créer mon compte' }),
+    ).toBeDisabled();
   });
 
-  test('should logout successfully', async ({ page }) => {
-    // Register and login first
-    await page.goto('/signup');
-    const email = `test-logout-${Date.now()}@example.com`;
-    await page.fill('input[id="displayName"]', 'Logout Test');
-    await page.fill('input[id="email"]', email);
-    await page.fill('input[id="password"]', testPassword);
-    await page.fill('input[id="confirmPassword"]', testPassword);
-    await page.click('button[type="submit"]');
-    await page.waitForURL('/');
+  test('should logout successfully', async ({ page, request }) => {
+    const session = await registerViaApi(request, 'logout');
+    await loginAs(page, session);
+    await expect(page.getByRole('heading', { level: 1 }).first()).toBeVisible();
 
-    // Logout
-    await page.click(
-      'button:has-text("Déconnexion"), a:has-text("Déconnexion")',
-    );
+    await openUserMenu(page);
+    await page.getByRole('button', { name: 'Déconnexion' }).click();
 
-    // Should redirect to login
+    await expect(page).toHaveURL('/login');
+    // The session is gone: protected pages redirect to login again
+    await page.goto('/routines');
     await expect(page).toHaveURL('/login');
   });
 
   test('should redirect to login when accessing protected route', async ({
     page,
   }) => {
-    // Clear any existing auth
-    await page.context().clearCookies();
-    await page.evaluate(() => localStorage.clear());
-
-    // Try to access admin page
-    await page.goto('/admin');
-
-    // Should redirect to login
-    await expect(page).toHaveURL('/login');
+    for (const path of ['/routines', '/calendar', '/settings', '/admin']) {
+      await page.goto(path);
+      await expect(page).toHaveURL('/login');
+      // Let the client-side redirect settle before the next navigation
+      await expect(pageTitle(page, 'Bon retour.')).toBeVisible();
+    }
   });
 });

@@ -41,10 +41,79 @@ jobs:
       - name: Run frontend unit tests
         run: npx nx test frontend
 
+  # End-to-end tests (backend API + frontend UI) against a real MongoDB
+  e2e:
+    name: Run e2e tests
+    runs-on: ubuntu-latest
+
+    services:
+      mongo:
+        image: mongo:8
+        ports:
+          - 27017:27017
+
+    env:
+      MONGODB_URI: mongodb://localhost:27017/flexicoach-e2e
+      JWT_SECRET: e2e-secret
+      ADMIN_EMAILS: admin@example.com
+      GOOGLE_CLIENT_ID: e2e.apps.googleusercontent.com
+      GOOGLE_CLIENT_SECRET: e2e
+      GOOGLE_CALLBACK_URL: http://localhost:3000/api/auth/google/callback
+      FRONTEND_URL: http://localhost:4200
+      # Registration is limited to 3 requests/hour: disabled for the e2e run only
+      THROTTLE_DISABLED: 'true'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build backend
+        run: npx nx build backend
+
+      - name: Start backend
+        run: |
+          node dist/apps/backend/main.js > backend.log 2>&1 &
+          for i in $(seq 1 60); do
+            curl -sf http://localhost:3000/api && exit 0
+            sleep 1
+          done
+          echo "Backend did not start" && cat backend.log && exit 1
+
+      - name: Run backend e2e tests
+        run: npx nx e2e-dev backend-e2e
+
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Run frontend e2e tests
+        # Playwright starts the Angular dev server itself (webServer in playwright.config.ts)
+        run: npx nx e2e frontend-e2e -- --project=chromium
+
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: dist/.playwright/apps/frontend-e2e
+          retention-days: 7
+
+      - name: Backend logs
+        if: failure()
+        run: cat backend.log
+
   # Build and publish docker image (only after tests pass)
   build-and-push-docker-image:
     name: Build Docker image and push to repositories
-    needs: test
+    needs: [test, e2e]
     # run only when code is compiling and tests are passing
     runs-on: ubuntu-latest
 

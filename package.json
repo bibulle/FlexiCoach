@@ -1,6 +1,6 @@
 {
   "name": "@flexicoach/source",
-  "version": "0.8.6",
+  "version": "0.8.7",
   "license": "MIT",
   "scripts": {
     "version": "node scripts/update-version.js && git add apps/frontend/src/app/version.ts",
@@ -12,7 +12,7 @@
     "test:cov:backend": "nx test backend --coverage",
     "test:cov:frontend": "nx test frontend --coverage",
     "test:e2e:backend": "nx e2e-dev backend-e2e",
-    "test:e2e:frontend": "nx e2e frontend-e2e",
+    "test:e2e:frontend": "nx e2e frontend-e2e -- --project=chromium",
     "test:all": "npm run test && npm run test:e2e:backend && npm run test:e2e:frontend"
   },
   "private": true,

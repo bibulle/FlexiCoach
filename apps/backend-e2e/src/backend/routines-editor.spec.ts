@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { errorMessage } from '../support/auth-helper';
 
 describe('Routines Editor API (Issue #8)', () => {
   const API_URL = process.env.API_URL || 'http://localhost:3000';
@@ -7,7 +8,7 @@ describe('Routines Editor API (Issue #8)', () => {
 
   const testUser = {
     email: `routine-editor-test-${Date.now()}@example.com`,
-    password: 'password123',
+    password: 'Password123',
     displayName: 'Routine Editor Test User',
   };
 
@@ -219,7 +220,7 @@ describe('Routines Editor API (Issue #8)', () => {
         fail('Should have thrown an error');
       } catch (error: any) {
         expect(error.response.status).toBe(400);
-        expect(error.response.data.message).toContain('version');
+        expect(errorMessage(error)).toContain('version');
       }
     });
 
@@ -295,7 +296,7 @@ describe('Routines Editor API (Issue #8)', () => {
       // Create another user
       const otherUser = {
         email: `other-user-${Date.now()}@example.com`,
-        password: 'password123',
+        password: 'Password123',
         displayName: 'Other User',
       };
       const otherRegisterRes = await axios.post(
@@ -343,7 +344,7 @@ describe('Routines Editor API (Issue #8)', () => {
       // Use the other user token from previous test
       const otherUser = {
         email: `delete-test-user-${Date.now()}@example.com`,
-        password: 'password123',
+        password: 'Password123',
         displayName: 'Delete Test User',
       };
       const otherRegisterRes = await axios.post(
@@ -412,7 +413,7 @@ describe('Routines Editor API (Issue #8)', () => {
       // Create another user and their routine
       const otherUser = {
         email: `visibility-test-${Date.now()}@example.com`,
-        password: 'password123',
+        password: 'Password123',
         displayName: 'Visibility Test User',
       };
       const otherRegisterRes = await axios.post(

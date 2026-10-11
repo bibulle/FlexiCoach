@@ -2,29 +2,14 @@
 
 ## Statut des tests
 
-### ✅ Tests qui passent
+| Suite | Outil | Tests | Lancée en CI |
+|---|---|---|---|
+| Unitaires backend | Jest | 198 | ✅ job `test` |
+| Unitaires frontend | Vitest | 385 | ✅ job `test` |
+| E2E backend (API) | Jest + axios | 73 | ✅ job `e2e` |
+| E2E frontend (UI) | Playwright (Chromium) | 50 | ✅ job `e2e` |
 
-**Frontend** : Tous les tests passent (235 tests, 3 skipped)
-- Auth tests : OK
-- Component tests : OK (calendar, completion, login, signup, routine-player, routine-list, routine-editor, etc.)
-- Service tests : OK (auth.service, session.service, stats.service, sw-update.service)
-- Guard/Interceptor tests : OK (auth.guard, auth.interceptor)
-
-**Backend** : Tous les tests passent (151 tests)
-- ✅ AuthService (8 tests)
-- ✅ AuthController tests : OK
-- ✅ AdminGuard tests : OK
-- ✅ RoutinesService (19 tests) - Tests avec mocks
-- ✅ RoutinesController tests : OK
-- ✅ UsersService (15 tests) - Tests avec mocks
-- ✅ UsersController tests : OK
-- ✅ SessionsService (26 tests) - Tests avec mocks
-- ✅ SessionsController tests : OK
-- ✅ AdminService tests : OK
-- ✅ AdminController tests : OK
-- ✅ AllExceptionsFilter tests : OK
-- ✅ HttpLoggerMiddleware tests : OK
-- ✅ AppService/AppController tests : OK
+Aucun test n'est ignoré (`skip`, `xit`, `fixme`…).
 
 ### Architecture des tests
 
@@ -61,16 +46,48 @@ npm run test:cov:frontend
 
 ### Tests E2E
 
+Les E2E tournent contre un **vrai backend** et une **vraie base MongoDB**.
+
+**Prérequis**
+
+1. MongoDB démarré (local ou `docker run -d -p 27017:27017 mongo:8`).
+2. Backend lancé avec le rate limiting désactivé : l'inscription est limitée à 3 requêtes/heure, or chaque suite crée ses propres utilisateurs.
+   ```bash
+   npx nx build backend
+   THROTTLE_DISABLED=true node dist/apps/backend/main.js
+   ```
+   ⚠️ `THROTTLE_DISABLED=true` est réservé aux tests : ne jamais le définir en production.
+3. Navigateur Playwright installé (une fois, et après chaque mise à jour de `@playwright/test`) :
+   ```bash
+   npx playwright install chromium
+   ```
+   Sans lui : `Executable doesn't exist at …/ms-playwright/chromium_headless_shell-XXXX`.
+4. Pour les tests admin du frontend : `admin@example.com` doit figurer dans `ADMIN_EMAILS` du backend
+   (ou définir `E2E_ADMIN_EMAIL` avec un email présent dans `ADMIN_EMAILS`). Le compte est créé au premier lancement
+   avec le mot de passe `Password123`.
+
 ```bash
-# Tests E2E backend (nécessite backend en cours d'exécution)
+# E2E backend (API) — le backend doit tourner sur http://localhost:3000
 npm run test:e2e:backend
 
-# Tests E2E frontend (Playwright)
-npm run test:e2e:frontend
+# E2E frontend (Playwright / Chromium) — Playwright démarre lui-même le frontend (nx serve)
+# MONGODB_URI doit pointer vers la base du backend : les routines intégrées
+# (douce-10min, bureau-5min) y sont insérées/mises à jour avant les tests.
+MONGODB_URI=mongodb://localhost:27017/flexicoach npm run test:e2e:frontend
 
 # Tous les tests (unitaires + E2E)
 npm run test:all
 ```
+
+Bonnes pratiques suivies par les suites E2E :
+- chaque test crée ses propres utilisateurs (emails uniques) : les suites sont indépendantes, rejouables
+  sur une base existante et parallélisables ;
+- l'authentification UI est simulée en injectant le JWT dans `localStorage` (sauf pour les tests du parcours
+  de connexion/inscription eux-mêmes) ;
+- aucune donnée existante n'est supprimée (les routines intégrées sont mises à jour par *upsert*).
+
+> Note Linux sans locale UTF-8 : Chromium remplace les noms de fichiers accentués des téléchargements par
+> `download`. Lancer les E2E avec `LANG=C.UTF-8` (c'est le cas par défaut sur les runners GitHub).
 
 ### Tests E2E complets (production)
 
@@ -123,6 +140,7 @@ apps/
 │   ├── routines.spec.ts              # E2E routines
 │   ├── routines-editor.spec.ts       # E2E routine editing
 │   └── backend.spec.ts               # E2E général
+├── backend-e2e/src/support/           # global setup/teardown, auth-helper.ts
 ├── frontend/src/app/
 │   ├── components/
 │   │   ├── calendar/calendar.component.spec.ts
@@ -143,7 +161,8 @@ apps/
     ├── navigation.spec.ts            # E2E navigation
     ├── routines.spec.ts              # E2E routines
     ├── admin.spec.ts                 # E2E admin panel
-    └── stats.spec.ts                 # E2E statistics
+    ├── stats.spec.ts                 # E2E statistics
+    └── support/                      # helpers.ts, global-setup.ts (seed)
 ```
 
 ## Comment tester manuellement
@@ -225,15 +244,22 @@ npx nx serve frontend
 ```typescript
 // apps/frontend-e2e/playwright.config.ts
 {
-  baseURL: 'http://localhost:4200',
+  baseURL: 'http://localhost:4200',          // ou BASE_URL
   testDir: './src',
-  projects: [
-    { name: 'chromium' },
-    { name: 'firefox' },
-    { name: 'webkit' }
-  ]
+  globalSetup: './src/support/global-setup.ts', // seed des routines intégrées
+  webServer: { command: 'npx nx run frontend:serve', reuseExistingServer: true },
+  projects: [{ name: 'chromium' }, { name: 'firefox' }, { name: 'webkit' }]
 }
 ```
+
+`npm run test:e2e:frontend` et la CI ne lancent que le projet `chromium`
+(`npx playwright install --with-deps chromium`). Helpers partagés : `apps/frontend-e2e/src/support/helpers.ts`.
+
+### Backend E2E (Jest)
+
+`apps/backend-e2e/src/support/auth-helper.ts` fournit `registerUser()` (utilisateur unique + JWT),
+`authHeaders()` et `errorMessage()`. Le `globalTeardown` n'arrête le backend (port 3000) que pour la cible
+`e2e` (qui le démarre elle-même), jamais pour `e2e-dev`.
 
 ## Couverture de code
 

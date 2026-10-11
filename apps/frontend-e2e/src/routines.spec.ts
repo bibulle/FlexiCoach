@@ -1,379 +1,292 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, Page } from '@playwright/test';
+import { readFileSync } from 'fs';
+import {
+  API_URL,
+  AuthSession,
+  completeRoutine,
+  loginAs,
+  registerViaApi,
+  routineCard,
+} from './support/helpers';
+
+/** Adds a step through the step editor modal of the routine editor. */
+async function addStep(
+  page: Page,
+  step: { name: string; seconds: number; text: string; cues?: string[] },
+) {
+  await page.locator('.editor-add-btn').click();
+  const modal = page.locator('.modal-overlay');
+  await expect(modal).toBeVisible();
+
+  await page.locator('#step-name').fill(step.name);
+  await page.locator('#step-seconds').fill(String(step.seconds));
+  await page.locator('#step-text').fill(step.text);
+  for (const [i, say] of (step.cues ?? []).entries()) {
+    await page.locator('.btn-add-cue').click();
+    await page.locator(`#cue-at-${i}`).fill(String((i + 1) * 2));
+    await page.locator(`#cue-say-${i}`).fill(say);
+  }
+
+  await page.locator('.btn-save').click();
+  await expect(modal).toHaveCount(0);
+}
 
 test.describe('Routines Flow', () => {
-  const testEmail = `test-routines-${Date.now()}@example.com`;
-  const testPassword = 'TestPassword123!';
+  let session: AuthSession;
 
-  test.beforeEach(async ({ page }) => {
-    // Register and login before each test
-    await page.goto('/signup');
-    await page.fill('input[id="displayName"]', 'Routines Test');
-    await page.fill('input[id="email"]', testEmail);
-    await page.fill('input[id="password"]', testPassword);
-    await page.fill('input[id="confirmPassword"]', testPassword);
-    await page.click('button[type="submit"]');
-    await page.waitForURL('/');
+  test.beforeEach(async ({ page, request }) => {
+    session = await registerViaApi(request, 'routines');
+    await loginAs(page, session, '/routines');
+    await expect(page.getByRole('heading', { name: 'Routines.' })).toBeVisible();
   });
 
   test('should display routines list', async ({ page }) => {
-    // Should be on routines page after login
-    await expect(page.locator('h1, h2')).toContainText('Routines');
-
-    // Should display routine cards
-    const routineCards = page.locator('.routine-card, [class*="routine"]');
-    await expect(routineCards.first()).toBeVisible({ timeout: 10000 });
+    await expect(routineCard(page, 'Routine douce')).toBeVisible();
+    await expect(routineCard(page, 'Pause bureau')).toBeVisible();
+    await expect(routineCard(page, 'Routine douce')).toContainText('10 min');
+    await expect(routineCard(page, 'Routine douce')).toContainText('10 étapes');
   });
 
-  test('should filter routines by level', async ({ page }) => {
-    await page.waitForSelector('.routine-card, [class*="routine"]', {
-      timeout: 10000,
-    });
+  test('should filter routines by tag', async ({ page }) => {
+    await page.getByRole('button', { name: 'Bureau', exact: true }).click();
+    await expect(routineCard(page, 'Pause bureau')).toBeVisible();
+    await expect(routineCard(page, 'Routine douce')).toHaveCount(0);
 
-    // Check if filter exists
-    const filterSelect = page.locator('select, [role="combobox"]').first();
-    if (await filterSelect.isVisible()) {
-      await filterSelect.selectOption({ label: 'Débutant' });
+    await page.getByRole('button', { name: 'Quotidien', exact: true }).click();
+    await expect(routineCard(page, 'Routine douce')).toBeVisible();
+    await expect(routineCard(page, 'Pause bureau')).toHaveCount(0);
 
-      // Wait for filter to apply
-      await page.waitForTimeout(500);
+    await page.getByRole('button', { name: 'Tout', exact: true }).click();
+    await expect(routineCard(page, 'Routine douce')).toBeVisible();
+    await expect(routineCard(page, 'Pause bureau')).toBeVisible();
+  });
 
-      // All visible routines should be for beginners
-      const routineCards = page.locator('.routine-card, [class*="routine"]');
-      const count = await routineCards.count();
-      expect(count).toBeGreaterThan(0);
-    }
+  test('should add a routine to favorites and filter on them', async ({
+    page,
+  }) => {
+    await routineCard(page, 'Routine douce')
+      .getByRole('button', { name: 'Ajouter aux favoris' })
+      .click();
+    await expect(
+      routineCard(page, 'Routine douce').getByRole('button', {
+        name: 'Retirer des favoris',
+      }),
+    ).toBeVisible();
+
+    await page.getByRole('button', { name: 'Favoris', exact: true }).click();
+    await expect(routineCard(page, 'Routine douce')).toBeVisible();
+    await expect(routineCard(page, 'Pause bureau')).toHaveCount(0);
+
+    // The favorite is stored server side
+    await page.reload();
+    await expect(
+      routineCard(page, 'Routine douce').getByRole('button', {
+        name: 'Retirer des favoris',
+      }),
+    ).toBeVisible();
   });
 
   test('should navigate to routine detail', async ({ page }) => {
-    await page.waitForSelector('.routine-card, [class*="routine"]', {
-      timeout: 10000,
-    });
+    await routineCard(page, 'Routine douce')
+      .getByRole('heading', { name: 'Routine douce' })
+      .click();
 
-    // Click on first routine
-    const firstRoutine = page
-      .locator('.routine-card, [class*="routine"]')
-      .first();
-    await firstRoutine.click();
-
-    // Should navigate to routine detail/player page
-    await expect(page).toHaveURL(/\/(routine|player)/);
+    await expect(page).toHaveURL('/routine/douce-10min');
+    await expect(page.getByText('Routine en cours')).toBeVisible();
   });
 
   test('should start a routine session', async ({ page }) => {
-    await page.waitForSelector('.routine-card, [class*="routine"]', {
-      timeout: 10000,
-    });
+    await routineCard(page, 'Pause bureau')
+      .getByRole('button', { name: 'Démarrer' })
+      .click();
+    await expect(page).toHaveURL('/routine/bureau-5min');
 
-    // Click on first routine
-    await page.locator('.routine-card, [class*="routine"]').first().click();
+    await page.getByRole('button', { name: 'Démarrer' }).click();
 
-    // Wait for detail page
-    await page.waitForURL(/\/(routine|player)/);
+    // Playing: the button turns into "Pause" and the step timer moves
+    await expect(page.getByRole('button', { name: 'Pause' })).toBeVisible();
+    await expect(page.getByText('0:29')).toBeVisible({ timeout: 5000 });
 
-    // Look for start button
-    const startButton = page.locator(
-      'button:has-text("Commencer"), button:has-text("Démarrer"), button:has-text("Start")',
-    );
-    if (await startButton.isVisible({ timeout: 5000 })) {
-      await startButton.click();
-
-      // Should show exercise player or timer
-      await expect(
-        page.locator('.timer, .exercise, [class*="player"]'),
-      ).toBeVisible({ timeout: 5000 });
-    }
+    await page.getByRole('button', { name: 'Pause' }).click();
+    await expect(page.getByRole('button', { name: /Reprendre|Démarrer/ })).toBeVisible();
   });
 
   test('should display routine information', async ({ page }) => {
-    await page.waitForSelector('.routine-card, [class*="routine"]', {
-      timeout: 10000,
-    });
+    await page.goto('/routine/douce-10min');
 
-    // Click on first routine
-    await page.locator('.routine-card, [class*="routine"]').first().click();
-
-    await page.waitForURL(/\/(routine|player)/);
-
-    // Should display routine name
-    await expect(page.locator('h1, h2')).not.toBeEmpty();
-
-    // Should display duration or exercises count
-    const hasInfo = await page
-      .locator('text=/\\d+\\s*(min|exercices?)/i')
-      .isVisible({ timeout: 3000 });
-    expect(hasInfo).toBeTruthy();
+    const main = page.getByRole('main');
+    await expect(main).toContainText('Routine douce');
+    await expect(main).toContainText('Étape 1 / 10');
+    await expect(
+      page.getByRole('heading', { level: 1, name: 'Respiration profonde' }),
+    ).toBeVisible();
+    await expect(main).toContainText('Épaules relâchées');
+    await expect(main).toContainText('À suivre');
+    await expect(main).toContainText('Rotations du bassin');
   });
 
   test('should navigate between exercises in player', async ({ page }) => {
-    await page.waitForSelector('.routine-card, [class*="routine"]', {
-      timeout: 10000,
-    });
+    await page.goto('/routine/douce-10min');
+    const main = page.getByRole('main');
+    await expect(main).toContainText('Étape 1 / 10');
 
-    // Select a routine
-    await page.locator('.routine-card, [class*="routine"]').first().click();
-    await page.waitForURL(/\/(routine|player)/);
+    await page.getByRole('button', { name: 'Étape suivante' }).click();
+    await expect(main).toContainText('Étape 2 / 10');
+    await expect(
+      page.getByRole('heading', { level: 1, name: 'Rotations du bassin' }),
+    ).toBeVisible();
 
-    // Start routine if needed
-    const startButton = page.locator(
-      'button:has-text("Commencer"), button:has-text("Démarrer")',
-    );
-    if (await startButton.isVisible({ timeout: 3000 })) {
-      await startButton.click();
-    }
-
-    // Look for next/skip button
-    const nextButton = page.locator(
-      'button:has-text("Suivant"), button:has-text("Next"), button:has-text("Skip"), button[aria-label*="next"]',
-    );
-    if (await nextButton.isVisible({ timeout: 5000 })) {
-      const initialText = await page
-        .locator('h1, h2, h3')
-        .first()
-        .textContent();
-      await nextButton.click();
-
-      // Wait for change
-      await page.waitForTimeout(500);
-
-      const newText = await page.locator('h1, h2, h3').first().textContent();
-      // Exercise should have changed (different text) or routine completed
-      expect(
-        initialText !== newText ||
-          (await page.locator('text=/complet|terminé|finished/i').isVisible()),
-      ).toBeTruthy();
-    }
+    await page.getByRole('button', { name: 'Étape précédente' }).click();
+    await expect(main).toContainText('Étape 1 / 10');
+    await expect(
+      page.getByRole('heading', { level: 1, name: 'Respiration profonde' }),
+    ).toBeVisible();
   });
 
-  test('should complete a routine session', async ({ page }) => {
-    await page.waitForSelector('.routine-card, [class*="routine"]', {
-      timeout: 10000,
-    });
+  test('should complete a routine session', async ({ page, request }) => {
+    await completeRoutine(page, 'bureau-5min');
+    await expect(page.getByRole('main')).toContainText('Pause bureau');
 
-    // Select a short routine or any routine
-    await page.locator('.routine-card, [class*="routine"]').first().click();
-    await page.waitForURL(/\/(routine|player)/);
+    await page.getByRole('button', { name: /Bien$/ }).click();
+    await page.getByRole('button', { name: 'Retour aux routines' }).click();
+    await expect(page).toHaveURL('/');
 
-    // Start routine
-    const startButton = page.locator(
-      'button:has-text("Commencer"), button:has-text("Démarrer")',
-    );
-    if (await startButton.isVisible({ timeout: 3000 })) {
-      await startButton.click();
-    }
-
-    // Look for complete/finish button (might need to skip through exercises)
-    const finishButton = page.locator(
-      'button:has-text("Terminer"), button:has-text("Compléter"), button:has-text("Finish")',
-    );
-
-    // Try to skip to end if skip buttons exist
-    let attempts = 0;
-    while (attempts < 10) {
-      if (await finishButton.isVisible({ timeout: 1000 })) {
-        await finishButton.click();
-        break;
-      }
-
-      const skipButton = page.locator(
-        'button:has-text("Suivant"), button:has-text("Skip")',
-      );
-      if (await skipButton.isVisible({ timeout: 1000 })) {
-        await skipButton.click();
-        await page.waitForTimeout(300);
-      } else {
-        break;
-      }
-      attempts++;
-    }
-
-    // Should show completion screen or redirect
-    const completionIndicators = page.locator(
-      'text=/complet|terminé|finished|bravo|félicitations/i',
-    );
-    if (await completionIndicators.isVisible({ timeout: 3000 })) {
-      expect(await completionIndicators.isVisible()).toBeTruthy();
-    }
+    // The completed session and its feeling are saved
+    await expect
+      .poll(async () => {
+        const res = await request.get(`${API_URL}/api/sessions`, {
+          headers: { Authorization: `Bearer ${session.access_token}` },
+        });
+        const sessions = await res.json();
+        return sessions.map((s: any) => [s.routineId, s.completed, s.feeling]);
+      })
+      .toEqual([['bureau-5min', true, 4]]);
   });
 
   test('Issue #35: should hide admin-only buttons for non-admin users', async ({
     page,
   }) => {
-    // User is already logged in as non-admin from beforeEach
-
-    // Verify "Nouvelle routine" button is NOT visible
-    const newRoutineButton = page.locator('a[href="/routines/new"]');
-    await expect(newRoutineButton).not.toBeVisible();
-
-    // Verify edit/delete buttons are not visible
-    const editButtons = page.locator('.btn-secondary:has-text("Éditer")');
-    const deleteButtons = page.locator('.btn-danger:has-text("Supprimer")');
-
-    await expect(editButtons).toHaveCount(0);
-    await expect(deleteButtons).toHaveCount(0);
-
-    // But "Démarrer" button should still be visible
-    const startButtons = page.locator('.btn-primary:has-text("Démarrer")');
-    await expect(startButtons.first()).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Nouvelle routine' })).toHaveCount(0);
+    await expect(page.getByRole('link', { name: 'Éditer' })).toHaveCount(0);
   });
 });
 
 test.describe('Issue #33: Modal scroll with multiple cues', () => {
-  const testEmail = `modal-test-${Date.now()}@example.com`;
-  const testPassword = 'TestPassword123!';
-
-  test.beforeEach(async ({ page }) => {
-    await page.goto('/signup');
-    await page.fill('input[id="displayName"]', 'Modal Test User');
-    await page.fill('input[id="email"]', testEmail);
-    await page.fill('input[id="password"]', testPassword);
-    await page.fill('input[id="confirmPassword"]', testPassword);
-    await page.click('button[type="submit"]');
-    await page.waitForURL('/');
+  test.beforeEach(async ({ page, request }) => {
+    await loginAs(page, await registerViaApi(request, 'modal'), '/routines/new');
+    await expect(page.locator('.editor-shell')).toBeVisible();
   });
 
   test('should allow scrolling in step editor modal with many cues', async ({
     page,
   }) => {
-    await page.goto('/routines/new');
-    await page.waitForSelector('.editor-shell', { timeout: 5000 });
+    await page.setViewportSize({ width: 1280, height: 640 });
+    await page.locator('.editor-add-btn').click();
+    await expect(page.locator('.modal-overlay')).toBeVisible();
 
-    // Click to add a step
-    await page.click('.editor-add-btn');
-
-    // Wait for modal
-    await page.waitForSelector('.modal-overlay', { timeout: 3000 });
-
-    // Fill in basic step info
-    await page.fill('input[id="step-name"]', 'Test Step with Many Cues');
-    await page.fill('input[id="step-seconds"]', '60');
-    await page.selectOption('select[id="step-mode"]', 'mouvement');
-    await page.fill('textarea[id="step-text"]', 'Test instructions');
-
-    // Add 8 cues to trigger overflow
+    await page.locator('#step-name').fill('Étape avec repères');
+    await page.locator('#step-seconds').fill('60');
+    await page.locator('#step-text').fill('Instructions');
     for (let i = 0; i < 8; i++) {
-      await page.click('.btn-add-cue');
-      await page.fill(`input[id="cue-at-${i}"]`, String(i * 5));
-      await page.fill(`input[id="cue-say-${i}"]`, `Cue ${i}`);
+      await page.locator('.btn-add-cue').click();
+      await page.locator(`#cue-at-${i}`).fill(String(i * 5));
+      await page.locator(`#cue-say-${i}`).fill(`Repère ${i}`);
     }
 
-    // Verify modal is scrollable
     const modalBody = page.locator('.modal-body');
-    const isScrollable = await modalBody.evaluate(
-      (el) => el.scrollHeight > el.clientHeight,
-    );
-    expect(isScrollable).toBeTruthy();
+    expect(
+      await modalBody.evaluate((el) => el.scrollHeight > el.clientHeight),
+    ).toBe(true);
 
-    // Scroll to bottom
     await modalBody.evaluate((el) => el.scrollTo(0, el.scrollHeight));
-
-    // Verify save button is still accessible
-    const saveButton = page.locator('.btn-save');
-    await expect(saveButton).toBeVisible();
+    await expect(page.locator('.btn-save')).toBeInViewport();
+    await page.locator('.btn-save').click();
+    await expect(page.locator('.modal-overlay')).toHaveCount(0);
+    await expect(page.getByRole('main')).toContainText('Étape avec repères');
   });
 });
 
 test.describe('Issue #34: Import/Export with MongoDB _id fields', () => {
-  const testEmail = `import-export-${Date.now()}@example.com`;
-  const testPassword = 'TestPassword123!';
+  let session: AuthSession;
 
-  test.beforeEach(async ({ page }) => {
-    await page.goto('/signup');
-    await page.fill('input[id="displayName"]', 'Import Export Test');
-    await page.fill('input[id="email"]', testEmail);
-    await page.fill('input[id="password"]', testPassword);
-    await page.fill('input[id="confirmPassword"]', testPassword);
-    await page.click('button[type="submit"]');
-    await page.waitForURL('/');
+  test.beforeEach(async ({ page, request }) => {
+    session = await registerViaApi(request, 'import-export');
+    await loginAs(page, session, '/routines/new');
+    await expect(page.locator('.editor-shell')).toBeVisible();
   });
 
   test('should export and re-import routine without _id errors', async ({
     page,
+    request,
   }) => {
-    await page.goto('/routines/new');
-    await page.waitForSelector('.editor-shell', { timeout: 5000 });
-
-    // Fill routine metadata
-    await page.fill('.editor-name-input', 'Export Test Routine');
-    await page.fill('.editor-desc-input', 'Test routine for export/import');
-
-    // Add a step with cues
-    await page.click('.editor-add-btn');
-    await page.waitForSelector('.modal-overlay', { timeout: 3000 });
-
-    await page.fill('input[id="step-name"]', 'Test Step');
-    await page.fill('input[id="step-seconds"]', '30');
-    await page.fill('textarea[id="step-text"]', 'Test instructions');
-
-    // Add cues
-    await page.click('.btn-add-cue');
-    await page.fill('input[id="cue-at-0"]', '10');
-    await page.fill('input[id="cue-say-0"]', 'Halfway');
-
-    await page.click('.btn-add-cue');
-    await page.fill('input[id="cue-at-1"]', '20');
-    await page.fill('input[id="cue-say-1"]', 'Almost done');
-
-    // Save step
-    await page.click('.btn-save');
-    await page.waitForSelector('.modal-overlay', {
-      state: 'detached',
-      timeout: 3000,
+    await page.getByRole('textbox', { name: 'Nom de la routine' }).fill(
+      'Routine exportée',
+    );
+    await addStep(page, {
+      name: 'Étape exportée',
+      seconds: 30,
+      text: 'Instructions',
+      cues: ['Mi-parcours', 'Presque fini'],
     });
 
-    // Save routine
-    await page.click('.editor-toolbar .btn-primary');
-    await expect(
-      page.locator('.editor-alert--success'),
-    ).toBeVisible({ timeout: 5000 });
-
-    // Wait for redirect to routines list, then go back to edit
-    await page.waitForURL('/routines', { timeout: 5000 });
-
-    // Navigate back to editor to export
-    await page.goto('/routines/new');
-    await page.waitForSelector('.editor-shell', { timeout: 5000 });
-
-    // Re-fill routine to have something to export
-    await page.fill('.editor-name-input', 'Export Test Routine 2');
-    await page.click('.editor-add-btn');
-    await page.waitForSelector('.modal-overlay', { timeout: 3000 });
-    await page.fill('input[id="step-name"]', 'Step for export');
-    await page.fill('input[id="step-seconds"]', '20');
-    await page.fill('textarea[id="step-text"]', 'Instructions');
-    await page.click('.btn-save');
-    await page.waitForSelector('.modal-overlay', {
-      state: 'detached',
-      timeout: 3000,
-    });
-
-    // Export the routine
+    // Export
     const downloadPromise = page.waitForEvent('download');
-    await page.click('button:has-text("Exporter")');
+    await page.getByRole('button', { name: 'Exporter' }).click();
     const download = await downloadPromise;
-    const downloadPath = await download.path();
+    const exported = JSON.parse(readFileSync((await download.path())!, 'utf-8'));
+    expect(exported.version).toBe('1.0');
+    expect(exported.routine.name).toBe('Routine exportée');
+    expect(download.suggestedFilename()).toMatch(/\.json$/);
 
-    // Import the exported file into a fresh editor
+    // Re-import into a fresh editor and save
     await page.goto('/routines/new');
-    await page.waitForSelector('.editor-shell', { timeout: 5000 });
-
-    await page.setInputFiles('input[type="file"]', downloadPath!);
-
-    // Wait for import success
+    await expect(page.locator('.editor-shell')).toBeVisible();
+    // Re-use the exported content under its suggested file name (*.json)
+    await page
+      .locator('input[type="file"][accept=".json,.routine.json"]')
+      .setInputFiles({
+        name: download.suggestedFilename(),
+        mimeType: 'application/json',
+        buffer: readFileSync((await download.path())!),
+      });
     await expect(
-      page.locator('.editor-alert--success'),
-    ).toBeVisible({ timeout: 5000 });
+      page.getByRole('textbox', { name: 'Nom de la routine' }),
+    ).toHaveValue('Routine exportée');
 
-    // Save the imported routine
-    await page.click('.editor-toolbar .btn-primary');
+    // The import already shows a success alert ("Routine importée…"): wait for
+    // the save's own confirmation, then for the redirect to the list.
+    await page.getByRole('button', { name: 'Enregistrer' }).click();
+    await expect(page.locator('.editor-alert--success')).toHaveText(
+      'Routine créée avec succès',
+    );
+    await expect(page.locator('.editor-alert--error')).toHaveCount(0);
+    await expect(page).toHaveURL('/routines');
 
-    // Should NOT show _id validation error
-    await expect(
-      page.locator('text=/_id should not exist/i'),
-    ).not.toBeVisible({ timeout: 2000 });
-
-    // Should show success
-    await expect(
-      page.locator('.editor-alert--success'),
-    ).toBeVisible({ timeout: 5000 });
+    // The imported routine (and its cues) is stored for this user.
+    // Polled: a replicated MongoDB may not expose the write to the next read
+    // immediately. On failure the message lists what the API returned.
+    let ownRoutines: any[] = [];
+    await expect
+      .poll(
+        async () => {
+          const res = await request.get(`${API_URL}/api/routines`, {
+            headers: { Authorization: `Bearer ${session.access_token}` },
+          });
+          expect(res.status()).toBe(200);
+          ownRoutines = (await res.json()).filter(
+            (r: any) => r.ownerId === session.user._id,
+          );
+          return ownRoutines.map((r: any) => r.name);
+        },
+        {
+          message: `routines of ${session.user.email} returned by ${API_URL}`,
+          timeout: 10_000,
+        },
+      )
+      .toEqual(['Routine exportée']);
+    expect(ownRoutines[0].steps[0].cues.map((c: any) => c.say)).toEqual([
+      'Mi-parcours',
+      'Presque fini',
+    ]);
   });
 });
