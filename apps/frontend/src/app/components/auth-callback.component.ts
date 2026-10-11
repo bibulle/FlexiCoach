@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
@@ -8,6 +8,7 @@ import { AuthService } from '../services/auth.service';
   standalone: true,
   imports: [CommonModule],
   styleUrls: ['./auth-callback.component.css'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <div class="callback-container">
       <div class="callback-content">

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../services/auth.service';
@@ -14,6 +14,7 @@ interface User {
   selector: 'app-admin',
   imports: [CommonModule, FormsModule],
   styleUrl: './admin.component.sass',
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <div class="admin-container">
       <div class="admin-card">

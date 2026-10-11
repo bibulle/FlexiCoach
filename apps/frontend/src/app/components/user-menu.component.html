@@ -3,7 +3,7 @@
     <button class="user-menu-trigger" (click)="toggleMenu()" type="button">
       <span class="user-avatar" [class.has-image]="currentUser()?.avatar">
         @if (currentUser()?.avatar) {
-          <img [src]="currentUser()?.avatar" alt="Avatar" />
+          <img [src]="$safeNavigationMigration(currentUser()?.avatar)" alt="Avatar" />
         } @else {
           {{ getInitials() }}
         }

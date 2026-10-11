@@ -91,7 +91,7 @@
                         type="number"
                         formControlName="at"
                         min="0"
-                        [max]="stepForm.get('seconds')?.value"
+                        [max]="$safeNavigationMigration(stepForm.get('seconds')?.value)"
                         class="form-control"
                       />
                     </div>

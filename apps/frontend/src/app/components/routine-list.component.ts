@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, computed } from '@angular/core';
+import { Component, OnInit, signal, computed, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { Routine } from '@flexicoach/shared';
@@ -13,6 +13,7 @@ type FilterKey = 'Tout' | 'Quotidien' | 'Bureau' | 'Sport' | 'Favoris';
   standalone: true,
   imports: [CommonModule, RouterLink, StatsComponent],
   templateUrl: './routine-list.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./routine-list.component.scss'],
 })
 export class RoutineListComponent implements OnInit {

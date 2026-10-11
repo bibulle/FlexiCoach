@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Routine, Step } from '@flexicoach/shared';
@@ -11,6 +11,7 @@ import { AuthService } from '../services/auth.service';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './routine-player.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./routine-player.component.scss'],
 })
 export class RoutinePlayerComponent implements OnInit, OnDestroy {

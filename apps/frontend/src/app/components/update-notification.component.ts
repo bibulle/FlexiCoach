@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -32,6 +32,7 @@ import {
     </div>
   `,
   styleUrls: ['./update-notification.component.css'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   animations: [
     trigger('slideIn', [
       state(

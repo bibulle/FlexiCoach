@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { SwUpdateService } from './services/sw-update.service';
@@ -18,6 +18,7 @@ import { BottomNavComponent } from './components/bottom-nav.component';
   ],
   selector: 'app-root',
   templateUrl: './app.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./app.sass'],
 })
 export class AppComponent implements OnInit {

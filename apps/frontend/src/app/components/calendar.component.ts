@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { startOfWeek, addDays, format, isBefore, startOfDay } from 'date-fns';
@@ -28,6 +28,7 @@ export interface TrendSvg {
   standalone: true,
   imports: [CommonModule],
   templateUrl: './calendar.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./calendar.component.scss'],
 })
 export class CalendarComponent implements OnInit {
