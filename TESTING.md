@@ -57,7 +57,12 @@ Les E2E tournent contre un **vrai backend** et une **vraie base MongoDB**.
    THROTTLE_DISABLED=true node dist/apps/backend/main.js
    ```
    ⚠️ `THROTTLE_DISABLED=true` est réservé aux tests : ne jamais le définir en production.
-3. Pour les tests admin du frontend : `admin@example.com` doit figurer dans `ADMIN_EMAILS` du backend
+3. Navigateur Playwright installé (une fois, et après chaque mise à jour de `@playwright/test`) :
+   ```bash
+   npx playwright install chromium
+   ```
+   Sans lui : `Executable doesn't exist at …/ms-playwright/chromium_headless_shell-XXXX`.
+4. Pour les tests admin du frontend : `admin@example.com` doit figurer dans `ADMIN_EMAILS` du backend
    (ou définir `E2E_ADMIN_EMAIL` avec un email présent dans `ADMIN_EMAILS`). Le compte est créé au premier lancement
    avec le mot de passe `Password123`.
 

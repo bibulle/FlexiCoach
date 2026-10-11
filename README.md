@@ -91,6 +91,8 @@ Prérequis : MongoDB démarré et backend lancé **avec `THROTTLE_DISABLED=true`
 `admin@example.com` doit figurer dans `ADMIN_EMAILS` pour les tests admin.
 
 ```bash
+npx playwright install chromium        # une seule fois (et après chaque mise à jour de Playwright)
+
 npx nx build backend && THROTTLE_DISABLED=true node dist/apps/backend/main.js   # terminal 1
 
 npm run test:e2e:backend                                                       # terminal 2
