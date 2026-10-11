@@ -98,7 +98,11 @@ export async function completeRoutine(page: Page, slug: string) {
   await page.getByRole('button', { name: 'Démarrer' }).click();
   const next = page.getByRole('button', { name: 'Étape suivante' });
   while (!page.url().includes('/completion')) {
-    await next.click();
+    // The last click navigates to /completion: when that takes more than the
+    // pause below, the button is already gone on the next turn. A short timeout
+    // lets the loop re-check the URL instead of waiting for it until the test
+    // times out.
+    await next.click({ timeout: 2_000 }).catch(() => undefined);
     await page.waitForTimeout(150);
   }
   await expect(page.getByRole('heading', { name: 'Bravo !' })).toBeVisible();

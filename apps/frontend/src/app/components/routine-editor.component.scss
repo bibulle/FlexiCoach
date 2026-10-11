@@ -271,9 +271,23 @@
   padding-top: 4px;
 }
 
-/* === Right panel === */
+/* === Step detail panel ===
+   Mobile: hidden until a step is selected, then a full-screen sheet.
+   Desktop (≥768px): right column, see the media query below. */
 .editor-panel {
   display: none;
+}
+
+.editor-panel--open {
+  display: block;
+  position: fixed;
+  inset: 0;
+  /* Above the sticky app header (100), below the mobile bottom nav (200) */
+  z-index: 150;
+  overflow-y: auto;
+  background: var(--surface);
+  /* Bottom space for the fixed mobile navigation bar (same as app.sass) */
+  padding: 12px 12px calc(80px + env(safe-area-inset-bottom));
 }
 
 .editor-panel-card {
@@ -281,8 +295,33 @@
   display: flex;
   flex-direction: column;
   gap: 0;
-  position: sticky;
-  top: 72px;
+}
+
+.editor-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.editor-panel-close {
+  height: 32px;
+  padding: 0 12px;
+  font-size: 13px;
+}
+
+.step-chevron {
+  color: var(--ink-4);
+  flex-shrink: 0;
+}
+
+.editor-step--invalid {
+  border-color: rgba(220, 38, 38, 0.45);
+}
+
+.step-incomplete {
+  color: var(--error);
+  font-weight: 600;
 }
 
 .editor-panel-mode-label {
@@ -342,13 +381,6 @@
   gap: 4px;
 }
 
-/* Legacy read-only (kept for compat) */
-.editor-panel-field {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
 .editor-delete-step-btn {
   margin-top: 16px;
   width: 100%;
@@ -361,26 +393,47 @@
   }
 }
 
+.editor-cues-empty {
+  margin: 0 0 4px;
+  color: var(--ink-4);
+}
+
 .editor-cue {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 7px 10px;
-  background: var(--surface-2);
-  border-radius: 8px;
-  margin-bottom: 4px;
+  gap: 6px;
+  margin-bottom: 6px;
+
+  .input {
+    height: 36px;
+    font-size: 13px;
+  }
 }
 
-.editor-cue-time {
-  font-size: 12px;
+.editor-cue-at {
+  width: 64px;
+  flex-shrink: 0;
   font-weight: 700;
   color: var(--primary-600);
-  width: 36px;
 }
 
-.editor-cue-text {
-  font-size: 13px;
-  color: var(--ink-2);
+.editor-cue-unit {
+  flex-shrink: 0;
+}
+
+.editor-cue-say {
+  flex: 1;
+  min-width: 0;
+}
+
+.editor-cue-remove {
+  flex-shrink: 0;
+  color: var(--ink-4);
+}
+
+.editor-field-error--row {
+  display: block;
+  margin: -8px 0 12px;
 }
 
 .editor-panel-empty {
@@ -407,8 +460,27 @@
     padding: 32px 24px 64px;
   }
 
-  .editor-panel {
+  .editor-panel,
+  .editor-panel--open {
     display: block;
+    position: static;
+    inset: auto;
+    z-index: auto;
+    overflow: visible;
+    background: none;
+    padding: 0;
+  }
+
+  /* Sticky column; scrolls on its own when the step has many voice cues */
+  .editor-panel-card {
+    position: sticky;
+    top: 72px;
+    max-height: calc(100vh - 88px);
+    overflow-y: auto;
+  }
+
+  .editor-panel-close {
+    display: none;
   }
 
   .editor-meta-card {
