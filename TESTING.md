@@ -89,23 +89,6 @@ Bonnes pratiques suivies par les suites E2E :
 > Note Linux sans locale UTF-8 : Chromium remplace les noms de fichiers accentués des téléchargements par
 > `download`. Lancer les E2E avec `LANG=C.UTF-8` (c'est le cas par défaut sur les runners GitHub).
 
-### Tests E2E complets (production)
-
-Pour tester l'application complète en mode production avec MongoDB local :
-
-```bash
-./test-e2e-local.sh
-```
-
-Ce script :
-- ✅ Vérifie que MongoDB est installé (Homebrew)
-- ✅ Nettoie la base de données
-- ✅ Build le backend et le frontend en mode production
-- ✅ Démarre le backend sur le port 3000
-- ✅ Exécute tous les tests automatiques
-- ✅ Crée un utilisateur admin
-- ✅ Charge les routines de test
-
 ## Structure des tests
 
 ```

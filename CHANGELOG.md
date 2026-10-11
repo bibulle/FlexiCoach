@@ -1,6 +1,39 @@
 # Changelog
 
-All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
+Ce fichier est maintenu automatiquement par [release-please](https://github.com/googleapis/release-please)
+à partir des messages de commit ([Conventional Commits](https://www.conventionalcommits.org/fr/)) :
+ne pas l'éditer à la main. Les releases sont publiées sur
+[GitHub Releases](https://github.com/bibulle/FlexiCoach/releases).
+
+## 0.7.4 → 0.8.7 (2026-01-19 → 2026-10-11) — rattrapage
+
+Versions montées à la main (`npm version patch`) pendant cette période, sans tag ni changelog :
+résumé reconstitué depuis l'historique git.
+
+### Fonctionnalités
+
+* Nouvelle interface hi-fi : authentification, catalogue, lecteur, complétion, accueil, calendrier annuel, éditeur, paramètres
+* Authentification Google OAuth2 (#39), menu utilisateur et en-tête de navigation (#37, #38)
+* Mode administration (toggle dans le menu utilisateur) et gestion des utilisateurs
+* Favoris de routines (#123), tags/catégories de routines (#90)
+* Rappels par notifications navigateur (#99), sélecteur de voix TTS (#98)
+* Paramètres synchronisés avec le backend (#5)
+* Images optionnelles pour les étapes de routine (#127)
+* Routines golf et squash
+
+### Corrections
+
+* Sécurité : mass assignment, IDOR sur les sessions, vérification du mot de passe, garde admin (#49–#55), redirection sur JWT expiré (#43)
+* PWA / Android : wake lock, notifications via service worker, icônes, installation du service worker (#105, #106, #114–#116)
+* Ressenti de fin de séance enfin sauvegardé (#66), `JSON.parse` sécurisé dans `AuthService` (#62)
+* Tag d'une routine perdu à la création ; rechargement intempestif de la page à la première installation du service worker
+* Warnings console en production (#72–#75), sauvegarde de l'éditeur débloquée (#70)
+
+### Build, tests & dépendances
+
+* Node.js 24 LTS, Nx 23, Angular 22, TypeScript 6, Vite 8 ; dépendances à jour (0 vulnérabilité critique/haute) (#130)
+* Dependabot (npm, GitHub Actions, Docker)
+* Tests E2E backend (73) et frontend Playwright (50) réparés et exécutés en CI (#132)
 
 ## 0.7.3 (2026-01-18)
 

@@ -1,0 +1,46 @@
+name: Release
+
+# release-please (https://github.com/googleapis/release-please-action)
+# - On each merge on main, opens/updates a "Release PR" (chore: release X.Y.Z) that
+#   bumps package.json, package-lock.json, apps/frontend/src/app/version.ts and
+#   CHANGELOG.md from the conventional commits (feat → minor, fix → patch, ! → major).
+# - Merging that Release PR creates the tag vX.Y.Z + GitHub Release, then the
+#   versioned Docker image (VX.Y.Z) is published and the GitOps repo is updated.
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release-please:
+    name: Release PR / release
+    runs-on: ubuntu-latest
+    outputs:
+      release_created: ${{ steps.release.outputs.release_created }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
+      version: ${{ steps.release.outputs.version }}
+    steps:
+      - uses: googleapis/release-please-action@v4
+        id: release
+        with:
+          # Optional PAT: with the default GITHUB_TOKEN, GitHub does not run the CI
+          # workflows on the Release PR. See README > Versions et releases.
+          token: ${{ secrets.RELEASE_PLEASE_TOKEN || secrets.GITHUB_TOKEN }}
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
+
+  docker-release:
+    name: Docker image (release)
+    needs: release-please
+    if: needs.release-please.outputs.release_created == 'true'
+    uses: ./.github/workflows/docker.yml
+    with:
+      push: true
+      version: ${{ needs.release-please.outputs.version }}
+      ref: ${{ needs.release-please.outputs.tag_name }}
+    secrets: inherit
