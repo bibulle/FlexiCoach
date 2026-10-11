@@ -1,0 +1,30 @@
+{
+  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
+  "release-type": "node",
+  "include-component-in-tag": false,
+  "include-v-in-tag": true,
+  "bootstrap-sha": "a12e0bda4591b0e78973202b40b800e60fc051b3",
+  "pull-request-title-pattern": "chore: release ${version}",
+  "changelog-sections": [
+    { "type": "feat", "section": "Fonctionnalités" },
+    { "type": "fix", "section": "Corrections" },
+    { "type": "perf", "section": "Performances" },
+    { "type": "refactor", "section": "Refactoring" },
+    { "type": "test", "section": "Tests" },
+    { "type": "docs", "section": "Documentation" },
+    { "type": "build", "section": "Build & dépendances" },
+    { "type": "ci", "section": "CI" },
+    { "type": "chore", "section": "Maintenance", "hidden": true }
+  ],
+  "packages": {
+    ".": {
+      "package-name": "flexicoach",
+      "extra-files": [
+        {
+          "type": "generic",
+          "path": "apps/frontend/src/app/version.ts"
+        }
+      ]
+    }
+  }
+}
