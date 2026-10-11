@@ -5,6 +5,14 @@ Ce fichier est maintenu automatiquement par [release-please](https://github.com/
 ne pas l'éditer à la main. Les releases sont publiées sur
 [GitHub Releases](https://github.com/bibulle/FlexiCoach/releases).
 
+## [0.8.13](https://github.com/bibulle/FlexiCoach/compare/v0.8.12...v0.8.13) (2026-10-11)
+
+
+### Corrections
+
+* **admin:** accès direct à /admin et mode administration conservé au rechargement ([#149](https://github.com/bibulle/FlexiCoach/issues/149)) ([9d98c11](https://github.com/bibulle/FlexiCoach/commit/9d98c112300e715953f04afd9f4931e2eab2973b))
+* **admin:** accès direct à /admin et mode administration conservé au rechargement ([#149](https://github.com/bibulle/FlexiCoach/issues/149)) ([e4f98d5](https://github.com/bibulle/FlexiCoach/commit/e4f98d5769bb108f0d26c18fe86b657db7e350ce))
+
 ## [0.8.12](https://github.com/bibulle/FlexiCoach/compare/v0.8.11...v0.8.12) (2026-10-11)
 
 
