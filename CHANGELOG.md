@@ -5,6 +5,15 @@ Ce fichier est maintenu automatiquement par [release-please](https://github.com/
 ne pas l'éditer à la main. Les releases sont publiées sur
 [GitHub Releases](https://github.com/bibulle/FlexiCoach/releases).
 
+## [0.8.17](https://github.com/bibulle/FlexiCoach/compare/v0.8.16...v0.8.17) (2026-10-11)
+
+
+### Corrections
+
+* **player:** une seule séance enregistrée en fin de routine ([ce99e47](https://github.com/bibulle/FlexiCoach/commit/ce99e47df0ebdc9a6071f02f432dd1cb665b0914))
+* **uploads:** images stockées dans MongoDB pour survivre aux déploiements ([#173](https://github.com/bibulle/FlexiCoach/issues/173)) ([448ac0c](https://github.com/bibulle/FlexiCoach/commit/448ac0cfeaab17b31fb5152e299f805a4375c5c1))
+* **uploads:** images stockées dans MongoDB pour survivre aux déploiements ([#173](https://github.com/bibulle/FlexiCoach/issues/173)) ([f2d54a3](https://github.com/bibulle/FlexiCoach/commit/f2d54a31557f7ab37a794c53de3e7e9e7dc4679c))
+
 ## [0.8.16](https://github.com/bibulle/FlexiCoach/compare/v0.8.15...v0.8.16) (2026-10-11)
 
 
