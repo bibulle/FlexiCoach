@@ -5,6 +5,14 @@ Ce fichier est maintenu automatiquement par [release-please](https://github.com/
 ne pas l'éditer à la main. Les releases sont publiées sur
 [GitHub Releases](https://github.com/bibulle/FlexiCoach/releases).
 
+## [0.8.15](https://github.com/bibulle/FlexiCoach/compare/v0.8.14...v0.8.15) (2026-10-11)
+
+
+### Corrections
+
+* **nav:** « Routines » et « Retour aux routines » mènent au catalogue ([#150](https://github.com/bibulle/FlexiCoach/issues/150)) ([abca075](https://github.com/bibulle/FlexiCoach/commit/abca0758d1b0f8540678e17149b8178d29711a46))
+* **nav:** « Routines » et « Retour aux routines » mènent au catalogue ([#150](https://github.com/bibulle/FlexiCoach/issues/150)) ([6a683e9](https://github.com/bibulle/FlexiCoach/commit/6a683e9610cc6d77ac0fe7f39b4b53e356e075c9))
+
 ## [0.8.14](https://github.com/bibulle/FlexiCoach/compare/v0.8.13...v0.8.14) (2026-10-11)
 
 
