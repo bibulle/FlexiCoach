@@ -261,6 +261,9 @@ messages de commit ([Conventional Commits](https://www.conventionalcommits.org/f
 3. **Merger cette Release PR** crée le tag `vX.Y.Z` et la GitHub Release, publie l'image Docker
    `bibulle/flexicoach:VX.Y.Z` (+ `:latest`) et met à jour le dépôt GitOps (déploiement).
 
+**CI de la Release PR :** seuls les tests unitaires y tournent (ils valident `npm ci` et la compilation de
+`version.ts`) ; les E2E et le build Docker sont sautés, le code ayant déjà été testé sur `main`.
+
 **Images Docker :** chaque merge sur `main` publie `:latest` ; seules les releases publient une image versionnée
 et déclenchent le déploiement GitOps. Les PR ne font qu'un build (rien n'est publié).
 

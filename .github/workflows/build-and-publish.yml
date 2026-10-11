@@ -37,6 +37,9 @@ jobs:
   # End-to-end tests (backend API + frontend UI) against a real MongoDB
   e2e:
     name: Run e2e tests
+    # Skipped on the release-please PR: it only bumps version files and the changelog,
+    # and its code was already tested on main (unit tests still run, see job "test").
+    if: ${{ !startsWith(github.head_ref, 'release-please--') }}
     runs-on: ubuntu-latest
 
     services:
@@ -109,6 +112,8 @@ jobs:
   docker:
     name: Docker image
     needs: [test, e2e]
+    # Not built on the release-please PR: the release image is built from the tag
+    if: ${{ !startsWith(github.head_ref, 'release-please--') }}
     uses: ./.github/workflows/docker.yml
     with:
       push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
