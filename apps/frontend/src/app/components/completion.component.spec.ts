@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Router, ActivatedRoute } from '@angular/router';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { CompletionComponent } from './completion.component';
 import { SessionService } from '../services/session.service';
@@ -63,12 +63,47 @@ describe('CompletionComponent', () => {
     expect(component.selectedFeeling).toBe(4);
   });
 
-  it('should navigate to home on finish without feeling', () => {
+  it('should navigate to the routines catalogue on finish without feeling', () => {
     component.sessionId = '';
     component.selectedFeeling = null;
     component.finish();
-    expect(mockRouter.navigate).toHaveBeenCalledWith(['/']);
+    expect(mockRouter.navigate).toHaveBeenCalledWith(['/routines']);
     expect(mockSessionService.update).not.toHaveBeenCalled();
+  });
+
+  it('should navigate to the routines catalogue without saving when there is no session', () => {
+    component.sessionId = '';
+    component.selectedFeeling = 4;
+    component.finish();
+    expect(mockSessionService.update).not.toHaveBeenCalled();
+    expect(mockRouter.navigate).toHaveBeenCalledWith(['/routines']);
+  });
+
+  it('should navigate to the routines catalogue even if saving the feeling fails', () => {
+    mockSessionService.update.mockReturnValue(
+      throwError(() => new Error('Save failed')),
+    );
+    component.sessionId = 'session-123';
+    component.selectedFeeling = 2;
+    component.finish();
+    expect(mockSessionService.update).toHaveBeenCalledWith('session-123', {
+      feeling: 2,
+    });
+    expect(mockRouter.navigate).toHaveBeenCalledWith(['/routines']);
+    expect(mockRouter.navigate).not.toHaveBeenCalledWith(['/']);
+  });
+
+  it('should render a "Retour aux routines" button that goes to the catalogue', () => {
+    component.sessionId = '';
+    fixture.detectChanges();
+
+    const button = Array.from(
+      (fixture.nativeElement as HTMLElement).querySelectorAll('button'),
+    ).find((b) => b.textContent?.includes('Retour aux routines'));
+    expect(button).toBeTruthy();
+
+    button?.click();
+    expect(mockRouter.navigate).toHaveBeenCalledWith(['/routines']);
   });
 
   it('should save feeling and navigate on finish with sessionId', () => {
@@ -78,7 +113,7 @@ describe('CompletionComponent', () => {
     expect(mockSessionService.update).toHaveBeenCalledWith('session-123', {
       feeling: 4,
     });
-    expect(mockRouter.navigate).toHaveBeenCalledWith(['/']);
+    expect(mockRouter.navigate).toHaveBeenCalledWith(['/routines']);
   });
 
   it('should have 5 feeling options', () => {

@@ -149,7 +149,9 @@ test.describe('Routines Flow', () => {
 
     await page.getByRole('button', { name: /Bien$/ }).click();
     await page.getByRole('button', { name: 'Retour aux routines' }).click();
-    await expect(page).toHaveURL('/');
+    // "Retour aux routines" leads to the catalogue, not to the home page (issue #150)
+    await expect(page).toHaveURL('/routines');
+    await expect(routineCard(page, 'Pause bureau')).toBeVisible();
 
     // The completed session and its feeling are saved
     await expect

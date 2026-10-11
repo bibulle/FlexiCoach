@@ -1,4 +1,11 @@
-import { Component, OnInit, OnDestroy, signal, inject, ChangeDetectionStrategy } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  signal,
+  inject,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   Router,
@@ -67,8 +74,8 @@ export class HeaderComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // Always add "Routines" as first breadcrumb for authenticated routes
-    crumbs.push({ label: 'Routines', url: '/' });
+    // Always add "Routines" (the catalogue) as first breadcrumb for authenticated routes
+    crumbs.push({ label: 'Routines', url: '/routines' });
 
     // Parse URL and build appropriate breadcrumbs
     if (url.startsWith('/routines/new')) {

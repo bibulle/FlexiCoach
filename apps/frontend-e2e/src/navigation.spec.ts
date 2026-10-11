@@ -108,8 +108,23 @@ test.describe('Navigation and Header', () => {
 
       await page.locator('.breadcrumbs').getByRole('link', { name: 'Routines' }).click();
 
-      await expect(page).not.toHaveURL(/\/routine\//);
+      // "Routines" leads to the catalogue, not to the home page (issue #150)
+      await expect(page).toHaveURL('/routines');
+      await expect(pageTitle(page, 'Routines.')).toBeVisible();
       await expect(routineCard(page, 'Routine douce')).toBeVisible();
+    });
+
+    test('Issue #150: the "Routines" breadcrumb of the editor leads to the catalogue', async ({
+      page,
+    }) => {
+      await page.goto('/routines/new');
+      const crumbs = page.locator('.breadcrumbs');
+      await expect(crumbs).toContainText('Nouvelle routine');
+
+      await crumbs.getByRole('link', { name: 'Routines' }).click();
+
+      await expect(page).toHaveURL('/routines');
+      await expect(pageTitle(page, 'Routines.')).toBeVisible();
     });
   });
 
