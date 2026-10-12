@@ -40,7 +40,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           ref: ${{ inputs.ref }}
           path: ${{ env.APP_PATH }}
@@ -81,7 +81,7 @@ jobs:
       # GitOps: only for a release, so the cluster always runs a tagged version
       - name: Checkout gitops
         if: inputs.version != '' && steps.tags.outputs.push == 'true' && env.actions_token != ''
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           repository: bibulle/myKubernetesConfig
           token: ${{ env.actions_token }}
